@@ -37,7 +37,7 @@ export default function ClientsPage() {
 
   return (
     <div className="flex-1 w-full animate-fade-in">
-      <div className="max-w-[1400px] mx-auto pl-6 sm:pl-10 md:pl-16 lg:pl-20 pr-6 sm:pr-8 md:pr-12 lg:pr-14 py-8 md:py-12 space-y-6">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-12 space-y-6">
 
         {/* ─── Header ─── */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-[#1e1e1e]">
@@ -54,19 +54,19 @@ export default function ClientsPage() {
 
         {/* ─── Summary bar ─── */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-[#0f0f0f] border border-[#1e1e1e] rounded-xl px-5 py-4">
+          <div className="bg-[#0f0f0f] border border-[#1e1e1e] rounded-xl px-5 py-4 min-w-0">
             <span className="text-[10px] text-[#555] uppercase tracking-widest block">Total de Clientes</span>
             <span className="text-2xl font-bebas text-[#F0F0F0] tracking-wide mt-1.5 block">{clients.length}</span>
           </div>
-          <div className="bg-[#0f0f0f] border border-[#1e1e1e] rounded-xl px-5 py-4">
+          <div className="bg-[#0f0f0f] border border-[#1e1e1e] rounded-xl px-5 py-4 min-w-0">
             <span className="text-[10px] text-[#555] uppercase tracking-widest block">Débitos em Aberto</span>
-            <span className={`text-2xl font-bebas tracking-wide mt-1.5 block ${totalPending > 0 ? 'text-[#E74C3C]' : 'text-[#F0F0F0]'}`}>
+            <span className={`text-xl font-bebas tracking-wide mt-1.5 block truncate ${totalPending > 0 ? 'text-[#E74C3C]' : 'text-[#F0F0F0]'}`} title={fmt(totalPending)}>
               {fmt(totalPending)}
             </span>
           </div>
-          <div className="bg-[#0f0f0f] border border-[#1e1e1e] rounded-xl px-5 py-4">
+          <div className="bg-[#0f0f0f] border border-[#1e1e1e] rounded-xl px-5 py-4 min-w-0">
             <span className="text-[10px] text-[#555] uppercase tracking-widest block">Investido no Estúdio</span>
-            <span className="text-2xl font-bebas text-gold tracking-wide mt-1.5 block">{fmt(totalSpent)}</span>
+            <span className="text-xl font-bebas text-gold tracking-wide mt-1.5 block truncate" title={fmt(totalSpent)}>{fmt(totalSpent)}</span>
           </div>
         </div>
 
@@ -147,20 +147,28 @@ export default function ClientsPage() {
                 )}
 
                 {/* Bottom stats */}
-                <div className="grid grid-cols-3 gap-2 pt-3 mt-auto border-t border-[#1a1a1a] text-center">
-                  <div>
+                <div className="grid grid-cols-3 gap-2 pt-3 mt-auto border-t border-[#1a1a1a]">
+                  <div className="text-center min-w-0">
                     <span className="text-[9px] text-[#555] uppercase tracking-widest block">Sessões</span>
                     <span className="text-base font-bebas text-[#F0F0F0] mt-1 block">{client.totalSessions}</span>
                   </div>
-                  <div>
-                    <span className="text-[9px] text-[#555] uppercase tracking-widest block">Pendente</span>
-                    <span className={`text-sm font-bold mt-1 block ${client.pendingBalance > 0 ? 'text-[#E74C3C]' : 'text-[#F0F0F0]'}`}>
+                  <div className="text-center min-w-0">
+                    <span className="text-[9px] text-[#555] uppercase tracking-widest block leading-tight">Pendente</span>
+                    <span
+                      className={`text-xs font-bold mt-1 block truncate ${client.pendingBalance > 0 ? 'text-[#E74C3C]' : 'text-[#F0F0F0]'}`}
+                      title={fmt(client.pendingBalance)}
+                    >
                       {fmt(client.pendingBalance)}
                     </span>
                   </div>
-                  <div>
-                    <span className="text-[9px] text-[#555] uppercase tracking-widest block">Gasto</span>
-                    <span className="text-sm font-bold text-gold mt-1 block">{fmt(client.totalSpent)}</span>
+                  <div className="text-center min-w-0">
+                    <span className="text-[9px] text-[#555] uppercase tracking-widest block leading-tight">Gasto</span>
+                    <span
+                      className="text-xs font-bold text-gold mt-1 block truncate"
+                      title={fmt(client.totalSpent)}
+                    >
+                      {fmt(client.totalSpent)}
+                    </span>
                   </div>
                 </div>
               </div>

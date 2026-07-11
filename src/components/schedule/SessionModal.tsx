@@ -5,6 +5,7 @@ import Modal from '@/components/ui/Modal'
 import { Session, ServiceType, SessionStatus } from '@/lib/types'
 import { saveSession, generateId, getClients, getArtists, getSessions } from '@/lib/storage'
 import { AlertCircle } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface SessionModalProps {
   isOpen: boolean
@@ -21,6 +22,7 @@ export default function SessionModal({
   onSave,
   defaultDate,
 }: SessionModalProps) {
+  const { user } = useAuth()
   const [title, setTitle] = useState('')
   const [clientId, setClientId] = useState('')
   const [clientName, setClientName] = useState('')
@@ -32,6 +34,9 @@ export default function SessionModal({
   const [value, setValue] = useState<number>(0)
   const [notes, setNotes] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
+  
+  const [sessionType, setSessionType] = useState<'estudio' | 'show'>('estudio')
+  const [address, setAddress] = useState('')
 
   const [availableClients, setAvailableClients] = useState<{ id: string; name: string }[]>([])
 
@@ -53,10 +58,18 @@ export default function SessionModal({
       setEndTime(session.endTime)
       setValue(session.value || 0)
       setNotes(session.notes || '')
+      setSessionType(session.sessionType || 'estudio')
+      setAddress(session.address || '')
     } else {
       setTitle('')
-      setClientId('')
-      setClientName('')
+      if (user && user.role === 'artist') {
+        setClientId(user.artistId || '')
+        setClientName(user.name)
+        setTitle(`Agendamento ${user.name}`)
+      } else {
+        setClientId('')
+        setClientName('')
+      }
       setServiceType('gravacao')
       setStatus('confirmado')
       setDate(defaultDate || new Date().toISOString().split('T')[0])
@@ -64,8 +77,10 @@ export default function SessionModal({
       setEndTime('18:00')
       setValue(0)
       setNotes('')
+      setSessionType('estudio')
+      setAddress('')
     }
-  }, [session, isOpen, defaultDate])
+  }, [session, isOpen, defaultDate, user])
 
   const handleSelectClient = (id: string) => {
     setClientId(id)
@@ -91,6 +106,16 @@ export default function SessionModal({
       return
     }
 
+    if (sessionType === 'show' && !address) {
+      setErrorMsg('Preencha o endereço do show.')
+      return
+    }
+
+    if (sessionType === 'show' && !value) {
+      setErrorMsg('Preencha o valor do cachê.')
+      return
+    }
+
     // Get all sessions from storage to check for overlap
     const allSessions = getSessions()
     
@@ -112,7 +137,7 @@ export default function SessionModal({
       title,
       clientId: clientId || 'externo',
       clientName,
-      serviceType,
+      serviceType: sessionType === 'show' ? 'outro' : serviceType,
       status,
       date,
       startTime,
@@ -120,6 +145,8 @@ export default function SessionModal({
       value: Number(value) || undefined,
       notes: notes || undefined,
       createdAt: session?.createdAt || new Date().toISOString(),
+      sessionType,
+      address: sessionType === 'show' ? address : undefined,
     }
 
     saveSession(payload)
@@ -128,7 +155,16 @@ export default function SessionModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={session ? 'Editar Sessão' : 'Agendar Sessão'} size="md">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={
+        session 
+          ? (sessionType === 'show' ? 'Editar Show' : 'Editar Sessão') 
+          : (sessionType === 'show' ? 'Agendar Show' : 'Agendar Sessão')
+      }
+      size="md"
+    >
       <form onSubmit={handleSubmit} className="space-y-5">
         {errorMsg && (
           <div className="flex items-start gap-2 bg-crimson-muted border border-crimson/20 text-crimson-light text-xs rounded-lg p-3 animate-fade-in">
@@ -136,75 +172,137 @@ export default function SessionModal({
             <span className="whitespace-pre-line">{errorMsg}</span>
           </div>
         )}
+
+        {/* Toggle Studio / Show */}
         <div>
-          <label className="label-field">Título da Sessão *</label>
+          <label className="label-field">Tipo de Agenda</label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setSessionType('estudio')}
+              className={`py-2.5 px-4 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                sessionType === 'estudio'
+                  ? 'bg-[#8B5CF6]/10 border-[#8B5CF6] text-[#A78BFA] shadow-[0_0_10px_rgba(139,92,246,0.1)]'
+                  : 'bg-transparent border-[#1e1e1e] text-[#555] hover:text-[#888]'
+              }`}
+            >
+              Agenda de Estúdio
+            </button>
+            <button
+              type="button"
+              onClick={() => setSessionType('show')}
+              className={`py-2.5 px-4 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                sessionType === 'show'
+                  ? 'bg-[#8B5CF6]/10 border-[#8B5CF6] text-[#A78BFA] shadow-[0_0_10px_rgba(139,92,246,0.1)]'
+                  : 'bg-transparent border-[#1e1e1e] text-[#555] hover:text-[#888]'
+              }`}
+            >
+              Agenda de Shows
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label className="label-field">
+            {sessionType === 'show' ? 'Nome do Evento / Show *' : 'Título da Sessão *'}
+          </label>
           <input
             type="text"
             className="input-dark"
-            placeholder="Ex: Gravação Vocais"
+            placeholder={sessionType === 'show' ? 'Ex: Show Festival de Inverno' : 'Ex: Gravação Vocais'}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
           />
         </div>
 
-        <div>
-          <label className="label-field">Cliente / Rapper *</label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <select
-              className="input-dark"
-              value={clientId}
-              onChange={(e) => handleSelectClient(e.target.value)}
-            >
-              <option value="">-- Selecione ou digite abaixo --</option>
-              {availableClients.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+        {user && user.role === 'admin' ? (
+          <div>
+            <label className="label-field">
+              {sessionType === 'show' ? 'Artista do Show *' : 'Cliente / Rapper *'}
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <select
+                className="input-dark"
+                value={clientId}
+                onChange={(e) => handleSelectClient(e.target.value)}
+              >
+                <option value="">-- Selecione ou digite abaixo --</option>
+                {availableClients.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+              <input
+                type="text"
+                className="input-dark"
+                placeholder={sessionType === 'show' ? 'Nome do artista manual' : 'Nome manual se não cadastrado'}
+                value={clientName}
+                onChange={(e) => {
+                  setClientName(e.target.value)
+                  setClientId('') // Custom manual name resets dropdown linkage
+                }}
+                required
+              />
+            </div>
+          </div>
+        ) : (
+          <div>
+            <label className="label-field">Agendado Para</label>
             <input
               type="text"
-              className="input-dark"
-              placeholder="Nome manual se não cadastrado"
+              className="input-dark bg-[#0e0e10] border-[#1a1a1c] text-[#666] cursor-not-allowed"
               value={clientName}
-              onChange={(e) => {
-                setClientName(e.target.value)
-                setClientId('') // Custom manual name resets dropdown linkage
-              }}
-              required
+              disabled
             />
           </div>
-        </div>
+        )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="label-field">Tipo de Serviço</label>
-            <select
-              className="input-dark"
-              value={serviceType}
-              onChange={(e) => setServiceType(e.target.value as ServiceType)}
-            >
-              <option value="gravacao">Gravação</option>
-              <option value="mix">Mixagem</option>
-              <option value="master">Masterização</option>
-              <option value="recall">Recall</option>
-              <option value="producao">Produção</option>
-              <option value="outro">Outro</option>
-            </select>
+        {sessionType === 'estudio' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="label-field">Tipo de Serviço</label>
+              <select
+                className="input-dark"
+                value={serviceType}
+                onChange={(e) => setServiceType(e.target.value as ServiceType)}
+              >
+                <option value="gravacao">Gravação</option>
+                <option value="mix">Mixagem</option>
+                <option value="master">Masterização</option>
+                <option value="recall">Recall</option>
+                <option value="producao">Produção</option>
+                <option value="outro">Outro</option>
+              </select>
+            </div>
+            <div>
+              <label className="label-field">Status da Sessão</label>
+              <select
+                className="input-dark"
+                value={status}
+                onChange={(e) => setStatus(e.target.value as SessionStatus)}
+              >
+                <option value="confirmado">Confirmada</option>
+                <option value="pendente">Pendente</option>
+                <option value="cancelado">Cancelada</option>
+                <option value="concluido">Concluída</option>
+              </select>
+            </div>
           </div>
+        ) : (
           <div>
-            <label className="label-field">Status da Sessão</label>
+            <label className="label-field">Status do Show</label>
             <select
               className="input-dark"
               value={status}
               onChange={(e) => setStatus(e.target.value as SessionStatus)}
             >
-              <option value="confirmado">Confirmada</option>
-              <option value="pendente">Pendente</option>
-              <option value="cancelado">Cancelada</option>
-              <option value="concluido">Concluída</option>
+              <option value="confirmado">Confirmado</option>
+              <option value="pendente">Pendente / Negociação</option>
+              <option value="cancelado">Cancelado</option>
+              <option value="concluido">Concluído</option>
             </select>
           </div>
-        </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
@@ -239,22 +337,45 @@ export default function SessionModal({
           </div>
         </div>
 
+        {sessionType === 'show' && (
+          <div>
+            <label className="label-field">Endereço do Show *</label>
+            <input
+              type="text"
+              className="input-dark"
+              placeholder="Ex: Av. Paulista, 1000 - Bela Vista, São Paulo - SP"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              required
+            />
+          </div>
+        )}
+
         <div>
-          <label className="label-field">Valor Estimado (R$)</label>
+          <label className="label-field">
+            {sessionType === 'show' ? 'Valor do Cachê (R$) *' : 'Valor Estimado (R$)'}
+          </label>
           <input
             type="number"
             className="input-dark"
-            placeholder="Ex: 600"
-            value={value}
+            placeholder={sessionType === 'show' ? 'Ex: 5000' : 'Ex: 600'}
+            value={value || ''}
             onChange={(e) => setValue(parseFloat(e.target.value) || 0)}
+            required={sessionType === 'show'}
           />
         </div>
 
         <div>
-          <label className="label-field">Anotações da Sessão</label>
+          <label className="label-field">
+            {sessionType === 'show' ? 'Observações do Show' : 'Anotações da Sessão'}
+          </label>
           <textarea
             className="input-dark h-20 resize-none"
-            placeholder="Observações de setup, batida contratada, microfones recomendados..."
+            placeholder={
+              sessionType === 'show'
+                ? 'Informações sobre camarim, passagens, som, passagem de som, etc.'
+                : 'Observações de setup, batida contratada, microfones recomendados...'
+            }
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
@@ -264,8 +385,8 @@ export default function SessionModal({
           <button type="button" onClick={onClose} className="btn-secondary">
             Cancelar
           </button>
-          <button type="submit" className="btn-primary">
-            Agendar Sessão
+          <button type="submit" className="btn-primary cursor-pointer">
+            {sessionType === 'show' ? 'Agendar Show' : 'Agendar Sessão'}
           </button>
         </div>
       </form>

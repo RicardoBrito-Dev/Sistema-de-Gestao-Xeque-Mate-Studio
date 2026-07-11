@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
 import AppShell from '@/components/AppShell'
+import { SupabaseProvider } from '@/components/SupabaseProvider'
 
 export const metadata: Metadata = {
   title: 'Xeque Mate Studio',
@@ -26,7 +27,9 @@ export default function RootLayout({
       </head>
       <body className="bg-[#0a0a0a] text-[#F0F0F0] min-h-screen flex">
         <AuthProvider>
-          <AppShell>{children}</AppShell>
+          <SupabaseProvider>
+            <AppShell>{children}</AppShell>
+          </SupabaseProvider>
         </AuthProvider>
       </body>
     </html>

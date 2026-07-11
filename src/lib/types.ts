@@ -104,6 +104,8 @@ export interface Session {
   notes?: string
   value?: number // R$
   createdAt: string
+  sessionType?: 'estudio' | 'show'
+  address?: string
 }
 
 // ============================================================
@@ -145,6 +147,7 @@ export interface AppUser {
   name: string
   role: UserRole
   artistId?: string
+  avatarUrl?: string
 }
 
 export interface AuthSession {
@@ -153,4 +156,5 @@ export interface AuthSession {
   name: string
   role: UserRole
   artistId?: string
+  avatarUrl?: string
 }

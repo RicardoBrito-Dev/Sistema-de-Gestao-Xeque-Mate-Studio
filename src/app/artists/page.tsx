@@ -93,9 +93,17 @@ export default function ArtistsPage() {
                 {/* Top: Avatar + Name + Actions */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-12 h-12 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center font-bebas text-base text-gold flex-shrink-0">
-                      {initials(artist.artisticName)}
-                    </div>
+                    {artist.avatar ? (
+                      <img
+                        src={artist.avatar}
+                        alt={artist.artisticName}
+                        className="w-12 h-12 rounded-full object-cover border border-[#8B5CF6]/30 flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center font-bebas text-base text-gold flex-shrink-0">
+                        {initials(artist.artisticName)}
+                      </div>
+                    )}
                     <div className="min-w-0">
                       <h3 className="font-bebas text-lg text-[#F0F0F0] tracking-wide truncate leading-none">
                         {artist.artisticName}

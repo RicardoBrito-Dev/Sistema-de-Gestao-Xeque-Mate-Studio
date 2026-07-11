@@ -88,17 +88,30 @@ export default function Sidebar() {
 
         {/* ── User info ── */}
         {!collapsed && user && (
-          <div className="px-4 py-3 mx-3 mt-3 rounded-xl bg-[#0f0f0f] border border-[#1e1e1e]">
-            <p className="text-xs font-medium text-[#F0F0F0] truncate">{user.name}</p>
-            <div className="flex items-center gap-1.5 mt-1">
-              {canEdit ? (
-                <Shield size={10} className="text-[#8B5CF6]" />
-              ) : (
-                <Eye size={10} className="text-[#666]" />
-              )}
-              <span className={`text-[9px] uppercase tracking-wider font-bold ${canEdit ? 'text-[#8B5CF6]' : 'text-[#666]'}`}>
-                {canEdit ? 'Admin' : 'Visualização'}
-              </span>
+          <div className="px-4 py-3 mx-3 mt-3 rounded-xl bg-[#0f0f0f] border border-[#1e1e1e] flex items-center gap-3">
+            {user.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt={user.name}
+                className="w-8 h-8 rounded-full object-cover border border-[#8B5CF6]/30 flex-shrink-0"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-[#8B5CF6]/10 border border-[#8B5CF6]/30 flex items-center justify-center font-bebas text-xs text-[#A78BFA] flex-shrink-0">
+                {user.name.slice(0, 2).toUpperCase()}
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium text-[#F0F0F0] truncate leading-none">{user.name}</p>
+              <div className="flex items-center gap-1.5 mt-1">
+                {canEdit ? (
+                  <Shield size={10} className="text-[#8B5CF6]" />
+                ) : (
+                  <Eye size={10} className="text-[#666]" />
+                )}
+                <span className={`text-[9px] uppercase tracking-wider font-bold ${canEdit ? 'text-[#8B5CF6]' : 'text-[#666]'}`}>
+                  {canEdit ? 'Admin' : 'Artista'}
+                </span>
+              </div>
             </div>
           </div>
         )}

@@ -5,6 +5,16 @@ export function canEdit(user: AuthSession | null): boolean {
   return user?.role === 'admin'
 }
 
+export function canEditSession(session: Session | null, user: AuthSession | null): boolean {
+  if (!user) return false
+  if (user.role === 'admin') return true
+  if (user.role === 'artist') {
+    if (!session) return true // Creating new sessions is allowed
+    return session.clientId === user.artistId
+  }
+  return false
+}
+
 export function isAdmin(user: AuthSession | null): boolean {
   return user?.role === 'admin'
 }
