@@ -131,3 +131,26 @@ export interface RevenueByService {
   value: number
   color: string
 }
+
+// ============================================================
+// Auth Types
+// ============================================================
+
+export type UserRole = 'admin' | 'artist'
+
+export interface AppUser {
+  id: string
+  email: string
+  password: string
+  name: string
+  role: UserRole
+  artistId?: string
+}
+
+export interface AuthSession {
+  userId: string
+  email: string
+  name: string
+  role: UserRole
+  artistId?: string
+}

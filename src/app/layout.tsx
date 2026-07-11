@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import Sidebar from '@/components/Sidebar'
+import { AuthProvider } from '@/contexts/AuthContext'
+import AppShell from '@/components/AppShell'
 
 export const metadata: Metadata = {
   title: 'Xeque Mate Studio',
@@ -24,10 +25,9 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-[#0a0a0a] text-[#F0F0F0] min-h-screen flex">
-        <Sidebar />
-        <main className="flex-1 min-h-screen flex flex-col pt-6 pb-28 md:py-8 md:pl-24 md:pr-16 min-w-0 transition-all duration-300">
-          {children}
-        </main>
+        <AuthProvider>
+          <AppShell>{children}</AppShell>
+        </AuthProvider>
       </body>
     </html>
   )

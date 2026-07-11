@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import {
   LayoutDashboard,
@@ -12,20 +12,37 @@ import {
   DollarSign,
   ChevronLeft,
   Crown,
+  LogOut,
+  Shield,
+  Eye,
 } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
+import { getNavItemsForUser } from '@/lib/permissions'
 
-const navItems = [
-  { href: '/dashboard', label: 'Dashboard',  icon: LayoutDashboard },
-  { href: '/artists',   label: 'Artistas',   icon: Mic2 },
-  { href: '/clients',   label: 'Clientes',   icon: Users },
-  { href: '/kanban',    label: 'Produção',   icon: Kanban },
-  { href: '/schedule',  label: 'Agenda',     icon: Calendar },
-  { href: '/finances',  label: 'Financeiro', icon: DollarSign },
-]
+const iconMap = {
+  '/dashboard': LayoutDashboard,
+  '/artists': Mic2,
+  '/clients': Users,
+  '/kanban': Kanban,
+  '/schedule': Calendar,
+  '/finances': DollarSign,
+}
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
+  const { user, logout, canEdit } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    router.push('/login')
+  }
+
+  const navItems = getNavItemsForUser(user).map(item => ({
+    ...item,
+    icon: iconMap[item.href as keyof typeof iconMap],
+  }))
 
   return (
     <>
@@ -69,6 +86,23 @@ export default function Sidebar() {
           )}
         </div>
 
+        {/* ── User info ── */}
+        {!collapsed && user && (
+          <div className="px-4 py-3 mx-3 mt-3 rounded-xl bg-[#0f0f0f] border border-[#1e1e1e]">
+            <p className="text-xs font-medium text-[#F0F0F0] truncate">{user.name}</p>
+            <div className="flex items-center gap-1.5 mt-1">
+              {canEdit ? (
+                <Shield size={10} className="text-[#8B5CF6]" />
+              ) : (
+                <Eye size={10} className="text-[#666]" />
+              )}
+              <span className={`text-[9px] uppercase tracking-wider font-bold ${canEdit ? 'text-[#8B5CF6]' : 'text-[#666]'}`}>
+                {canEdit ? 'Admin' : 'Visualização'}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* ── Label section ── */}
         {!collapsed && (
           <div className="px-5 pt-5 pb-1">
@@ -105,7 +139,6 @@ export default function Sidebar() {
                   </span>
                 )}
 
-                {/* Tooltip on collapsed */}
                 {collapsed && (
                   <span className="
                     absolute left-[calc(100%+12px)] top-1/2 -translate-y-1/2
@@ -124,7 +157,7 @@ export default function Sidebar() {
 
         {/* ── ON-AIR Status Card ── */}
         {!collapsed && (
-          <div className="px-4 py-3.5 mb-4 mx-3 rounded-xl bg-gradient-to-b from-[#111] to-[#0a0a0a] border border-[#1e1e1e] flex flex-col gap-2 shadow-lg">
+          <div className="px-4 py-3.5 mb-2 mx-3 rounded-xl bg-gradient-to-b from-[#111] to-[#0a0a0a] border border-[#1e1e1e] flex flex-col gap-2 shadow-lg">
             <div className="flex items-center gap-2">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -139,8 +172,23 @@ export default function Sidebar() {
           </div>
         )}
 
-        {/* ── Collapse toggle ── */}
+        {/* ── Logout ── */}
         <div className={`border-t border-[#1e1e1e] p-3 ${collapsed ? '' : 'px-4'}`}>
+          <button
+            onClick={handleLogout}
+            className={`
+              w-full flex items-center gap-3 py-2.5 px-3 rounded-lg mb-1
+              text-[#666] hover:text-[#E74C3C] hover:bg-[#C0392B]/5
+              transition-all duration-200 group
+              ${collapsed ? 'justify-center' : ''}
+            `}
+          >
+            <LogOut size={15} className="flex-shrink-0" />
+            {!collapsed && (
+              <span className="text-[11px] font-medium">Sair</span>
+            )}
+          </button>
+
           <button
             onClick={() => setCollapsed(!collapsed)}
             className={`
@@ -168,7 +216,6 @@ export default function Sidebar() {
         className="md:hidden fixed bottom-0 left-0 right-0 z-50"
         style={{ boxShadow: '0 -4px 30px rgba(0,0,0,0.8)' }}
       >
-        {/* Glassmorphism backdrop */}
         <div
           className="bg-[#0a0a0a]/95 border-t border-[#1e1e1e]"
           style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}

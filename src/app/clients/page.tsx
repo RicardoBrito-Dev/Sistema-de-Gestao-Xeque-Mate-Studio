@@ -5,9 +5,11 @@ import { getClients, deleteClient } from '@/lib/storage'
 import { Client } from '@/lib/types'
 import ClientModal from '@/components/clients/ClientModal'
 import Badge from '@/components/ui/Badge'
+import { useAuth } from '@/contexts/AuthContext'
 import { Users, Plus, Search, Instagram, Edit2, Trash2, Phone, Mail, AlertCircle } from 'lucide-react'
 
 export default function ClientsPage() {
+  const { canEdit } = useAuth()
   const [clients, setClients] = useState<Client[]>([])
   const [search, setSearch] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -35,21 +37,23 @@ export default function ClientsPage() {
 
   return (
     <div className="flex-1 w-full animate-fade-in">
-      <div className="max-w-[1400px] mx-auto pl-6 sm:pl-10 md:pl-16 lg:pl-20 pr-6 sm:pr-8 md:pr-12 lg:pr-14 py-8 md:py-12">
+      <div className="max-w-[1400px] mx-auto pl-6 sm:pl-10 md:pl-16 lg:pl-20 pr-6 sm:pr-8 md:pr-12 lg:pr-14 py-8 md:py-12 space-y-6">
 
         {/* ─── Header ─── */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 pb-6 border-b border-[#1e1e1e]">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-[#1e1e1e]">
           <div>
             <h1 className="font-bebas text-3xl md:text-4xl text-[#F0F0F0] tracking-wider leading-none">Clientes do Estúdio</h1>
             <p className="text-sm text-[#888] mt-1.5">Controle de clientes, sessões e pagamentos</p>
           </div>
-          <button onClick={handleNew} className="btn-primary">
-            <Plus size={16} />Novo Cliente
-          </button>
+          {canEdit && (
+            <button onClick={handleNew} className="btn-primary">
+              <Plus size={16} />Novo Cliente
+            </button>
+          )}
         </div>
 
         {/* ─── Summary bar ─── */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-[#0f0f0f] border border-[#1e1e1e] rounded-xl px-5 py-4">
             <span className="text-[10px] text-[#555] uppercase tracking-widest block">Total de Clientes</span>
             <span className="text-2xl font-bebas text-[#F0F0F0] tracking-wide mt-1.5 block">{clients.length}</span>
@@ -67,7 +71,7 @@ export default function ClientsPage() {
         </div>
 
         {/* ─── Search ─── */}
-        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center mb-6">
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
           <div className="relative w-full sm:max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555]" size={15} />
             <input
@@ -105,14 +109,16 @@ export default function ClientsPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-1 flex-shrink-0">
-                    <button onClick={() => handleEdit(client)} className="btn-icon">
-                      <Edit2 size={13} />
-                    </button>
-                    <button onClick={() => handleDelete(client.id, client.name)} className="btn-icon btn-icon-danger">
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
+                  {canEdit && (
+                    <div className="flex gap-1 flex-shrink-0">
+                      <button onClick={() => handleEdit(client)} className="btn-icon">
+                        <Edit2 size={13} />
+                      </button>
+                      <button onClick={() => handleDelete(client.id, client.name)} className="btn-icon btn-icon-danger">
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Badges */}
@@ -163,7 +169,9 @@ export default function ClientsPage() {
         )}
       </div>
 
-      <ClientModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} client={selectedClient} onSave={loadData} />
+      {canEdit && (
+        <ClientModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} client={selectedClient} onSave={loadData} />
+      )}
     </div>
   )
 }

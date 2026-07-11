@@ -6,6 +6,7 @@ import {
 } from '@/lib/storage'
 import { Transaction } from '@/lib/types'
 import TransactionModal from '@/components/finances/TransactionModal'
+import { useAuth } from '@/contexts/AuthContext'
 import {
   TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Search,
   Mic2, Sliders, Headphones, RotateCcw, Music, Settings, Home,
@@ -27,6 +28,7 @@ const catLabels: Record<string, string> = {
 }
 
 export default function FinancesPage() {
+  const { canEdit } = useAuth()
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [summary, setSummary] = useState({ totalRevenue: 0, monthRevenue: 0, totalExpenses: 0, monthExpenses: 0, netProfit: 0, monthNetProfit: 0, revenueGrowth: 0 })
   const [chartData, setChartData] = useState<any[]>([])
@@ -89,13 +91,15 @@ export default function FinancesPage() {
             <h1 className="font-bebas text-3xl md:text-4xl text-[#F0F0F0] tracking-wider leading-none">Fluxo Financeiro</h1>
             <p className="text-sm text-[#888] mt-1.5">Controle de receitas e despesas da produtora</p>
           </div>
-          <button onClick={() => setIsModalOpen(true)} className="btn-primary">
-            <Plus size={16} />Novo Lançamento
-          </button>
+          {canEdit && (
+            <button onClick={() => setIsModalOpen(true)} className="btn-primary">
+              <Plus size={16} />Novo Lançamento
+            </button>
+          )}
         </div>
 
         {/* ─── KPI Cards ─── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {[
             { label: 'Receita Total', value: fmt(summary.totalRevenue), icon: TrendingUp, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
             { label: 'Despesas Total', value: fmt(summary.totalExpenses), icon: TrendingDown, color: 'text-[#E74C3C]', bg: 'bg-[#C0392B]/10', border: 'border-[#C0392B]/20' },
@@ -131,18 +135,18 @@ export default function FinancesPage() {
         </div>
 
         {/* ─── Filters ─── */}
-        <div className="bg-[#0d0d0d] border border-[#1e1e1e] rounded-xl p-4 flex flex-wrap gap-3 items-center">
-          <div className="relative flex-1 min-w-[200px]">
+        <div className="bg-[#0d0d0d] border border-[#1e1e1e] rounded-xl p-4 grid grid-cols-1 sm:flex sm:flex-wrap gap-4 items-center">
+          <div className="relative w-full sm:flex-1 sm:min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#444]" size={14} />
             <input type="text" className="input-dark pl-9 text-sm" placeholder="Buscar descrição..." value={search} onChange={e => setSearch(e.target.value)} />
           </div>
 
-          <div className="flex bg-[#111] border border-[#1e1e1e] rounded-lg p-0.5 text-xs">
+          <div className="flex bg-[#111] border border-[#1e1e1e] rounded-lg p-0.5 text-xs w-full sm:w-auto justify-around sm:justify-start">
             {(['all', 'receita', 'despesa'] as const).map(t => (
               <button
                 key={t}
                 onClick={() => setTypeFilter(t)}
-                className={`px-3.5 py-1.5 rounded-lg font-medium transition-all duration-200 active:scale-[0.95] cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-lg font-medium transition-all duration-200 active:scale-[0.95] cursor-pointer flex-1 sm:flex-none text-center ${
                   typeFilter === t
                     ? t === 'all' ? 'bg-[#222] text-[#F0F0F0]'
                       : t === 'receita' ? 'bg-emerald-500/15 text-emerald-400'
@@ -155,7 +159,7 @@ export default function FinancesPage() {
             ))}
           </div>
 
-          <select className="input-dark text-sm min-w-[160px]" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
+          <select className="input-dark text-sm w-full sm:w-auto sm:min-w-[180px]" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
             <option value="all">Todas Categorias</option>
             <optgroup label="Receitas">
               {['gravacao', 'mix', 'master', 'recall', 'producao'].map(c => <option key={c} value={c}>{catLabels[c]}</option>)}
@@ -166,10 +170,12 @@ export default function FinancesPage() {
             <option value="outro">Outro</option>
           </select>
 
-          <input type="month" className="input-dark text-sm max-w-[160px]" value={monthFilter} onChange={e => setMonthFilter(e.target.value)} />
-          {monthFilter && (
-            <button onClick={() => setMonthFilter('')} className="text-xs text-[#555] hover:text-[#888] underline whitespace-nowrap">Limpar mês</button>
-          )}
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <input type="month" className="input-dark text-sm w-full sm:w-auto sm:max-w-[160px]" value={monthFilter} onChange={e => setMonthFilter(e.target.value)} />
+            {monthFilter && (
+              <button onClick={() => setMonthFilter('')} className="text-xs text-[#555] hover:text-[#888] underline whitespace-nowrap">Limpar</button>
+            )}
+          </div>
         </div>
 
         {/* ─── Transaction list ─── */}
@@ -207,12 +213,14 @@ export default function FinancesPage() {
                               {fmt(tx.amount)}
                             </span>
                           </div>
-                          <button
-                            onClick={() => handleDelete(tx.id, tx.description)}
-                            className="btn-icon btn-icon-danger opacity-0 group-hover:opacity-100"
-                          >
-                            <Trash2 size={12} />
-                          </button>
+                          {canEdit && (
+                            <button
+                              onClick={() => handleDelete(tx.id, tx.description)}
+                              className="btn-icon btn-icon-danger opacity-0 group-hover:opacity-100"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          )}
                         </div>
                       </div>
                     )
@@ -224,7 +232,9 @@ export default function FinancesPage() {
         </div>
       </div>
 
-      <TransactionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} transaction={null} onSave={loadData} />
+      {canEdit && (
+        <TransactionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} transaction={null} onSave={loadData} />
+      )}
     </div>
   )
 }

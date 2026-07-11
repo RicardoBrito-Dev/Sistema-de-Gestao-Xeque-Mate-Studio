@@ -6,6 +6,8 @@ import { getKanbanCards, saveKanbanCard, deleteKanbanCard } from '@/lib/storage'
 import { KanbanCard, KanbanStage } from '@/lib/types'
 import KanbanCardModal from '@/components/kanban/KanbanCardModal'
 import Badge from '@/components/ui/Badge'
+import { useAuth } from '@/contexts/AuthContext'
+import { filterKanbanForUser } from '@/lib/permissions'
 import { Mic2, Sliders, Headphones, RotateCcw, CheckCircle2, Plus, Calendar, Trash2, Edit2 } from 'lucide-react'
 import { format, differenceInDays } from 'date-fns'
 
@@ -18,15 +20,17 @@ const COLUMNS: { id: KanbanStage; label: string; color: string; bg: string; bord
 ]
 
 export default function KanbanPage() {
+  const { user, canEdit } = useAuth()
   const [cards, setCards] = useState<KanbanCard[]>([])
   const [mounted, setMounted] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedCard, setSelectedCard] = useState<KanbanCard | null>(null)
 
-  const loadData = () => setCards(getKanbanCards())
-  useEffect(() => { setMounted(true); loadData() }, [])
+  const loadData = () => setCards(filterKanbanForUser(getKanbanCards(), user))
+  useEffect(() => { setMounted(true); loadData() }, [user])
 
   const handleDragEnd = (result: DropResult) => {
+    if (!canEdit) return
     const { destination, source, draggableId } = result
     if (!destination) return
     if (destination.droppableId === source.droppableId && destination.index === source.index) return
@@ -66,11 +70,15 @@ export default function KanbanPage() {
       <div className="pl-6 sm:pl-10 md:pl-16 lg:pl-20 pr-6 sm:pr-8 md:pr-12 lg:pr-14 pt-8 md:pt-12 pb-5 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#1e1e1e]">
         <div>
           <h1 className="font-bebas text-3xl md:text-4xl text-[#F0F0F0] tracking-wider leading-none">Painel de Produção</h1>
-          <p className="text-sm text-[#888] mt-1.5">Arraste as faixas para atualizar o estágio de produção</p>
+          <p className="text-sm text-[#888] mt-1.5">
+            {canEdit ? 'Arraste as faixas para atualizar o estágio de produção' : 'Acompanhe o status das suas faixas'}
+          </p>
         </div>
-        <button onClick={handleNew} className="btn-primary">
-          <Plus size={16} />Nova Música
-        </button>
+        {canEdit && (
+          <button onClick={handleNew} className="btn-primary">
+            <Plus size={16} />Nova Música
+          </button>
+        )}
       </div>
 
       {/* Board */}
@@ -108,13 +116,14 @@ export default function KanbanPage() {
                         {colCards.map((card, index) => {
                           const isOverdue = card.deadline && new Date(card.deadline) < new Date()
                           return (
-                            <Draggable key={card.id} draggableId={card.id} index={index}>
+                            <Draggable key={card.id} draggableId={card.id} index={index} isDragDisabled={!canEdit}>
                               {(dp, ds) => (
                                 <div
                                   ref={dp.innerRef}
                                   {...dp.draggableProps}
-                                  {...dp.dragHandleProps}
-                                  className={`bg-[#111] border rounded-xl p-4 flex flex-col gap-3 group transition-all cursor-grab active:cursor-grabbing
+                                  {...(canEdit ? dp.dragHandleProps : {})}
+                                  className={`bg-[#111] border rounded-xl p-4 flex flex-col gap-3 group transition-all
+                                    ${canEdit ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}
                                     ${ds.isDragging
                                       ? 'border-gold/40 shadow-[0_8px_32px_rgba(139,92,246,0.25)] scale-[1.03] rotate-1'
                                       : 'border-[#1e1e1e] hover:border-[#2a2a2a] hover:shadow-[0_4px_16px_rgba(0,0,0,0.4)]'
@@ -126,12 +135,16 @@ export default function KanbanPage() {
                                       {card.priority}
                                     </Badge>
                                     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                      <button onClick={() => handleEdit(card)} className="btn-icon" style={{ padding: '5px' }}>
-                                        <Edit2 size={11} />
-                                      </button>
-                                      <button onClick={() => handleDelete(card.id, card.trackName)} className="btn-icon btn-icon-danger" style={{ padding: '5px' }}>
-                                        <Trash2 size={11} />
-                                      </button>
+                                      {canEdit && (
+                                        <>
+                                          <button onClick={() => handleEdit(card)} className="btn-icon" style={{ padding: '5px' }}>
+                                            <Edit2 size={11} />
+                                          </button>
+                                          <button onClick={() => handleDelete(card.id, card.trackName)} className="btn-icon btn-icon-danger" style={{ padding: '5px' }}>
+                                            <Trash2 size={11} />
+                                          </button>
+                                        </>
+                                      )}
                                     </div>
                                   </div>
 
@@ -175,7 +188,9 @@ export default function KanbanPage() {
         </DragDropContext>
       </div>
 
-      <KanbanCardModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} card={selectedCard} onSave={loadData} />
+      {canEdit && (
+        <KanbanCardModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} card={selectedCard} onSave={loadData} />
+      )}
     </div>
   )
 }

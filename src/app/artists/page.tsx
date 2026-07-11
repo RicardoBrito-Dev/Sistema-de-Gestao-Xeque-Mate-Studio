@@ -5,16 +5,19 @@ import { getArtists, deleteArtist } from '@/lib/storage'
 import { Artist } from '@/lib/types'
 import ArtistModal from '@/components/artists/ArtistModal'
 import Badge from '@/components/ui/Badge'
-import { Mic2, Plus, Search, Instagram, Play, Youtube, Trash2, Edit2, Phone, Mail } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
+import { filterArtistsForUser } from '@/lib/permissions'
+import { Mic2, Plus, Search, Instagram, Play, Youtube, Trash2, Edit2, Phone } from 'lucide-react'
 
 export default function ArtistsPage() {
+  const { user, canEdit } = useAuth()
   const [artists, setArtists] = useState<Artist[]>([])
   const [search, setSearch] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null)
 
-  const loadData = () => setArtists(getArtists())
-  useEffect(() => { loadData() }, [])
+  const loadData = () => setArtists(filterArtistsForUser(getArtists(), user))
+  useEffect(() => { loadData() }, [user])
 
   const handleDelete = (id: string, name: string) => {
     if (confirm(`Excluir artista "${name}"?`)) { deleteArtist(id); loadData() }
@@ -30,24 +33,36 @@ export default function ArtistsPage() {
   const fmt = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(val)
   const initials = (name: string) => name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
   const statusColor: Record<Artist['status'], 'green' | 'yellow' | 'gray'> = { ativo: 'green', pausado: 'yellow', inativo: 'gray' }
+  const formatPhone = (p: string) => {
+    const c = p.replace(/\D/g, '')
+    if (c.length === 11) return `(${c.slice(0, 2)}) ${c.slice(2, 7)}-${c.slice(7)}`
+    if (c.length === 10) return `(${c.slice(0, 2)}) ${c.slice(2, 6)}-${c.slice(6)}`
+    return p
+  }
 
   return (
     <div className="flex-1 w-full animate-fade-in">
-      <div className="max-w-[1400px] mx-auto pl-6 sm:pl-10 md:pl-16 lg:pl-20 pr-6 sm:pr-8 md:pr-12 lg:pr-14 py-8 md:py-12">
+      <div className="max-w-[1400px] mx-auto pl-6 sm:pl-10 md:pl-16 lg:pl-20 pr-6 sm:pr-8 md:pr-12 lg:pr-14 py-8 md:py-12 space-y-6">
 
         {/* ─── Header ─── */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 pb-6 border-b border-[#1e1e1e]">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-[#1e1e1e]">
           <div>
-            <h1 className="font-bebas text-3xl md:text-4xl text-[#F0F0F0] tracking-wider leading-none">Artistas da Produtora</h1>
-            <p className="text-sm text-[#888] mt-1.5">Gerencie o casting de artistas da Xeque Mate</p>
+            <h1 className="font-bebas text-3xl md:text-4xl text-[#F0F0F0] tracking-wider leading-none">
+              {canEdit ? 'Artistas da Produtora' : 'Meu Perfil'}
+            </h1>
+            <p className="text-sm text-[#888] mt-1.5">
+              {canEdit ? 'Gerencie o casting de artistas da Xeque Mate' : 'Visualize suas informações no estúdio'}
+            </p>
           </div>
-          <button onClick={handleNew} className="btn-primary">
-            <Plus size={16} />Novo Artista
-          </button>
+          {canEdit && (
+            <button onClick={handleNew} className="btn-primary">
+              <Plus size={16} />Novo Artista
+            </button>
+          )}
         </div>
 
         {/* ─── Search bar ─── */}
-        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center mb-6">
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
           <div className="relative w-full sm:max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555]" size={15} />
             <input
@@ -89,12 +104,16 @@ export default function ArtistsPage() {
                     </div>
                   </div>
                   <div className="flex gap-1 flex-shrink-0">
-                    <button onClick={() => handleEdit(artist)} className="btn-icon" title="Editar">
-                      <Edit2 size={13} />
-                    </button>
-                    <button onClick={() => handleDelete(artist.id, artist.artisticName)} className="btn-icon btn-icon-danger" title="Excluir">
-                      <Trash2 size={13} />
-                    </button>
+                    {canEdit && (
+                      <>
+                        <button onClick={() => handleEdit(artist)} className="btn-icon" title="Editar">
+                          <Edit2 size={13} />
+                        </button>
+                        <button onClick={() => handleDelete(artist.id, artist.artisticName)} className="btn-icon btn-icon-danger" title="Excluir">
+                          <Trash2 size={13} />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -143,9 +162,10 @@ export default function ArtistsPage() {
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 text-[10px] text-[#444]">
-                    <span title={artist.phone} className="flex items-center gap-1">
-                      <Phone size={9} />{artist.phone}
+                  <div className="flex items-center gap-2 text-xs text-[#555]">
+                    <span title={artist.phone} className="flex items-center gap-1.5 hover:text-[#888] transition-colors">
+                      <Phone size={10} className="text-[#444]" />
+                      {formatPhone(artist.phone)}
                     </span>
                   </div>
                 </div>
@@ -155,7 +175,9 @@ export default function ArtistsPage() {
         )}
       </div>
 
-      <ArtistModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} artist={selectedArtist} onSave={loadData} />
+      {canEdit && (
+        <ArtistModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} artist={selectedArtist} onSave={loadData} />
+      )}
     </div>
   )
 }

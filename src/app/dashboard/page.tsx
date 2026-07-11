@@ -7,16 +7,20 @@ import {
   getClients,
   getKanbanCards,
   getSessions,
+  getTransactions,
 } from '@/lib/storage'
-import { DollarSign, Mic2, TrendingUp, Sparkles, Users, LayoutDashboard, Music } from 'lucide-react'
+import { DollarSign, Mic2, TrendingUp, Sparkles, Users, Music, Kanban, Calendar, Eye } from 'lucide-react'
 import StatCard from '@/components/ui/StatCard'
 import RevenueChart from '@/components/dashboard/RevenueChart'
 import ServicePieChart from '@/components/dashboard/ServicePieChart'
 import RecentTransactions from '@/components/dashboard/RecentTransactions'
+import { useAuth } from '@/contexts/AuthContext'
+import { filterKanbanForUser, filterSessionsForUser, filterTransactionsForUser } from '@/lib/permissions'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
 export default function DashboardPage() {
+  const { user, canEdit } = useAuth()
   const [summary, setSummary] = useState({
     totalRevenue: 0, monthRevenue: 0, totalExpenses: 0, monthExpenses: 0,
     netProfit: 0, monthNetProfit: 0, revenueGrowth: 0,
@@ -25,112 +29,198 @@ export default function DashboardPage() {
   const [clientsCount, setClientsCount] = useState(0)
   const [kanbanCount, setKanbanCount] = useState(0)
   const [sessionsToday, setSessionsToday] = useState(0)
+  const [artistRevenue, setArtistRevenue] = useState(0)
   const [currentDateStr, setCurrentDateStr] = useState('')
 
   useEffect(() => {
-    setSummary(getFinancialSummary())
-    setArtistsCount(getArtists().filter(a => a.status === 'ativo').length)
-    setClientsCount(getClients().length)
-    setKanbanCount(getKanbanCards().filter(k => k.stage !== 'entregue').length)
     const today = format(new Date(), 'yyyy-MM-dd')
-    setSessionsToday(getSessions().filter(s => s.date === today).length)
+
+    if (canEdit) {
+      setSummary(getFinancialSummary())
+      setArtistsCount(getArtists().filter(a => a.status === 'ativo').length)
+      setClientsCount(getClients().length)
+      setKanbanCount(getKanbanCards().filter(k => k.stage !== 'entregue').length)
+      setSessionsToday(getSessions().filter(s => s.date === today).length)
+    } else {
+      const myKanban = filterKanbanForUser(getKanbanCards(), user)
+      const mySessions = filterSessionsForUser(getSessions(), user)
+      const myTransactions = filterTransactionsForUser(getTransactions(), user)
+      const myRevenue = myTransactions
+        .filter(t => t.type === 'receita')
+        .reduce((sum, t) => sum + t.amount, 0)
+
+      setKanbanCount(myKanban.filter(k => k.stage !== 'entregue').length)
+      setSessionsToday(mySessions.filter(s => s.date === today).length)
+      setArtistRevenue(myRevenue)
+    }
+
     setCurrentDateStr(format(new Date(), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR }))
-  }, [])
+  }, [user, canEdit])
 
   const fmt = (val: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
 
   return (
     <div className="flex-1 w-full animate-fade-in">
-      <div className="max-w-[1400px] mx-auto pl-6 sm:pl-10 md:pl-16 lg:pl-20 pr-6 sm:pr-8 md:pr-12 lg:pr-14 py-8 md:py-12 space-y-8">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-12 space-y-8">
 
         {/* ─── Header ─────────────────────────────────────────── */}
         <div className="flex flex-col gap-1 pb-6 border-b border-[#1e1e1e]">
           <p className="text-xs font-semibold text-gold uppercase tracking-widest flex items-center gap-1.5">
             <Sparkles size={11} className="animate-float" />
-            Painel de Controle
+            {canEdit ? 'Painel de Controle' : 'Meu Painel'}
           </p>
           <h1 className="font-bebas text-3xl md:text-4xl text-[#F0F0F0] tracking-wider leading-none">
-            Bem-vindo ao{' '}
-            <span style={{
-              background: 'linear-gradient(135deg, #8B5CF6, #C084FC)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}>
-              Xeque Mate Studio
-            </span>
+            {canEdit ? (
+              <>
+                Bem-vindo ao{' '}
+                <span style={{
+                  background: 'linear-gradient(135deg, #8B5CF6, #C084FC)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}>
+                  Xeque Mate Studio
+                </span>
+              </>
+            ) : (
+              <>Olá, <span className="text-gold">{user?.name}</span></>
+            )}
           </h1>
           <p className="text-sm text-[#666] mt-0.5 capitalize">{currentDateStr}</p>
-        </div>
-
-        {/* ─── KPI Cards ──────────────────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          <StatCard
-            title="Faturamento Mês"
-            value={fmt(summary.monthRevenue)}
-            subtitle="entradas no período"
-            icon={DollarSign}
-            trend={summary.revenueGrowth}
-            color="gold"
-          />
-          <StatCard
-            title="Despesas Mês"
-            value={fmt(summary.monthExpenses)}
-            subtitle="saídas no período"
-            icon={TrendingUp}
-            color="crimson"
-          />
-          <StatCard
-            title="Resultado Líquido"
-            value={fmt(summary.monthNetProfit)}
-            subtitle="saldo do mês"
-            icon={DollarSign}
-            color={summary.monthNetProfit >= 0 ? 'green' : 'crimson'}
-          />
-          <StatCard
-            title="Artistas Ativos"
-            value={artistsCount}
-            subtitle="na produtora"
-            icon={Mic2}
-            color="blue"
-          />
-        </div>
-
-        {/* ─── Quick stats bar ────────────────────────────────── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 rounded-xl border border-[#1e1e1e] bg-[#0f0f0f] overflow-hidden">
-          {[
-            { label: 'Receita Total', value: fmt(summary.totalRevenue), highlight: true },
-            { label: 'Clientes Cadastrados', value: String(clientsCount), highlight: false },
-            { label: 'Músicas em Produção', value: String(kanbanCount), highlight: false },
-            { label: 'Sessões Hoje', value: String(sessionsToday), highlight: true },
-          ].map((item, i) => (
-            <div
-              key={i}
-              className={`flex flex-col items-center justify-center py-5 px-4 text-center border-r border-b md:border-b-0 border-[#1e1e1e] last:border-r-0 ${i >= 2 ? 'border-b-0' : ''}`}
-            >
-              <span className="text-[10px] text-[#555] uppercase tracking-widest font-semibold block">
-                {item.label}
-              </span>
-              <span className={`text-xl font-bebas tracking-wide mt-2 block ${item.highlight ? 'text-gold' : 'text-[#F0F0F0]'}`}>
-                {item.value}
-              </span>
+          {!canEdit && (
+            <div className="flex items-center gap-2 mt-2">
+              <Eye size={12} className="text-[#666]" />
+              <span className="text-xs text-[#666]">Modo visualização — você pode acompanhar, mas não editar dados</span>
             </div>
-          ))}
+          )}
         </div>
 
-        {/* ─── Charts ─────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <RevenueChart />
-          </div>
-          <div>
-            <ServicePieChart />
-          </div>
-        </div>
+        {canEdit ? (
+          <>
+            {/* ─── KPI Cards (Admin) ──────────────────────────────────────── */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+              <StatCard
+                title="Faturamento Mês"
+                value={fmt(summary.monthRevenue)}
+                subtitle="entradas no período"
+                icon={DollarSign}
+                trend={summary.revenueGrowth}
+                color="gold"
+              />
+              <StatCard
+                title="Despesas Mês"
+                value={fmt(summary.monthExpenses)}
+                subtitle="saídas no período"
+                icon={TrendingUp}
+                color="crimson"
+              />
+              <StatCard
+                title="Resultado Líquido"
+                value={fmt(summary.monthNetProfit)}
+                subtitle="saldo do mês"
+                icon={DollarSign}
+                color={summary.monthNetProfit >= 0 ? 'green' : 'crimson'}
+              />
+              <StatCard
+                title="Artistas Ativos"
+                value={artistsCount}
+                subtitle="na produtora"
+                icon={Mic2}
+                color="blue"
+              />
+            </div>
 
-        {/* ─── Recent Transactions ─────────────────────────────── */}
-        <RecentTransactions />
+            {/* ─── Quick stats bar ────────────────────────────────── */}
+            <div className="grid grid-cols-2 md:grid-cols-4 rounded-xl border border-[#1e1e1e] bg-[#0f0f0f] overflow-hidden">
+              {[
+                { label: 'Receita Total', value: fmt(summary.totalRevenue), highlight: true },
+                { label: 'Clientes Cadastrados', value: String(clientsCount), highlight: false },
+                { label: 'Músicas em Produção', value: String(kanbanCount), highlight: false },
+                { label: 'Sessões Hoje', value: String(sessionsToday), highlight: true },
+              ].map((item, i) => (
+                <div
+                  key={i}
+                  className={`flex flex-col items-center justify-center py-5 px-4 text-center border-[#1e1e1e] min-w-0
+                    ${i % 2 === 0 ? 'border-r' : 'border-r-0 md:border-r'} 
+                    ${i < 2 ? 'border-b' : 'border-b-0'} 
+                    md:border-b-0 
+                    md:last:border-r-0`}
+                >
+                  <span className="text-[10px] text-[#555] uppercase tracking-widest font-semibold block truncate w-full px-1" title={item.label}>
+                    {item.label}
+                  </span>
+                  <span 
+                    className={`text-lg sm:text-xl font-bebas tracking-wide mt-2 block truncate w-full px-1 ${item.highlight ? 'text-gold' : 'text-[#F0F0F0]'}`}
+                    title={item.value}
+                  >
+                    {item.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* ─── Charts ─────────────────────────────────────────── */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-w-0">
+              <div className="lg:col-span-2 min-w-0">
+                <RevenueChart />
+              </div>
+              <div className="min-w-0">
+                <ServicePieChart />
+              </div>
+            </div>
+
+            <RecentTransactions />
+          </>
+        ) : (
+          <>
+            {/* ─── KPI Cards (Artista) ──────────────────────────────────────── */}
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              <StatCard
+                title="Minhas Faixas"
+                value={kanbanCount}
+                subtitle="em produção"
+                icon={Kanban}
+                color="gold"
+              />
+              <StatCard
+                title="Sessões Hoje"
+                value={sessionsToday}
+                subtitle="agendadas"
+                icon={Calendar}
+                color="blue"
+              />
+              <StatCard
+                title="Meu Faturamento"
+                value={fmt(artistRevenue)}
+                subtitle="receitas registradas"
+                icon={Music}
+                color="green"
+              />
+            </div>
+
+            <div className="bg-[#0f0f0f] border border-[#1e1e1e] rounded-xl p-6">
+              <h3 className="font-bebas text-lg text-[#F0F0F0] tracking-wider mb-3">Acesso Rápido</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {[
+                  { label: 'Produção', desc: 'Acompanhe suas faixas no kanban', href: '/kanban', icon: Kanban },
+                  { label: 'Agenda', desc: 'Veja suas sessões agendadas', href: '/schedule', icon: Calendar },
+                  { label: 'Perfil', desc: 'Suas informações no estúdio', href: '/artists', icon: Mic2 },
+                ].map(({ label, desc, href, icon: Icon }) => (
+                  <a
+                    key={href}
+                    href={href}
+                    className="bg-[#111] border border-[#1e1e1e] hover:border-[#8B5CF6]/30 rounded-xl p-4 transition-all group"
+                  >
+                    <Icon size={18} className="text-[#8B5CF6] mb-2 group-hover:scale-110 transition-transform" />
+                    <p className="text-sm font-semibold text-[#F0F0F0]">{label}</p>
+                    <p className="text-xs text-[#555] mt-1">{desc}</p>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
 
       </div>
     </div>

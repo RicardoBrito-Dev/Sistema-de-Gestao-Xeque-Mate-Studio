@@ -68,21 +68,21 @@ export default function RecentTransactions() {
             return (
               <div
                 key={tx.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-[#141414] hover:bg-[#1a1a1a] transition-colors border border-studio-border"
+                className="flex items-center justify-between p-3 rounded-lg bg-[#141414] hover:bg-[#1a1a1a] transition-colors border border-studio-border min-w-0 gap-3"
               >
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${isReceita ? 'bg-emerald-500/10 text-emerald-400' : 'bg-crimson/10 text-crimson-light'}`}>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`p-2 rounded-lg shrink-0 ${isReceita ? 'bg-emerald-500/10 text-emerald-400' : 'bg-crimson/10 text-crimson-light'}`}>
                     <Icon size={16} />
                   </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-studio-text">{tx.description}</h4>
-                    <span className="text-[10px] text-studio-muted uppercase tracking-wider">
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-medium text-studio-text truncate" title={tx.description}>{tx.description}</h4>
+                    <span className="text-[10px] text-studio-muted uppercase tracking-wider block truncate">
                       {categoryLabels[tx.category] || tx.category} • {format(new Date(tx.date), 'dd MMM yyyy', { locale: ptBR })}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 shrink-0 ml-2">
                   <span className={`text-sm font-semibold ${isReceita ? 'text-emerald-400' : 'text-crimson-light'}`}>
                     {isReceita ? '+' : '-'}{formatCurrency(tx.amount)}
                   </span>

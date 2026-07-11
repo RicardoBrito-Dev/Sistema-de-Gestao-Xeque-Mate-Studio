@@ -50,21 +50,28 @@ export default function StatCard({
   const selected = colorMap[color]
 
   return (
-    <div className={`glass rounded-xl p-5 border border-studio-border card-hover flex flex-col justify-between h-full ${selected.glow} animate-slide-up`}>
-      <div className="flex items-center justify-between gap-4">
-        <span className="text-xs font-semibold text-studio-muted uppercase tracking-wider">{title}</span>
-        <div className={`p-2 rounded-lg ${selected.bg} border ${selected.border}`}>
+    <div className={`glass rounded-xl p-5 border border-studio-border card-hover flex flex-col justify-between h-full ${selected.glow} animate-slide-up min-w-0`}>
+      <div className="flex items-center justify-between gap-2 min-w-0">
+        <span className="text-xs font-semibold text-studio-muted uppercase tracking-wider truncate" title={title}>
+          {title}
+        </span>
+        <div className={`p-2 rounded-lg ${selected.bg} border ${selected.border} shrink-0`}>
           <Icon className={`w-5 h-5 ${selected.text}`} />
         </div>
       </div>
 
-      <div className="mt-4">
-        <span className="text-2xl md:text-3xl font-bebas text-studio-text tracking-wide">{value}</span>
+      <div className="mt-4 min-w-0">
+        <span 
+          className="text-xl sm:text-2xl md:text-3xl font-bebas text-studio-text tracking-wide block truncate"
+          title={String(value)}
+        >
+          {value}
+        </span>
         
         {(subtitle || trend !== undefined) && (
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1 text-xs text-studio-muted min-w-0">
             {trend !== undefined && (
-              <span className={`flex items-center gap-0.5 text-xs font-semibold ${trend >= 0 ? 'text-emerald-400' : 'text-crimson-light'}`}>
+              <span className={`flex items-center gap-0.5 font-semibold shrink-0 ${trend >= 0 ? 'text-emerald-400' : 'text-crimson-light'}`}>
                 {trend >= 0 ? (
                   <>
                     <TrendingUp size={12} />
@@ -79,7 +86,7 @@ export default function StatCard({
               </span>
             )}
             {subtitle && (
-              <span className="text-xs text-studio-muted">{subtitle}</span>
+              <span className="truncate" title={subtitle}>{subtitle}</span>
             )}
           </div>
         )}

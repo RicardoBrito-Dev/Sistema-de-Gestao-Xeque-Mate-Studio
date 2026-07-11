@@ -5,6 +5,8 @@ import { getSessions, deleteSession } from '@/lib/storage'
 import { Session } from '@/lib/types'
 import SessionModal from '@/components/schedule/SessionModal'
 import Badge from '@/components/ui/Badge'
+import { useAuth } from '@/contexts/AuthContext'
+import { filterSessionsForUser } from '@/lib/permissions'
 import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight,
   Plus, Trash2, Clock, User,
@@ -16,14 +18,15 @@ import {
 import { ptBR } from 'date-fns/locale'
 
 export default function SchedulePage() {
+  const { user, canEdit } = useAuth()
   const [sessions, setSessions] = useState<Session[]>([])
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(new Date())
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedSession, setSelectedSession] = useState<Session | null>(null)
   const [targetDateStr, setTargetDateStr] = useState('')
 
-  const loadData = () => setSessions(getSessions())
-  useEffect(() => { loadData() }, [])
+  const loadData = () => setSessions(filterSessionsForUser(getSessions(), user))
+  useEffect(() => { loadData() }, [user])
 
   const weekStart = startOfWeek(currentWeekStart, { weekStartsOn: 0 })
   const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 0 })
@@ -74,11 +77,15 @@ export default function SchedulePage() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-[#1e1e1e]">
           <div>
             <h1 className="font-bebas text-3xl md:text-4xl text-[#F0F0F0] tracking-wider leading-none">Agenda do Estúdio</h1>
-            <p className="text-sm text-[#888] mt-1.5">Controle de gravações, mixagem e sessões agendadas</p>
+            <p className="text-sm text-[#888] mt-1.5">
+              {canEdit ? 'Controle de gravações, mixagem e sessões agendadas' : 'Suas sessões agendadas no estúdio'}
+            </p>
           </div>
-          <button onClick={() => handleNewSession()} className="btn-primary">
-            <Plus size={16} />Agendar Sessão
-          </button>
+          {canEdit && (
+            <button onClick={() => handleNewSession()} className="btn-primary">
+              <Plus size={16} />Agendar Sessão
+            </button>
+          )}
         </div>
 
         {/* ─── Week nav ─── */}
@@ -123,8 +130,8 @@ export default function SchedulePage() {
               >
                 {/* Day header */}
                 <div
-                  onClick={() => handleNewSession(format(day, 'yyyy-MM-dd'))}
-                  className={`p-3 border-b text-center rounded-t-xl cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0 ${isToday ? 'bg-gold/10 border-gold/20' : 'bg-[#0f0f0f] border-[#1e1e1e]'}`}
+                  onClick={canEdit ? () => handleNewSession(format(day, 'yyyy-MM-dd')) : undefined}
+                  className={`p-3 border-b text-center rounded-t-xl flex-shrink-0 ${canEdit ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''} ${isToday ? 'bg-gold/10 border-gold/20' : 'bg-[#0f0f0f] border-[#1e1e1e]'}`}
                 >
                   <span className={`text-[9px] uppercase font-bold tracking-widest block ${isToday ? 'text-gold' : 'text-[#555]'}`}>
                     {format(day, 'EEE', { locale: ptBR })}
@@ -136,16 +143,16 @@ export default function SchedulePage() {
 
                 {/* Sessions */}
                 <div
-                  onClick={() => handleNewSession(format(day, 'yyyy-MM-dd'))}
-                  className="flex-1 p-2 space-y-2 overflow-y-auto cursor-pointer group"
+                  onClick={canEdit ? () => handleNewSession(format(day, 'yyyy-MM-dd')) : undefined}
+                  className={`flex-1 p-2 space-y-2 overflow-y-auto group ${canEdit ? 'cursor-pointer' : ''}`}
                 >
                   {daySessions.map(session => {
                     const clrClass = serviceColors[session.serviceType] || serviceColors.outro
                     return (
                       <div
                         key={session.id}
-                        onClick={e => { e.stopPropagation(); handleEditSession(session) }}
-                        className={`p-2 rounded-lg border bg-[#111] cursor-pointer hover:brightness-110 transition-all flex flex-col gap-1.5 relative group/item ${clrClass}`}
+                        onClick={canEdit ? e => { e.stopPropagation(); handleEditSession(session) } : undefined}
+                        className={`p-2 rounded-lg border bg-[#111] flex flex-col gap-1.5 relative group/item ${clrClass} ${canEdit ? 'cursor-pointer hover:brightness-110 transition-all' : ''}`}
                       >
                         <div className="flex justify-between items-center">
                           <span className="text-[8px] font-semibold uppercase tracking-wide opacity-80">
@@ -153,12 +160,14 @@ export default function SchedulePage() {
                           </span>
                           <div className="flex items-center gap-1.5">
                             <span className={`w-1.5 h-1.5 rounded-full ${statusDots[session.status]}`} />
-                            <button
-                              onClick={e => handleDeleteSession(e, session.id, session.title)}
-                              className="opacity-0 group-hover/item:opacity-100 text-[#444] hover:text-[#E74C3C] transition-all"
-                            >
-                              <Trash2 size={9} />
-                            </button>
+                            {canEdit && (
+                              <button
+                                onClick={e => handleDeleteSession(e, session.id, session.title)}
+                                className="opacity-0 group-hover/item:opacity-100 text-[#444] hover:text-[#E74C3C] transition-all"
+                              >
+                                <Trash2 size={9} />
+                              </button>
+                            )}
                           </div>
                         </div>
                         <h4 className="text-[11px] font-semibold text-[#F0F0F0] truncate">{session.title}</h4>
@@ -169,7 +178,7 @@ export default function SchedulePage() {
                       </div>
                     )
                   })}
-                  {daySessions.length === 0 && (
+                  {daySessions.length === 0 && canEdit && (
                     <div className="h-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity py-8">
                       <span className="text-[#333] text-2xl font-light">+</span>
                     </div>
@@ -191,8 +200,8 @@ export default function SchedulePage() {
                 className={`rounded-xl border overflow-hidden ${isToday ? 'border-gold/30' : 'border-[#1e1e1e]'}`}
               >
                 <div
-                  onClick={() => handleNewSession(format(day, 'yyyy-MM-dd'))}
-                  className={`px-4 py-3 flex justify-between items-center cursor-pointer ${isToday ? 'bg-gold/10' : 'bg-[#0d0d0d]'}`}
+                  onClick={canEdit ? () => handleNewSession(format(day, 'yyyy-MM-dd')) : undefined}
+                  className={`px-4 py-3 flex justify-between items-center ${canEdit ? 'cursor-pointer' : ''} ${isToday ? 'bg-gold/10' : 'bg-[#0d0d0d]'}`}
                 >
                   <div className="flex items-center gap-2">
                     <span className={`text-xs font-bold uppercase tracking-wider ${isToday ? 'text-gold' : 'text-[#555]'}`}>
@@ -204,7 +213,7 @@ export default function SchedulePage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] bg-[#1a1a1a] border border-[#222] text-[#555] px-2 py-0.5 rounded-full">{daySessions.length}</span>
-                    <span className="text-xs text-gold font-semibold">+ Agendar</span>
+                    {canEdit && <span className="text-xs text-gold font-semibold">+ Agendar</span>}
                   </div>
                 </div>
 
@@ -215,8 +224,8 @@ export default function SchedulePage() {
                       return (
                         <div
                           key={session.id}
-                          onClick={() => handleEditSession(session)}
-                          className="flex items-center justify-between px-4 py-3 gap-3 cursor-pointer hover:bg-[#0f0f0f] transition-colors"
+                          onClick={canEdit ? () => handleEditSession(session) : undefined}
+                          className={`flex items-center justify-between px-4 py-3 gap-3 ${canEdit ? 'cursor-pointer hover:bg-[#0f0f0f] transition-colors' : ''}`}
                         >
                           <div className="flex items-center gap-3 min-w-0">
                             <span className={`w-2 h-2 rounded-full flex-shrink-0 ${statusDots[session.status]}`} />
@@ -234,12 +243,14 @@ export default function SchedulePage() {
                               <span className="text-xs text-[#888] block">{session.startTime} - {session.endTime}</span>
                               {session.value !== undefined && <span className="text-[10px] text-gold font-bold">{fmt(session.value)}</span>}
                             </div>
-                            <button
-                              onClick={e => handleDeleteSession(e, session.id, session.title)}
-                              className="p-1.5 text-[#333] hover:text-[#E74C3C] rounded hover:bg-[#1a1a1a] transition-all"
-                            >
-                              <Trash2 size={11} />
-                            </button>
+                            {canEdit && (
+                              <button
+                                onClick={e => handleDeleteSession(e, session.id, session.title)}
+                                className="p-1.5 text-[#333] hover:text-[#E74C3C] rounded hover:bg-[#1a1a1a] transition-all"
+                              >
+                                <Trash2 size={11} />
+                              </button>
+                            )}
                           </div>
                         </div>
                       )
@@ -264,8 +275,8 @@ export default function SchedulePage() {
               {upcomingSessions.map(session => (
                 <div
                   key={session.id}
-                  onClick={() => handleEditSession(session)}
-                  className="bg-[#0d0d0d] border border-[#1a1a1a] hover:border-gold/20 rounded-xl p-3 cursor-pointer transition-colors"
+                  onClick={canEdit ? () => handleEditSession(session) : undefined}
+                  className={`bg-[#0d0d0d] border border-[#1a1a1a] hover:border-gold/20 rounded-xl p-3 transition-colors ${canEdit ? 'cursor-pointer' : ''}`}
                 >
                   <div className="flex justify-between items-start mb-2">
                     <span className="text-[9px] text-[#555] uppercase tracking-widest leading-none">
@@ -286,13 +297,15 @@ export default function SchedulePage() {
         </div>
       </div>
 
-      <SessionModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        session={selectedSession}
-        onSave={loadData}
-        defaultDate={targetDateStr}
-      />
+      {canEdit && (
+        <SessionModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          session={selectedSession}
+          onSave={loadData}
+          defaultDate={targetDateStr}
+        />
+      )}
     </div>
   )
 }

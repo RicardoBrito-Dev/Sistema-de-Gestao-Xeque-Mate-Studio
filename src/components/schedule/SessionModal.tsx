@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react'
 import Modal from '@/components/ui/Modal'
 import { Session, ServiceType, SessionStatus } from '@/lib/types'
-import { saveSession, generateId, getClients, getArtists } from '@/lib/storage'
+import { saveSession, generateId, getClients, getArtists, getSessions } from '@/lib/storage'
+import { AlertCircle } from 'lucide-react'
 
 interface SessionModalProps {
   isOpen: boolean
@@ -30,6 +31,7 @@ export default function SessionModal({
   const [endTime, setEndTime] = useState('')
   const [value, setValue] = useState<number>(0)
   const [notes, setNotes] = useState('')
+  const [errorMsg, setErrorMsg] = useState('')
 
   const [availableClients, setAvailableClients] = useState<{ id: string; name: string }[]>([])
 
@@ -38,6 +40,7 @@ export default function SessionModal({
     const clients = getClients().map(c => ({ id: c.id, name: c.name }))
     const artists = getArtists().map(a => ({ id: a.id, name: `${a.artisticName} (Casa)` }))
     setAvailableClients([...clients, ...artists])
+    setErrorMsg('') // Clear error message when modal state changes
 
     if (session) {
       setTitle(session.title)
@@ -79,7 +82,28 @@ export default function SessionModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!title || !clientName || !date || !startTime || !endTime) {
-      alert('Preencha os campos obrigatórios (*).')
+      setErrorMsg('Preencha os campos obrigatórios (*).')
+      return
+    }
+
+    if (startTime >= endTime) {
+      setErrorMsg('O horário de término deve ser posterior ao horário de início.')
+      return
+    }
+
+    // Get all sessions from storage to check for overlap
+    const allSessions = getSessions()
+    
+    // Find overlapping session on the same date (excluding the current one and cancelled ones)
+    const overlappingSession = allSessions.find(s => {
+      if (session && s.id === session.id) return false
+      if (s.status === 'cancelado') return false
+      if (s.date !== date) return false
+      return startTime < s.endTime && endTime > s.startTime
+    })
+
+    if (overlappingSession) {
+      setErrorMsg(`Horário indisponível. Já existe outro agendamento neste período:\n"${overlappingSession.title}" (${overlappingSession.startTime} - ${overlappingSession.endTime})`)
       return
     }
 
@@ -106,6 +130,12 @@ export default function SessionModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={session ? 'Editar Sessão' : 'Agendar Sessão'} size="md">
       <form onSubmit={handleSubmit} className="space-y-5">
+        {errorMsg && (
+          <div className="flex items-start gap-2 bg-crimson-muted border border-crimson/20 text-crimson-light text-xs rounded-lg p-3 animate-fade-in">
+            <AlertCircle size={15} className="shrink-0 mt-0.5" />
+            <span className="whitespace-pre-line">{errorMsg}</span>
+          </div>
+        )}
         <div>
           <label className="label-field">Título da Sessão *</label>
           <input
