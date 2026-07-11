@@ -181,11 +181,12 @@ function toAppUser(row: Record<string, unknown>): AppUser {
   return {
     id: row.id as string,
     email: row.email as string,
-    password: '', // senha não é armazenada no banco, só no auth
+    password: (row.password as string) || '',
     name: row.name as string,
     role: row.role as AppUser['role'],
     artistId: row.artist_id as string | undefined,
     avatarUrl: row.avatar_url as string | undefined,
+    approved: !!row.approved,
   }
 }
 
@@ -193,10 +194,12 @@ function fromAppUser(u: AppUser): Record<string, unknown> {
   return {
     id: u.id,
     email: u.email,
+    password: u.password,
     name: u.name,
     role: u.role,
     artist_id: u.artistId,
     avatar_url: u.avatarUrl,
+    approved: u.approved ?? false,
   }
 }
 
@@ -360,7 +363,40 @@ export async function dbGetUsers(): Promise<AppUser[]> {
   const supabase = createClient()
   const { data, error } = await supabase.from('app_users').select('*')
   if (error) { console.error('dbGetUsers:', error.message); return [] }
-  return (data as Record<string, unknown>[]).map(toAppUser)
+  
+  const list = (data as Record<string, unknown>[]).map(toAppUser)
+  
+  // Seed automático: Garante que o administrador master esteja sempre no banco
+  const hasMaster = list.some(u => u.email === 'admin@xequemate.com')
+  if (!hasMaster) {
+    const masterAdmin: AppUser = {
+      id: 'u1',
+      email: 'admin@xequemate.com',
+      password: 'admin123',
+      name: 'Administrador',
+      role: 'admin',
+      approved: true,
+    }
+    
+    // Insere no banco em background
+    supabase
+      .from('app_users')
+      .upsert({
+        id: masterAdmin.id,
+        email: masterAdmin.email,
+        password: masterAdmin.password,
+        name: masterAdmin.name,
+        role: masterAdmin.role,
+        approved: true,
+      })
+      .then(({ error: upsertErr }) => {
+        if (upsertErr) console.error('Erro ao semear administrador master:', upsertErr.message)
+      })
+      
+    list.push(masterAdmin)
+  }
+  
+  return list
 }
 
 export async function dbSaveUser(user: AppUser): Promise<void> {
@@ -369,4 +405,35 @@ export async function dbSaveUser(user: AppUser): Promise<void> {
     .from('app_users')
     .upsert(fromAppUser(user), { onConflict: 'id' })
   if (error) console.error('dbSaveUser:', error.message)
+}
+
+export async function dbDeleteUserCascaded(userId: string, artistId?: string, userName?: string): Promise<void> {
+  const supabase = createClient()
+  
+  // 1. Exclui o login do usuário
+  await supabase.from('app_users').delete().eq('id', userId)
+  
+  if (artistId) {
+    // 2. Exclui o perfil do artista
+    await supabase.from('artists').delete().eq('id', artistId)
+    
+    // 3. Exclui as sessões associadas
+    await supabase.from('sessions').delete().eq('client_id', artistId)
+    
+    // 4. Exclui as transações associadas
+    await supabase
+      .from('transactions')
+      .delete()
+      .or(`artist_id.eq.${artistId},client_id.eq.${artistId}`)
+      
+    // 5. Exclui os cards de kanban do artista
+    if (userName) {
+      await supabase
+        .from('kanban_cards')
+        .delete()
+        .or(`client_id.eq.${artistId},artist_name.eq.${userName}`)
+    } else {
+      await supabase.from('kanban_cards').delete().eq('client_id', artistId)
+    }
+  }
 }

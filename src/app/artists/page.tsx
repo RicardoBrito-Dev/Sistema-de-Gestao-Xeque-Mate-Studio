@@ -4,10 +4,11 @@ import React, { useEffect, useState } from 'react'
 import { getArtists, deleteArtist } from '@/lib/storage'
 import { Artist } from '@/lib/types'
 import ArtistModal from '@/components/artists/ArtistModal'
+import UsersModal from '@/components/artists/UsersModal'
 import Badge from '@/components/ui/Badge'
 import { useAuth } from '@/contexts/AuthContext'
 import { filterArtistsForUser } from '@/lib/permissions'
-import { Mic2, Plus, Search, Instagram, Play, Youtube, Trash2, Edit2, Phone } from 'lucide-react'
+import { Mic2, Plus, Search, Instagram, Play, Youtube, Trash2, Edit2, Phone, Users } from 'lucide-react'
 
 export default function ArtistsPage() {
   const { user, canEdit } = useAuth()
@@ -15,6 +16,7 @@ export default function ArtistsPage() {
   const [search, setSearch] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null)
+  const [isUsersModalOpen, setIsUsersModalOpen] = useState(false)
 
   const loadData = () => setArtists(filterArtistsForUser(getArtists(), user))
   useEffect(() => { loadData() }, [user])
@@ -55,9 +57,14 @@ export default function ArtistsPage() {
             </p>
           </div>
           {canEdit && (
-            <button onClick={handleNew} className="btn-primary">
-              <Plus size={16} />Novo Artista
-            </button>
+            <div className="flex gap-3">
+              <button onClick={() => setIsUsersModalOpen(true)} className="btn-secondary cursor-pointer">
+                <Users size={16} />Gerenciar Contas
+              </button>
+              <button onClick={handleNew} className="btn-primary cursor-pointer">
+                <Plus size={16} />Novo Artista
+              </button>
+            </div>
           )}
         </div>
 
@@ -184,7 +191,10 @@ export default function ArtistsPage() {
       </div>
 
       {canEdit && (
-        <ArtistModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} artist={selectedArtist} onSave={loadData} />
+        <>
+          <ArtistModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} artist={selectedArtist} onSave={loadData} />
+          <UsersModal isOpen={isUsersModalOpen} onClose={() => setIsUsersModalOpen(false)} />
+        </>
       )}
     </div>
   )

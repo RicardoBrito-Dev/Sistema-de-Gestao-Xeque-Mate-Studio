@@ -78,9 +78,9 @@ const MIGRATIONS: MigrationMap[] = [
     localKey: 'xm_users',
     table: 'app_users',
     transform: (u) => ({
-      id: u.id, email: u.email, name: u.name, role: u.role,
+      id: u.id, email: u.email, password: u.password, name: u.name, role: u.role,
       artist_id: u.artistId, avatar_url: u.avatarUrl,
-      // Nunca migramos a senha para o banco
+      approved: u.approved ?? true,
     }),
   },
 ]

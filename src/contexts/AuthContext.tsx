@@ -8,7 +8,7 @@ import { canEdit, canAccessRoute } from '@/lib/permissions'
 interface AuthContextValue {
   user: AuthSession | null
   isLoading: boolean
-  login: (email: string, password: string) => boolean
+  login: (email: string, password: string) => Promise<boolean>
   logout: () => void
   canEdit: boolean
   canAccessRoute: (pathname: string) => boolean
@@ -25,8 +25,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false)
   }, [])
 
-  const login = useCallback((email: string, password: string) => {
-    const session = authLogin(email, password)
+  const login = useCallback(async (email: string, password: string) => {
+    const session = await authLogin(email, password)
     if (session) {
       setUser(session)
       return true

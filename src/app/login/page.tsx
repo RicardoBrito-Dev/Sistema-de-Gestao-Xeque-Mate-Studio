@@ -24,12 +24,12 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
-    const success = login(email, password)
+    const success = await login(email, password)
     if (success) {
       router.push('/dashboard')
     } else {
@@ -38,7 +38,7 @@ export default function LoginPage() {
     }
   }
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
@@ -49,27 +49,27 @@ export default function LoginPage() {
       return
     }
 
-    const newUser = registerArtist({
-      artisticName,
-      email: regEmail,
-      password: regPassword,
-      avatarUrl: avatarUrl || undefined,
-      role: user && user.role === 'admin' ? regRole : 'artist',
-    })
+    try {
+      await registerArtist({
+        artisticName,
+        email: regEmail,
+        password: regPassword,
+        avatarUrl: avatarUrl || undefined,
+        role: user && user.role === 'admin' ? regRole : 'artist',
+        approved: user && user.role === 'admin' ? true : false,
+      })
 
-    if (newUser) {
-      // If the registrar is NOT an admin, automatically login and redirect
+      // If the registrar is NOT an admin, show approval pending message (do NOT auto-login)
       if (!user || user.role !== 'admin') {
-        const success = login(regEmail, regPassword)
-        if (success) {
-          router.push('/dashboard')
-        } else {
-          setError('Cadastro realizado! Faça login com suas novas credenciais.')
-          setIsRegistering(false)
-          setEmail(regEmail)
-          setPassword(regPassword)
-          setLoading(false)
-        }
+        setError('Aguarde a aprovação de um administrador para poder acessar.')
+        setIsRegistering(false)
+        setEmail(regEmail)
+        setPassword('')
+        setArtisticName('')
+        setRegEmail('')
+        setRegPassword('')
+        setAvatarUrl('')
+        setLoading(false)
       } else {
         // If the registrar IS an admin, show success message and clear form fields (keep admin logged in)
         setError('Novo usuário cadastrado com sucesso!')
@@ -80,8 +80,8 @@ export default function LoginPage() {
         setRegRole('artist')
         setLoading(false)
       }
-    } else {
-      setError('Este e-mail já está cadastrado.')
+    } catch (err: any) {
+      setError(err.message || 'Erro ao realizar cadastro.')
       setLoading(false)
     }
   }
@@ -332,7 +332,9 @@ export default function LoginPage() {
 
               {error && (
                 <p className={`text-xs px-3 py-2 border rounded-lg ${
-                  error.includes('sucesso') 
+                  error.includes('Aguarde') || error.includes('aprovação')
+                    ? 'text-amber-400 bg-amber-500/10 border-amber-500/20'
+                    : error.includes('sucesso') 
                     ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' 
                     : 'text-[#E74C3C] bg-[#C0392B]/10 border-[#C0392B]/20'
                 }`}>

@@ -148,6 +148,7 @@ export interface AppUser {
   role: UserRole
   artistId?: string
   avatarUrl?: string
+  approved?: boolean
 }
 
 export interface AuthSession {
@@ -157,4 +158,5 @@ export interface AuthSession {
   role: UserRole
   artistId?: string
   avatarUrl?: string
+  approved?: boolean
 }

@@ -283,3 +283,29 @@ export function saveUser(user: AppUser): void {
   setItem(KEYS.users, all)
   if (USE_SUPABASE) db().then(m => m.dbSaveUser(user))
 }
+
+export function deleteUser(id: string): void {
+  const user = getUsers().find(u => u.id === id)
+  
+  // 1. Exclui a conta de login
+  setItem(KEYS.users, getUsers().filter(u => u.id !== id))
+  
+  if (user && user.artistId) {
+    // 2. Exclui o perfil do artista
+    setItem(KEYS.artists, getArtists().filter(a => a.id !== user.artistId))
+    
+    // 3. Exclui as sessões associadas
+    setItem(KEYS.sessions, getSessions().filter(s => s.clientId !== user.artistId))
+    
+    // 4. Exclui os cards de kanban do artista
+    const artistName = user.name
+    setItem(KEYS.kanban, getKanbanCards().filter(k => k.clientId !== user.artistId && k.artistName !== artistName))
+    
+    // 5. Exclui as transações financeiras associadas
+    setItem(KEYS.transactions, getTransactions().filter(t => t.artistId !== user.artistId && t.clientId !== user.artistId))
+  }
+  
+  if (USE_SUPABASE) {
+    db().then(m => m.dbDeleteUserCascaded(id, user?.artistId, user?.name))
+  }
+}

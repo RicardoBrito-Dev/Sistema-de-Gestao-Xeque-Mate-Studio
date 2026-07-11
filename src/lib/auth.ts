@@ -1,14 +1,19 @@
 import { AuthSession, AppUser } from './types'
-import { getUsers, saveUser, saveArtist } from './storage'
+import { getUsers, saveUser, saveArtist, getUsersAsync } from './storage'
 
 const SESSION_KEY = 'xm_session'
 
-export function login(email: string, password: string): AuthSession | null {
-  const users = getUsers()
+export async function login(email: string, password: string): Promise<AuthSession | null> {
+  const users = await getUsersAsync()
   const user = users.find(
     u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
   )
   if (!user) return null
+
+  const isApproved = user.id === 'u1' || user.role === 'admin' || user.approved === true
+  if (!isApproved) {
+    throw new Error('Sua conta está aguardando aprovação do administrador.')
+  }
 
   const session: AuthSession = {
     userId: user.id,
@@ -17,6 +22,7 @@ export function login(email: string, password: string): AuthSession | null {
     role: user.role,
     artistId: user.artistId,
     avatarUrl: user.avatarUrl,
+    approved: user.approved,
   }
 
   if (typeof window !== 'undefined') {
@@ -47,18 +53,25 @@ export function isAuthenticated(): boolean {
   return getSession() !== null
 }
 
-export function registerArtist(artistData: {
+export async function registerArtist(artistData: {
   artisticName: string
   email: string
   password: string
   avatarUrl?: string
   role?: 'admin' | 'artist'
-}): AppUser | null {
-  const users = getUsers()
+  approved?: boolean
+}): Promise<AppUser> {
+  // Busca a lista atualizada do banco (não do cache local)
+  const users = await getUsersAsync()
   
-  // Check if email already exists
+  // Checa se o nome já está em uso
+  if (users.some(u => u.name.trim().toLowerCase() === artistData.artisticName.trim().toLowerCase())) {
+    throw new Error('Este nome de usuário ou nome artístico já está em uso.')
+  }
+
+  // Checa se o e-mail já está em uso
   if (users.some(u => u.email.toLowerCase() === artistData.email.toLowerCase())) {
-    return null
+    throw new Error('Este e-mail já está cadastrado.')
   }
 
   let artistId: string | undefined = undefined
@@ -92,8 +105,10 @@ export function registerArtist(artistData: {
     role: artistData.role || 'artist',
     artistId: artistId,
     avatarUrl: artistData.avatarUrl,
+    approved: artistData.approved ?? false,
   }
 
   saveUser(newUser)
   return newUser
 }
+
