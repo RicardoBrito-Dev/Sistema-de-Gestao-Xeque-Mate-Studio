@@ -9,8 +9,8 @@ import {
 } from './types'
 import { mockUsers } from './mockUsers'
 
-// ─── Flag automática: usa Supabase sempre que a URL estiver disponível ──
-const USE_SUPABASE = !!process.env.NEXT_PUBLIC_SUPABASE_URL
+// ─── Supabase sempre ativo (chaves incorporadas em supabase/client.ts) ──
+const USE_SUPABASE = true
 
 // ─── localStorage helpers ────────────────────────────────────
 const KEYS = {
