@@ -1,19 +1,16 @@
 // ============================================================
 // XEQUE MATE STUDIO — CRUD com suporte a Supabase + localStorage
-// Quando NEXT_PUBLIC_USE_SUPABASE=true, delega ao db.ts (Supabase).
-// Caso contrário, usa localStorage (comportamento original).
+// Usa Supabase automaticamente quando NEXT_PUBLIC_SUPABASE_URL
+// estiver definido (produção/Vercel). Caso contrário, usa localStorage.
 // ============================================================
 
 import {
   Artist, Client, KanbanCard, Transaction, Session, AppUser
 } from './types'
-import {
-  mockArtists, mockClients, mockKanbanCards, mockTransactions, mockSessions
-} from './mockData'
 import { mockUsers } from './mockUsers'
 
-// ─── Flag de alternância ─────────────────────────────────────
-const USE_SUPABASE = process.env.NEXT_PUBLIC_USE_SUPABASE === 'true'
+// ─── Flag automática: usa Supabase sempre que a URL estiver disponível ──
+const USE_SUPABASE = !!process.env.NEXT_PUBLIC_SUPABASE_URL
 
 // ─── localStorage helpers ────────────────────────────────────
 const KEYS = {
@@ -49,7 +46,7 @@ async function db() {
 // ============================================================
 
 export function getArtists(): Artist[] {
-  return getItem<Artist>(KEYS.artists, mockArtists)
+  return getItem<Artist>(KEYS.artists, [])
 }
 
 export async function getArtistsAsync(): Promise<Artist[]> {
@@ -75,7 +72,7 @@ export function deleteArtist(id: string): void {
 // ============================================================
 
 export function getClients(): Client[] {
-  return getItem<Client>(KEYS.clients, mockClients)
+  return getItem<Client>(KEYS.clients, [])
 }
 
 export async function getClientsAsync(): Promise<Client[]> {
@@ -101,7 +98,7 @@ export function deleteClient(id: string): void {
 // ============================================================
 
 export function getKanbanCards(): KanbanCard[] {
-  return getItem<KanbanCard>(KEYS.kanban, mockKanbanCards)
+  return getItem<KanbanCard>(KEYS.kanban, [])
 }
 
 export async function getKanbanCardsAsync(): Promise<KanbanCard[]> {
@@ -134,7 +131,7 @@ export function updateKanbanStage(id: string, stage: KanbanCard['stage']): void 
 // ============================================================
 
 export function getTransactions(): Transaction[] {
-  return getItem<Transaction>(KEYS.transactions, mockTransactions)
+  return getItem<Transaction>(KEYS.transactions, [])
 }
 
 export async function getTransactionsAsync(): Promise<Transaction[]> {
@@ -160,7 +157,7 @@ export function deleteTransaction(id: string): void {
 // ============================================================
 
 export function getSessions(): Session[] {
-  return getItem<Session>(KEYS.sessions, mockSessions)
+  return getItem<Session>(KEYS.sessions, [])
 }
 
 export async function getSessionsAsync(): Promise<Session[]> {
