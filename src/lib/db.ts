@@ -213,7 +213,7 @@ export async function dbGetArtists(): Promise<Artist[]> {
     .from('artists')
     .select('*')
     .order('artistic_name')
-  if (error) { console.error('dbGetArtists:', error.message); return [] }
+  if (error || !data) { console.error('dbGetArtists:', error?.message); return [] }
   return (data as Record<string, unknown>[]).map(toArtist)
 }
 
@@ -241,7 +241,7 @@ export async function dbGetClients(): Promise<Client[]> {
     .from('clients')
     .select('*')
     .order('name')
-  if (error) { console.error('dbGetClients:', error.message); return [] }
+  if (error || !data) { console.error('dbGetClients:', error?.message); return [] }
   return (data as Record<string, unknown>[]).map(toClient)
 }
 
@@ -269,7 +269,7 @@ export async function dbGetSessions(): Promise<Session[]> {
     .from('sessions')
     .select('*')
     .order('date', { ascending: false })
-  if (error) { console.error('dbGetSessions:', error.message); return [] }
+  if (error || !data) { console.error('dbGetSessions:', error?.message); return [] }
   return (data as Record<string, unknown>[]).map(toSession)
 }
 
@@ -297,7 +297,7 @@ export async function dbGetKanbanCards(): Promise<KanbanCard[]> {
     .from('kanban_cards')
     .select('*')
     .order('entry_date', { ascending: false })
-  if (error) { console.error('dbGetKanbanCards:', error.message); return [] }
+  if (error || !data) { console.error('dbGetKanbanCards:', error?.message); return [] }
   return (data as Record<string, unknown>[]).map(toKanban)
 }
 
@@ -337,7 +337,7 @@ export async function dbGetTransactions(): Promise<Transaction[]> {
     .from('transactions')
     .select('*')
     .order('date', { ascending: false })
-  if (error) { console.error('dbGetTransactions:', error.message); return [] }
+  if (error || !data) { console.error('dbGetTransactions:', error?.message); return [] }
   return (data as Record<string, unknown>[]).map(toTransaction)
 }
 
@@ -362,7 +362,7 @@ export async function dbDeleteTransaction(id: string): Promise<void> {
 export async function dbGetUsers(): Promise<AppUser[]> {
   const supabase = createClient()
   const { data, error } = await supabase.from('app_users').select('*')
-  if (error) { console.error('dbGetUsers:', error.message); return [] }
+  if (error || !data) { console.error('dbGetUsers:', error?.message); return [] }
   
   const list = (data as Record<string, unknown>[]).map(toAppUser)
   
