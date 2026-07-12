@@ -223,6 +223,39 @@ export default function Sidebar() {
       </aside>
 
       {/* ════════════════════════════════════════════════
+          MOBILE TOP HEADER BAR
+      ════════════════════════════════════════════════ */}
+      <header
+        className="md:hidden fixed top-0 left-0 right-0 h-14 bg-[#0a0a0a]/95 border-b border-[#1e1e1e] flex items-center justify-between px-4 z-50"
+        style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 4px 30px rgba(0,0,0,0.6)' }}
+      >
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-[#8B5CF6]/10 border border-[#8B5CF6]/30 flex items-center justify-center">
+            <Crown size={14} className="text-[#8B5CF6]" />
+          </div>
+          <span
+            className="font-bebas text-lg tracking-widest leading-none block"
+            style={{
+              background: 'linear-gradient(135deg, #8B5CF6, #C084FC)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >
+            Xeque Mate
+          </span>
+        </div>
+
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-1 text-[11px] font-semibold text-rose-500 hover:text-rose-400 bg-rose-500/5 border border-rose-500/10 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
+        >
+          <LogOut size={12} />
+          Sair
+        </button>
+      </header>
+
+      {/* ════════════════════════════════════════════════
           MOBILE BOTTOM NAVIGATION BAR
       ════════════════════════════════════════════════ */}
       <nav

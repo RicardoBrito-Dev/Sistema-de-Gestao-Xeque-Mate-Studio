@@ -15,7 +15,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       ) : (
         <>
           <Sidebar />
-          <main className="flex-1 min-h-screen flex flex-col pt-6 pb-28 md:py-8 md:pl-24 md:pr-16 min-w-0 transition-all duration-300">
+          <main className="flex-1 min-h-screen flex flex-col pt-20 pb-28 md:py-8 md:pl-24 md:pr-16 min-w-0 transition-all duration-300">
             {children}
           </main>
         </>
