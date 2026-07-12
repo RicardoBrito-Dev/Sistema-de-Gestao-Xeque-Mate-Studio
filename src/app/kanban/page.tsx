@@ -70,7 +70,7 @@ export default function KanbanPage() {
   return (
     <div className="flex flex-col h-full min-h-screen animate-fade-in">
       {/* Header */}
-      <div className="pl-6 sm:pl-10 md:pl-16 lg:pl-20 pr-6 sm:pr-8 md:pr-12 lg:pr-14 pt-8 md:pt-12 pb-5 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#1e1e1e]">
+      <div className="px-4 sm:px-6 md:px-8 pt-8 md:pt-12 pb-5 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#1e1e1e]">
         <div>
           <h1 className="font-bebas text-3xl md:text-4xl text-[#F0F0F0] tracking-wider leading-none">Painel de Produção</h1>
           <p className="text-sm text-[#888] mt-1.5">
@@ -85,7 +85,7 @@ export default function KanbanPage() {
       </div>
 
       {/* Board */}
-      <div className="flex-1 overflow-x-auto overflow-y-hidden pl-6 sm:pl-10 md:pl-16 lg:pl-20 pr-6 sm:pr-8 md:pr-12 lg:pr-14 py-8">
+      <div className="flex-1 overflow-x-auto overflow-y-hidden px-4 sm:px-6 md:px-8 py-8">
         <DragDropContext onDragEnd={handleDragEnd}>
           <div className="flex gap-5 h-full" style={{ minWidth: 1100, minHeight: 520 }}>
             {COLUMNS.map(col => {
