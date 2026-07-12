@@ -4,10 +4,10 @@ import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { registerArtist } from '@/lib/auth'
-import { Crown, Mail, Lock, LogIn, Eye, EyeOff, Camera, Check } from 'lucide-react'
+import { Crown, Mail, Lock, LogIn, LogOut, Eye, EyeOff, Camera, Check, ArrowLeft } from 'lucide-react'
 
 export default function LoginPage() {
-  const { login, user } = useAuth()
+  const { login, logout, user } = useAuth()
   const router = useRouter()
   const [isRegistering, setIsRegistering] = useState(false)
   const [email, setEmail] = useState('')
@@ -132,23 +132,55 @@ export default function LoginPage() {
 
         {/* Card */}
         <div className="bg-[#111] border border-[#1e1e1e] rounded-2xl p-6 sm:p-8 shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
-          <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#1e1e1e]/50">
-            <button
-              onClick={() => { setIsRegistering(false); setError(''); }}
-              className={`font-bebas text-xl tracking-wider pb-1 transition-all cursor-pointer ${
-                !isRegistering ? 'text-[#8B5CF6] border-b border-[#8B5CF6]' : 'text-[#555] hover:text-[#888]'
-              }`}
-            >
-              Login
-            </button>
-            <button
-              onClick={() => { setIsRegistering(true); setError(''); }}
-              className={`font-bebas text-xl tracking-wider pb-1 transition-all cursor-pointer ${
-                isRegistering ? 'text-[#8B5CF6] border-b border-[#8B5CF6]' : 'text-[#555] hover:text-[#888]'
-              }`}
-            >
-              {user && user.role === 'admin' ? 'Cadastrar Usuário' : 'Cadastrar Artista'}
-            </button>
+          {/* Header: abas Login/Cadastro + botões de navegação */}
+          <div className="mb-6 pb-4 border-b border-[#1e1e1e]/50">
+            {/* Linha superior: abas */}
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => { setIsRegistering(false); setError(''); }}
+                className={`font-bebas text-xl tracking-wider pb-1 transition-all cursor-pointer ${
+                  !isRegistering ? 'text-[#8B5CF6] border-b border-[#8B5CF6]' : 'text-[#555] hover:text-[#888]'
+                }`}
+              >
+                Login
+              </button>
+              <button
+                onClick={() => { setIsRegistering(true); setError(''); }}
+                className={`font-bebas text-xl tracking-wider pb-1 transition-all cursor-pointer ${
+                  isRegistering ? 'text-[#8B5CF6] border-b border-[#8B5CF6]' : 'text-[#555] hover:text-[#888]'
+                }`}
+              >
+                {user && user.role === 'admin' ? 'Cadastrar Usuário' : 'Cadastrar Artista'}
+              </button>
+            </div>
+
+            {/* Linha inferior: botão contextual de saída/navegação */}
+            {user && user.role === 'admin' && (
+              // Admin logado criando conta → botão para voltar ao sistema
+              <div className="flex items-center justify-between mt-3">
+                <span className="text-[11px] text-[#555]">
+                  Logado como <span className="text-[#888]">{user.name}</span>
+                </span>
+                <button
+                  onClick={() => { logout(); router.push('/login'); }}
+                  className="flex items-center gap-1.5 text-[11px] text-rose-500 hover:text-rose-400 transition-colors cursor-pointer"
+                >
+                  <LogOut size={12} />
+                  Sair
+                </button>
+              </div>
+            )}
+
+            {!user && isRegistering && (
+              // Visitante no formulário de cadastro → botão para voltar ao login
+              <button
+                onClick={() => { setIsRegistering(false); setError(''); }}
+                className="flex items-center gap-1.5 text-[11px] text-[#555] hover:text-[#888] transition-colors cursor-pointer mt-3"
+              >
+                <ArrowLeft size={12} />
+                Voltar ao login
+              </button>
+            )}
           </div>
 
           {!isRegistering ? (
