@@ -11,14 +11,18 @@ import {
   CartesianGrid,
   Legend,
 } from 'recharts'
-import { getRevenueByMonth } from '@/lib/storage'
+import { getRevenueByMonthAsync } from '@/lib/storage'
 import { RevenueByMonth } from '@/lib/types'
 
 export default function RevenueChart() {
   const [data, setData] = useState<RevenueByMonth[]>([])
 
   useEffect(() => {
-    setData(getRevenueByMonth())
+    const load = async () => {
+      const res = await getRevenueByMonthAsync()
+      setData(res)
+    }
+    load()
   }, [])
 
   const formatCurrency = (val: number) => {

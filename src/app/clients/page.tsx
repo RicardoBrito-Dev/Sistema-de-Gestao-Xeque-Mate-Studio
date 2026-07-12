@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { getClients, deleteClient } from '@/lib/storage'
+import { getClientsAsync, deleteClient } from '@/lib/storage'
 import { Client } from '@/lib/types'
 import ClientModal from '@/components/clients/ClientModal'
 import Badge from '@/components/ui/Badge'
@@ -15,7 +15,10 @@ export default function ClientsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
 
-  const loadData = () => setClients(getClients())
+  const loadData = async () => {
+    const data = await getClientsAsync()
+    setClients(data)
+  }
   useEffect(() => { loadData() }, [])
 
   const handleDelete = (id: string, name: string) => {

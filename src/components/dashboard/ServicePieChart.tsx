@@ -2,14 +2,18 @@
 
 import React, { useEffect, useState } from 'react'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts'
-import { getRevenueByService } from '@/lib/storage'
+import { getRevenueByServiceAsync } from '@/lib/storage'
 import { RevenueByService } from '@/lib/types'
 
 export default function ServicePieChart() {
   const [data, setData] = useState<RevenueByService[]>([])
 
   useEffect(() => {
-    setData(getRevenueByService())
+    const load = async () => {
+      const res = await getRevenueByServiceAsync()
+      setData(res)
+    }
+    load()
   }, [])
 
   const total = data.reduce((sum, item) => sum + item.value, 0)

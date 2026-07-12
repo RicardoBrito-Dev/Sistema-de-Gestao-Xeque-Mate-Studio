@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
-import { getKanbanCards, saveKanbanCard, deleteKanbanCard } from '@/lib/storage'
+import { getKanbanCardsAsync, saveKanbanCard, deleteKanbanCard } from '@/lib/storage'
 import { KanbanCard, KanbanStage } from '@/lib/types'
 import KanbanCardModal from '@/components/kanban/KanbanCardModal'
 import Badge from '@/components/ui/Badge'
@@ -26,7 +26,10 @@ export default function KanbanPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedCard, setSelectedCard] = useState<KanbanCard | null>(null)
 
-  const loadData = () => setCards(filterKanbanForUser(getKanbanCards(), user))
+  const loadData = async () => {
+    const data = await getKanbanCardsAsync()
+    setCards(filterKanbanForUser(data, user))
+  }
   useEffect(() => { setMounted(true); loadData() }, [user])
 
   const handleDragEnd = (result: DropResult) => {

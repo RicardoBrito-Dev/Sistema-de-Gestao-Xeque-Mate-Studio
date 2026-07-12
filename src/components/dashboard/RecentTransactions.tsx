@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { getTransactions } from '@/lib/storage'
+import { getTransactionsAsync } from '@/lib/storage'
 import { Transaction } from '@/lib/types'
 import { ArrowUpRight, ArrowDownRight, Mic2, Sliders, Headphones, RotateCcw, Music, Settings, Home, Megaphone, User, MoreHorizontal } from 'lucide-react'
 import { format } from 'date-fns'
@@ -11,7 +11,11 @@ export default function RecentTransactions() {
   const [list, setList] = useState<Transaction[]>([])
 
   useEffect(() => {
-    setList(getTransactions().slice(0, 5))
+    const load = async () => {
+      const txs = await getTransactionsAsync()
+      setList(txs.slice(0, 5))
+    }
+    load()
   }, [])
 
   const formatCurrency = (val: number) => {

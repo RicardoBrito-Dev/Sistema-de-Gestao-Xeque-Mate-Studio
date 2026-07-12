@@ -218,6 +218,42 @@ export function getFinancialSummary() {
   }
 }
 
+export async function getFinancialSummaryAsync() {
+  const txs = await getTransactionsAsync()
+  const now = new Date()
+  const currentMonth = now.getMonth()
+  const currentYear = now.getFullYear()
+
+  const thisMonthTxs = txs.filter(t => {
+    const d = new Date(t.date)
+    return d.getMonth() === currentMonth && d.getFullYear() === currentYear
+  })
+
+  const lastMonthTxs = txs.filter(t => {
+    const d = new Date(t.date)
+    const lm = currentMonth === 0 ? 11 : currentMonth - 1
+    const ly = currentMonth === 0 ? currentYear - 1 : currentYear
+    return d.getMonth() === lm && d.getFullYear() === ly
+  })
+
+  const totalRevenue = txs.filter(t => t.type === 'receita').reduce((s, t) => s + t.amount, 0)
+  const totalExpenses = txs.filter(t => t.type === 'despesa').reduce((s, t) => s + t.amount, 0)
+  const monthRevenue = thisMonthTxs.filter(t => t.type === 'receita').reduce((s, t) => s + t.amount, 0)
+  const monthExpenses = thisMonthTxs.filter(t => t.type === 'despesa').reduce((s, t) => s + t.amount, 0)
+  const lastMonthRevenue = lastMonthTxs.filter(t => t.type === 'receita').reduce((s, t) => s + t.amount, 0)
+
+  const revenueGrowth = lastMonthRevenue > 0
+    ? ((monthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
+    : 0
+
+  return {
+    totalRevenue, monthRevenue, totalExpenses, monthExpenses,
+    netProfit: totalRevenue - totalExpenses,
+    monthNetProfit: monthRevenue - monthExpenses,
+    revenueGrowth,
+  }
+}
+
 export function getRevenueByMonth() {
   const txs = getTransactions()
   const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
@@ -239,8 +275,46 @@ export function getRevenueByMonth() {
   })
 }
 
+export async function getRevenueByMonthAsync() {
+  const txs = await getTransactionsAsync()
+  const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+  const now = new Date()
+
+  return Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
+    const m = d.getMonth()
+    const y = d.getFullYear()
+    const filtered = txs.filter(t => {
+      const td = new Date(t.date)
+      return td.getMonth() === m && td.getFullYear() === y
+    })
+    return {
+      month: months[m],
+      receita: filtered.filter(t => t.type === 'receita').reduce((s, t) => s + t.amount, 0),
+      despesa: filtered.filter(t => t.type === 'despesa').reduce((s, t) => s + t.amount, 0),
+    }
+  })
+}
+
 export function getRevenueByService() {
   const txs = getTransactions().filter(t => t.type === 'receita')
+  const categories: Record<string, { name: string; color: string }> = {
+    gravacao: { name: 'Gravação', color: '#D4AF37' },
+    mix: { name: 'Mix', color: '#C0392B' },
+    master: { name: 'Master', color: '#8E44AD' },
+    recall: { name: 'Recall', color: '#2980B9' },
+    producao: { name: 'Produção', color: '#27AE60' },
+    outro: { name: 'Outro', color: '#7F8C8D' },
+  }
+  const totals: Record<string, number> = {}
+  txs.forEach(t => { totals[t.category] = (totals[t.category] || 0) + t.amount })
+  return Object.entries(totals)
+    .filter(([, v]) => v > 0)
+    .map(([k, v]) => ({ name: categories[k]?.name || k, value: v, color: categories[k]?.color || '#999' }))
+}
+
+export async function getRevenueByServiceAsync() {
+  const txs = (await getTransactionsAsync()).filter(t => t.type === 'receita')
   const categories: Record<string, { name: string; color: string }> = {
     gravacao: { name: 'Gravação', color: '#D4AF37' },
     mix: { name: 'Mix', color: '#C0392B' },

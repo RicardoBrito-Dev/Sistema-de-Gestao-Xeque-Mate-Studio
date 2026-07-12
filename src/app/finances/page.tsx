@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import {
-  getTransactions, deleteTransaction, getFinancialSummary, getRevenueByMonth
+  getTransactionsAsync, deleteTransaction, getFinancialSummaryAsync, getRevenueByMonthAsync
 } from '@/lib/storage'
 import { Transaction } from '@/lib/types'
 import TransactionModal from '@/components/finances/TransactionModal'
@@ -38,10 +38,15 @@ export default function FinancesPage() {
   const [monthFilter, setMonthFilter] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const loadData = () => {
-    setTransactions(getTransactions())
-    setSummary(getFinancialSummary())
-    setChartData(getRevenueByMonth())
+  const loadData = async () => {
+    const [txs, sum, chart] = await Promise.all([
+      getTransactionsAsync(),
+      getFinancialSummaryAsync(),
+      getRevenueByMonthAsync()
+    ])
+    setTransactions(txs)
+    setSummary(sum)
+    setChartData(chart)
   }
 
   useEffect(() => { loadData() }, [])

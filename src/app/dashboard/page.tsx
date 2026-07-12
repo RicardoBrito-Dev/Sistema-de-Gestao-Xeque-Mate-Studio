@@ -2,12 +2,12 @@
 
 import React, { useEffect, useState } from 'react'
 import {
-  getFinancialSummary,
-  getArtists,
-  getClients,
-  getKanbanCards,
-  getSessions,
-  getTransactions,
+  getFinancialSummaryAsync,
+  getArtistsAsync,
+  getClientsAsync,
+  getKanbanCardsAsync,
+  getSessionsAsync,
+  getTransactionsAsync,
 } from '@/lib/storage'
 import { DollarSign, Mic2, TrendingUp, Sparkles, Users, Music, Kanban, Calendar, Eye } from 'lucide-react'
 import StatCard from '@/components/ui/StatCard'
@@ -35,25 +35,40 @@ export default function DashboardPage() {
   useEffect(() => {
     const today = format(new Date(), 'yyyy-MM-dd')
 
-    if (canEdit) {
-      setSummary(getFinancialSummary())
-      setArtistsCount(getArtists().filter(a => a.status === 'ativo').length)
-      setClientsCount(getClients().length)
-      setKanbanCount(getKanbanCards().filter(k => k.stage !== 'entregue').length)
-      setSessionsToday(getSessions().filter(s => s.date === today).length)
-    } else {
-      const myKanban = filterKanbanForUser(getKanbanCards(), user)
-      const mySessions = filterSessionsForUser(getSessions(), user)
-      const myTransactions = filterTransactionsForUser(getTransactions(), user)
-      const myRevenue = myTransactions
-        .filter(t => t.type === 'receita')
-        .reduce((sum, t) => sum + t.amount, 0)
+    const loadData = async () => {
+      if (canEdit) {
+        const [sum, artists, clients, kanban, sessions] = await Promise.all([
+          getFinancialSummaryAsync(),
+          getArtistsAsync(),
+          getClientsAsync(),
+          getKanbanCardsAsync(),
+          getSessionsAsync(),
+        ])
+        setSummary(sum)
+        setArtistsCount(artists.filter(a => a.status === 'ativo').length)
+        setClientsCount(clients.length)
+        setKanbanCount(kanban.filter(k => k.stage !== 'entregue').length)
+        setSessionsToday(sessions.filter(s => s.date === today).length)
+      } else {
+        const [kanban, sessions, txs] = await Promise.all([
+          getKanbanCardsAsync(),
+          getSessionsAsync(),
+          getTransactionsAsync(),
+        ])
+        const myKanban = filterKanbanForUser(kanban, user)
+        const mySessions = filterSessionsForUser(sessions, user)
+        const myTransactions = filterTransactionsForUser(txs, user)
+        const myRevenue = myTransactions
+          .filter(t => t.type === 'receita')
+          .reduce((sum, t) => sum + t.amount, 0)
 
-      setKanbanCount(myKanban.filter(k => k.stage !== 'entregue').length)
-      setSessionsToday(mySessions.filter(s => s.date === today).length)
-      setArtistRevenue(myRevenue)
+        setKanbanCount(myKanban.filter(k => k.stage !== 'entregue').length)
+        setSessionsToday(mySessions.filter(s => s.date === today).length)
+        setArtistRevenue(myRevenue)
+      }
     }
 
+    loadData()
     setCurrentDateStr(format(new Date(), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR }))
   }, [user, canEdit])
 

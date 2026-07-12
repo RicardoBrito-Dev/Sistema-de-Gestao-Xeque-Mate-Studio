@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, useCallback } from 'react'
-import { getSessions, deleteSession, getArtists } from '@/lib/storage'
+import { getSessionsAsync, deleteSession, getArtistsAsync } from '@/lib/storage'
 import { useSessionsRealtime } from '@/hooks/useSessionsRealtime'
 import { Session, Artist } from '@/lib/types'
 import SessionModal from '@/components/schedule/SessionModal'
@@ -31,9 +31,13 @@ export default function SchedulePage() {
   const [selectedArtistId, setSelectedArtistId] = useState<string>('todos')
   const [artistsList, setArtistsList] = useState<Artist[]>([])
 
-  const loadData = useCallback(() => {
-    setSessions(filterSessionsForUser(getSessions(), user))
-    setArtistsList(getArtists())
+  const loadData = useCallback(async () => {
+    const [sess, arts] = await Promise.all([
+      getSessionsAsync(),
+      getArtistsAsync()
+    ])
+    setSessions(filterSessionsForUser(sess, user))
+    setArtistsList(arts)
   }, [user])
 
   // Realtime: atualiza o calendário automaticamente quando outro usuário faz mudanças

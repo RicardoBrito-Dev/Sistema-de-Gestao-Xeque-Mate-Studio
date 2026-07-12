@@ -27,6 +27,8 @@ export async function login(email: string, password: string): Promise<AuthSessio
 
   if (typeof window !== 'undefined') {
     localStorage.setItem(SESSION_KEY, JSON.stringify(session))
+    // Salva também em cookie para que o middleware possa verificar no servidor
+    document.cookie = `${SESSION_KEY}=1; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`
   }
 
   return session
@@ -35,6 +37,8 @@ export async function login(email: string, password: string): Promise<AuthSessio
 export function logout(): void {
   if (typeof window !== 'undefined') {
     localStorage.removeItem(SESSION_KEY)
+    // Remove o cookie de sessão
+    document.cookie = `${SESSION_KEY}=; path=/; max-age=0`
   }
 }
 

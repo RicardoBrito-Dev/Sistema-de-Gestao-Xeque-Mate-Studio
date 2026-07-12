@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { AuthSession } from '@/lib/types'
 import { getSession, login as authLogin, logout as authLogout } from '@/lib/auth'
+import { getUsersAsync } from '@/lib/storage'
 import { canEdit, canAccessRoute } from '@/lib/permissions'
 
 interface AuthContextValue {
@@ -21,8 +22,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    setUser(getSession())
-    setIsLoading(false)
+    const initAuth = async () => {
+      const session = getSession()
+      if (session) {
+        try {
+          const dbUsers = await getUsersAsync()
+          const isValid = dbUsers.find(
+            u => u.id === session.userId && (u.approved === true || u.role === 'admin')
+          )
+          if (isValid) {
+            setUser(session)
+          } else {
+            // Sessão antiga ou não aprovada -> Desloga e limpa
+            authLogout()
+            setUser(null)
+          }
+        } catch {
+          // Fallback offline caso banco falhe
+          setUser(session)
+        }
+      }
+      setIsLoading(false)
+    }
+    initAuth()
   }, [])
 
   const login = useCallback(async (email: string, password: string) => {

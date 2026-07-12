@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { getArtists, deleteArtist } from '@/lib/storage'
+import { getArtistsAsync, deleteArtist } from '@/lib/storage'
 import { Artist } from '@/lib/types'
 import ArtistModal from '@/components/artists/ArtistModal'
 import UsersModal from '@/components/artists/UsersModal'
@@ -18,7 +18,10 @@ export default function ArtistsPage() {
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null)
   const [isUsersModalOpen, setIsUsersModalOpen] = useState(false)
 
-  const loadData = () => setArtists(filterArtistsForUser(getArtists(), user))
+  const loadData = async () => {
+    const data = await getArtistsAsync()
+    setArtists(filterArtistsForUser(data, user))
+  }
   useEffect(() => { loadData() }, [user])
 
   const handleDelete = (id: string, name: string) => {
