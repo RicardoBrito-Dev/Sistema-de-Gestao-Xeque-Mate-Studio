@@ -11,6 +11,7 @@ interface AuthContextValue {
   isLoading: boolean
   login: (email: string, password: string) => Promise<boolean>
   logout: () => void
+  updateUser: (patch: Partial<AuthSession>) => void
   canEdit: boolean
   canAccessRoute: (pathname: string) => boolean
 }
@@ -32,20 +33,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           )
           if (isValid) {
             setUser(session)
-            // Sincroniza o cookie para evitar loop de redirecionamento do middleware
             document.cookie = `xm_session=1; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
           } else {
-            // Sessão antiga ou não aprovada -> Desloga e limpa
             authLogout()
             setUser(null)
           }
         } catch {
-          // Fallback offline caso banco falhe
           setUser(session)
           document.cookie = `xm_session=1; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
         }
       } else {
-        // Sem sessão: garante que o cookie seja removido
         document.cookie = `xm_session=; path=/; max-age=0`
       }
       setIsLoading(false)
@@ -67,6 +64,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null)
   }, [])
 
+  const updateUser = useCallback((patch: Partial<AuthSession>) => {
+    setUser(prev => prev ? { ...prev, ...patch } : prev)
+  }, [])
+
   return (
     <AuthContext.Provider
       value={{
@@ -74,6 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         login,
         logout,
+        updateUser,
         canEdit: canEdit(user),
         canAccessRoute: (pathname: string) => canAccessRoute(pathname, user),
       }}

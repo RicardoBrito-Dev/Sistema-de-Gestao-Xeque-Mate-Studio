@@ -16,10 +16,12 @@ import {
   Shield,
   Eye,
   Key,
+  Camera,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { getNavItemsForUser } from '@/lib/permissions'
 import ChangePasswordModal from '@/components/auth/ChangePasswordModal'
+import AvatarModal from '@/components/auth/AvatarModal'
 
 const iconMap = {
   '/dashboard': LayoutDashboard,
@@ -35,6 +37,7 @@ export default function Sidebar() {
   const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false)
+  const [isAvatarOpen, setIsAvatarOpen] = useState(false)
   const { user, logout, canEdit } = useAuth()
 
   const handleLogout = () => {
@@ -92,17 +95,26 @@ export default function Sidebar() {
         {/* ── User info ── */}
         {!collapsed && user && (
           <div className="px-4 py-3 mx-3 mt-3 rounded-xl bg-[#0f0f0f] border border-[#1e1e1e] flex items-center gap-3">
-            {user.avatarUrl ? (
-              <img
-                src={user.avatarUrl}
-                alt={user.name}
-                className="w-8 h-8 rounded-full object-cover border border-[#8B5CF6]/30 flex-shrink-0"
-              />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-[#8B5CF6]/10 border border-[#8B5CF6]/30 flex items-center justify-center font-bebas text-xs text-[#A78BFA] flex-shrink-0">
-                {user.name.slice(0, 2).toUpperCase()}
+            <button
+              onClick={() => setIsAvatarOpen(true)}
+              className="relative group flex-shrink-0 cursor-pointer"
+              title="Alterar foto de perfil"
+            >
+              {user.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt={user.name}
+                  className="w-8 h-8 rounded-full object-cover border border-[#8B5CF6]/30"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-[#8B5CF6]/10 border border-[#8B5CF6]/30 flex items-center justify-center font-bebas text-xs text-[#A78BFA]">
+                  {user.name.slice(0, 2).toUpperCase()}
+                </div>
+              )}
+              <div className="absolute inset-0 rounded-full bg-[#000]/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Camera size={10} className="text-white" />
               </div>
-            )}
+            </button>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-[#F0F0F0] truncate leading-none">{user.name}</p>
               <div className="flex items-center gap-1.5 mt-1">
@@ -327,6 +339,12 @@ export default function Sidebar() {
       <ChangePasswordModal
         isOpen={isChangePasswordOpen}
         onClose={() => setIsChangePasswordOpen(false)}
+      />
+
+      {/* Global Avatar Modal */}
+      <AvatarModal
+        isOpen={isAvatarOpen}
+        onClose={() => setIsAvatarOpen(false)}
       />
     </>
   )

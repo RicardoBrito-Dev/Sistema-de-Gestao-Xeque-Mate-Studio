@@ -264,3 +264,25 @@ export async function updatePasswordByEmail(
   saveUser(user)
 }
 
+export async function updateAvatar(userId: string, avatarUrl: string): Promise<AuthSession> {
+  const users = await getUsersAsync()
+  const user = users.find(u => u.id === userId)
+  if (!user) throw new Error('Usuário não encontrado.')
+
+  user.avatarUrl = avatarUrl
+  saveUser(user)
+
+  // Update session in localStorage
+  const SESSION_KEY_LOCAL = 'xm_session'
+  if (typeof window !== 'undefined') {
+    const raw = localStorage.getItem(SESSION_KEY_LOCAL)
+    if (raw) {
+      const session = JSON.parse(raw) as AuthSession
+      session.avatarUrl = avatarUrl
+      localStorage.setItem(SESSION_KEY_LOCAL, JSON.stringify(session))
+    }
+  }
+
+  return { ...user, userId: user.id } as unknown as AuthSession
+}
+
