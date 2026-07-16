@@ -159,4 +159,5 @@ export interface AuthSession {
   artistId?: string
   avatarUrl?: string
   approved?: boolean
+  expiresAt?: number
 }

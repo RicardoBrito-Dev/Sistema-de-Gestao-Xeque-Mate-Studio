@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (isValid) {
             setUser(session)
             // Sincroniza o cookie para evitar loop de redirecionamento do middleware
-            document.cookie = `xm_session=1; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`
+            document.cookie = `xm_session=1; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
           } else {
             // Sessão antiga ou não aprovada -> Desloga e limpa
             authLogout()
@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch {
           // Fallback offline caso banco falhe
           setUser(session)
-          document.cookie = `xm_session=1; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`
+          document.cookie = `xm_session=1; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
         }
       } else {
         // Sem sessão: garante que o cookie seja removido

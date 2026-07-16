@@ -15,9 +15,11 @@ import {
   LogOut,
   Shield,
   Eye,
+  Key,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { getNavItemsForUser } from '@/lib/permissions'
+import ChangePasswordModal from '@/components/auth/ChangePasswordModal'
 
 const iconMap = {
   '/dashboard': LayoutDashboard,
@@ -32,6 +34,7 @@ export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false)
   const { user, logout, canEdit } = useAuth()
 
   const handleLogout = () => {
@@ -51,7 +54,7 @@ export default function Sidebar() {
       ════════════════════════════════════════════════ */}
       <aside
         className={`
-          hidden md:flex flex-col flex-shrink-0 sticky top-0 left-0 h-screen
+          max-md:!hidden md:flex flex-col flex-shrink-0 sticky top-0 left-0 h-screen
           bg-gradient-to-b from-[#0a0a0c] via-[#050505] to-[#010101] border-r border-[#1e1e1e] z-40
           transition-all duration-300 ease-in-out
           ${collapsed ? 'w-[72px]' : 'w-60'}
@@ -185,8 +188,24 @@ export default function Sidebar() {
           </div>
         )}
 
-        {/* ── Logout ── */}
+        {/* ── Logout & Security ── */}
         <div className={`border-t border-[#1e1e1e] p-3 ${collapsed ? '' : 'px-4'}`}>
+          <button
+            onClick={() => setIsChangePasswordOpen(true)}
+            className={`
+              w-full flex items-center gap-3 py-2.5 px-3 rounded-lg mb-1
+              text-[#666] hover:text-[#A78BFA] hover:bg-[#8B5CF6]/5
+              transition-all duration-200 group
+              ${collapsed ? 'justify-center' : ''}
+            `}
+            title="Alterar Senha"
+          >
+            <Key size={15} className="flex-shrink-0" />
+            {!collapsed && (
+              <span className="text-[11px] font-medium">Alterar Senha</span>
+            )}
+          </button>
+
           <button
             onClick={handleLogout}
             className={`
@@ -246,13 +265,22 @@ export default function Sidebar() {
           </span>
         </div>
 
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-1 text-[11px] font-semibold text-rose-500 hover:text-rose-400 bg-rose-500/5 border border-rose-500/10 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
-        >
-          <LogOut size={12} />
-          Sair
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsChangePasswordOpen(true)}
+            className="flex items-center gap-1 text-[11px] font-semibold text-[#A78BFA] hover:text-white bg-[#8B5CF6]/5 border border-[#8B5CF6]/10 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
+          >
+            <Key size={12} />
+            Senha
+          </button>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1 text-[11px] font-semibold text-rose-500 hover:text-rose-400 bg-rose-500/5 border border-rose-500/10 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
+          >
+            <LogOut size={12} />
+            Sair
+          </button>
+        </div>
       </header>
 
       {/* ════════════════════════════════════════════════
@@ -294,6 +322,12 @@ export default function Sidebar() {
           </div>
         </div>
       </nav>
+
+      {/* Global Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+      />
     </>
   )
 }

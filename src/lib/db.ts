@@ -372,7 +372,7 @@ export async function dbGetUsers(): Promise<AppUser[]> {
     const masterAdmin: AppUser = {
       id: 'u1',
       email: 'admin@xequemate.com',
-      password: 'admin123',
+      password: '$2b$10$3zUqmsJMo.0UCEyoeU4MK.tXE6bwMx7AKOP6pMNp0R.pJTTTYfInq', // bcrypt hash of admin123
       name: 'Administrador',
       role: 'admin',
       approved: true,
