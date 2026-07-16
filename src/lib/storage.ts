@@ -114,9 +114,22 @@ export function saveKanbanCard(card: KanbanCard): void {
   if (USE_SUPABASE) db().then(m => m.dbSaveKanbanCard(card))
 }
 
+export async function saveKanbanCardAsync(card: KanbanCard): Promise<void> {
+  const all = getKanbanCards()
+  const idx = all.findIndex(k => k.id === card.id)
+  if (idx >= 0) all[idx] = card; else all.unshift(card)
+  setItem(KEYS.kanban, all)
+  if (USE_SUPABASE) await (await db()).dbSaveKanbanCard(card)
+}
+
 export function deleteKanbanCard(id: string): void {
   setItem(KEYS.kanban, getKanbanCards().filter(k => k.id !== id))
   if (USE_SUPABASE) db().then(m => m.dbDeleteKanbanCard(id))
+}
+
+export async function deleteKanbanCardAsync(id: string): Promise<void> {
+  setItem(KEYS.kanban, getKanbanCards().filter(k => k.id !== id))
+  if (USE_SUPABASE) await (await db()).dbDeleteKanbanCard(id)
 }
 
 export function updateKanbanStage(id: string, stage: KanbanCard['stage']): void {

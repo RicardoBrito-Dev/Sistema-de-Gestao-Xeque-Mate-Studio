@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
-import { getKanbanCardsAsync, saveKanbanCard, deleteKanbanCard } from '@/lib/storage'
+import { getKanbanCardsAsync, saveKanbanCardAsync, deleteKanbanCardAsync } from '@/lib/storage'
 import { KanbanCard, KanbanStage } from '@/lib/types'
 import KanbanCardModal from '@/components/kanban/KanbanCardModal'
 import Badge from '@/components/ui/Badge'
@@ -32,20 +32,49 @@ export default function KanbanPage() {
   }
   useEffect(() => { setMounted(true); loadData() }, [user])
 
-  const handleDragEnd = (result: DropResult) => {
+  const handleDragEnd = async (result: DropResult) => {
     if (!canEdit) return
     const { destination, source, draggableId } = result
     if (!destination) return
     if (destination.droppableId === source.droppableId && destination.index === source.index) return
+
     const card = cards.find(c => c.id === draggableId)
-    if (card) {
-      saveKanbanCard({ ...card, stage: destination.droppableId as KanbanStage, daysInStage: 0 })
+    if (!card) return
+
+    const updatedCard: KanbanCard = {
+      ...card,
+      stage: destination.droppableId as KanbanStage,
+      daysInStage: 0,
+    }
+
+    // 1. Optimistic Update: Update stage immediately
+    const updatedCards = cards.map(c => c.id === draggableId ? updatedCard : c)
+    setCards(updatedCards)
+
+    // 2. Persist to database
+    try {
+      await saveKanbanCardAsync(updatedCard)
+    } catch (error) {
+      console.error('Falha ao atualizar coluna:', error)
+      // Rollback on error
       loadData()
     }
   }
 
-  const handleDelete = (id: string, name: string) => {
-    if (confirm(`Excluir "${name}" do painel?`)) { deleteKanbanCard(id); loadData() }
+  const handleDelete = async (id: string, name: string) => {
+    if (confirm(`Excluir "${name}" do painel?`)) {
+      // 1. Optimistic Delete
+      setCards(prev => prev.filter(c => c.id !== id))
+      
+      // 2. Persist to database
+      try {
+        await deleteKanbanCardAsync(id)
+      } catch (error) {
+        console.error('Erro ao excluir card:', error)
+        // Rollback on error
+        loadData()
+      }
+    }
   }
   const handleEdit = (card: KanbanCard) => { setSelectedCard(card); setIsModalOpen(true) }
   const handleNew = () => { setSelectedCard(null); setIsModalOpen(true) }
