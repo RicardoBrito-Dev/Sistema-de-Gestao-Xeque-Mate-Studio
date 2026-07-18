@@ -8,7 +8,7 @@ import KanbanCardModal from '@/components/kanban/KanbanCardModal'
 import Badge from '@/components/ui/Badge'
 import { useAuth } from '@/contexts/AuthContext'
 import { filterKanbanForUser } from '@/lib/permissions'
-import { Mic2, Sliders, Headphones, RotateCcw, CheckCircle2, Plus, Calendar, Trash2, Edit2 } from 'lucide-react'
+import { Mic2, Sliders, Headphones, RotateCcw, CheckCircle2, Plus, Calendar, Trash2, Edit2, ExternalLink } from 'lucide-react'
 import { format, differenceInDays } from 'date-fns'
 
 const COLUMNS: { id: KanbanStage; label: string; color: string; bg: string; border: string; icon: any }[] = [
@@ -188,11 +188,25 @@ export default function KanbanPage() {
 
                                   {/* Footer */}
                                   <div className="pt-2.5 border-t border-[#1a1a1a] flex items-center justify-between text-[10px] text-[#444]">
-                                    <span className="bg-[#0d0d0d] border border-[#1a1a1a] px-2.5 py-1 rounded-lg">
-                                      {getDaysText(card.entryDate)}
-                                    </span>
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                      <span className="bg-[#0d0d0d] border border-[#1a1a1a] px-2 py-1 rounded-lg flex-shrink-0">
+                                        {getDaysText(card.entryDate)}
+                                      </span>
+                                      {card.driveLink && (
+                                        <a
+                                          href={card.driveLink}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="flex items-center gap-1 bg-[#8B5CF6]/10 hover:bg-[#8B5CF6]/20 border border-[#8B5CF6]/20 text-[#A78BFA] px-2 py-1 rounded-lg transition-all truncate"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          <span>Drive</span>
+                                          <ExternalLink size={9} className="flex-shrink-0" />
+                                        </a>
+                                      )}
+                                    </div>
                                     {card.deadline && (
-                                      <span className={`flex items-center gap-1 ${isOverdue ? 'text-[#E74C3C] font-bold' : ''}`}>
+                                      <span className={`flex items-center gap-1 flex-shrink-0 ${isOverdue ? 'text-[#E74C3C] font-bold' : ''}`}>
                                         <Calendar size={9} />
                                         {format(new Date(card.deadline), 'dd/MM')}
                                       </span>

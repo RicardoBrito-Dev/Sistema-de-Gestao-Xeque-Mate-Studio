@@ -58,6 +58,7 @@ export interface KanbanCard {
   deadline?: string // ISO date
   notes?: string
   daysInStage: number
+  driveLink?: string
 }
 
 // ============================================================

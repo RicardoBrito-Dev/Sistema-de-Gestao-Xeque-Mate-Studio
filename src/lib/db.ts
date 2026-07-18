@@ -131,6 +131,7 @@ function toKanban(row: Record<string, unknown>): KanbanCard {
     deadline: row.deadline as string | undefined,
     notes: row.notes as string | undefined,
     daysInStage: row.days_in_stage as number,
+    driveLink: row.drive_link as string | undefined,
   }
 }
 
@@ -146,6 +147,7 @@ function fromKanban(k: KanbanCard): Record<string, unknown> {
     deadline: k.deadline,
     notes: k.notes,
     days_in_stage: k.daysInStage,
+    drive_link: k.driveLink,
   }
 }
 

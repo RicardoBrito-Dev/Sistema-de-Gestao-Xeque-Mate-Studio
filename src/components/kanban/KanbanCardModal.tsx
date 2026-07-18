@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Modal from '@/components/ui/Modal'
 import { KanbanCard, KanbanStage, Priority } from '@/lib/types'
-import { saveKanbanCard, generateId } from '@/lib/storage'
+import { saveKanbanCardAsync, generateId } from '@/lib/storage'
 
 interface KanbanCardModalProps {
   isOpen: boolean
@@ -25,6 +25,7 @@ export default function KanbanCardModal({
   const [entryDate, setEntryDate] = useState('')
   const [deadline, setDeadline] = useState('')
   const [notes, setNotes] = useState('')
+  const [driveLink, setDriveLink] = useState('')
 
   useEffect(() => {
     if (card) {
@@ -35,6 +36,7 @@ export default function KanbanCardModal({
       setEntryDate(card.entryDate)
       setDeadline(card.deadline || '')
       setNotes(card.notes || '')
+      setDriveLink(card.driveLink || '')
     } else {
       setTrackName('')
       setArtistName('')
@@ -43,10 +45,11 @@ export default function KanbanCardModal({
       setEntryDate(new Date().toISOString().split('T')[0])
       setDeadline('')
       setNotes('')
+      setDriveLink('')
     }
   }, [card, isOpen])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!trackName || !artistName) {
       alert('Nome da Música e Artista/Cliente são obrigatórios.')
@@ -62,10 +65,11 @@ export default function KanbanCardModal({
       entryDate: entryDate || new Date().toISOString().split('T')[0],
       deadline: deadline || undefined,
       notes: notes || undefined,
+      driveLink: driveLink || undefined,
       daysInStage: card?.daysInStage || 0,
     }
 
-    saveKanbanCard(payload)
+    await saveKanbanCardAsync(payload)
     onSave()
     onClose()
   }
@@ -145,6 +149,17 @@ export default function KanbanCardModal({
               onChange={(e) => setDeadline(e.target.value)}
             />
           </div>
+        </div>
+
+        <div>
+          <label className="label-field">Link do Google Drive / Guia (Opcional)</label>
+          <input
+            type="url"
+            className="input-dark"
+            placeholder="Ex: https://drive.google.com/file/d/..."
+            value={driveLink}
+            onChange={(e) => setDriveLink(e.target.value)}
+          />
         </div>
 
         <div>
