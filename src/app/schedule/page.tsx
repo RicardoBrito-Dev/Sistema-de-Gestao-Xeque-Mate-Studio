@@ -5,24 +5,25 @@ import { getSessionsAsync, deleteSession, getArtistsAsync } from '@/lib/storage'
 import { useSessionsRealtime } from '@/hooks/useSessionsRealtime'
 import { Session, Artist } from '@/lib/types'
 import SessionModal from '@/components/schedule/SessionModal'
-import Badge from '@/components/ui/Badge'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/AuthContext'
 import { filterSessionsForUser, canEditSession } from '@/lib/permissions'
 import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight,
-  Plus, Trash2, Clock, User, Music, Mic2, MapPin
+  Plus, Trash2, Clock, User, Music, Mic2, MapPin, LayoutGrid, Columns
 } from 'lucide-react'
 import {
   format, startOfWeek, endOfWeek, eachDayOfInterval,
-  isSameDay, addWeeks, subWeeks, parseISO,
+  isSameDay, addWeeks, subWeeks, addMonths, subMonths,
+  startOfMonth, endOfMonth, parseISO, isSameMonth,
 } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
 export default function SchedulePage() {
   const { user } = useAuth()
   const [sessions, setSessions] = useState<Session[]>([])
-  const [currentWeekStart, setCurrentWeekStart] = useState<Date>(new Date())
+  const [currentDate, setCurrentDate] = useState<Date>(new Date())
+  const [viewMode, setViewMode] = useState<'week' | 'month'>('week')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedSession, setSelectedSession] = useState<Session | null>(null)
   const [targetDateStr, setTargetDateStr] = useState('')
@@ -48,9 +49,31 @@ export default function SchedulePage() {
     loadData()
   }, [loadData])
 
-  const weekStart = startOfWeek(currentWeekStart, { weekStartsOn: 0 })
-  const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 0 })
-  const days = eachDayOfInterval({ start: weekStart, end: weekEnd })
+  // ─── Semana ───
+  const weekStart = startOfWeek(currentDate, { weekStartsOn: 0 })
+  const weekEnd = endOfWeek(currentDate, { weekStartsOn: 0 })
+  const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd })
+
+  // ─── Mês ───
+  // Grade completa: da primeira dom antes do início até a última sáb depois do fim
+  const monthStart = startOfMonth(currentDate)
+  const monthEnd = endOfMonth(currentDate)
+  const calGridStart = startOfWeek(monthStart, { weekStartsOn: 0 })
+  const calGridEnd = endOfWeek(monthEnd, { weekStartsOn: 0 })
+  const monthGridDays = eachDayOfInterval({ start: calGridStart, end: calGridEnd })
+
+  // Alias para compatibilidade — o que a UI usa como "dias atuais"
+  const days = viewMode === 'week' ? weekDays : monthGridDays
+
+  const goBack = () => {
+    if (viewMode === 'week') setCurrentDate(subWeeks(currentDate, 1))
+    else setCurrentDate(subMonths(currentDate, 1))
+  }
+  const goForward = () => {
+    if (viewMode === 'week') setCurrentDate(addWeeks(currentDate, 1))
+    else setCurrentDate(addMonths(currentDate, 1))
+  }
+  const goToday = () => setCurrentDate(new Date())
 
   const handleNewSession = (defaultDateStr?: string) => {
     setSelectedSession(null)
@@ -177,56 +200,87 @@ export default function SchedulePage() {
 
         {/* ─── Filters & Navigation Bar ─── */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-[#0d0d0d] border border-[#1e1e1e] rounded-xl px-4 py-3">
-          {/* Week Navigation */}
+          {/* Navigation Controls */}
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setCurrentWeekStart(subWeeks(currentWeekStart, 1))}
+              onClick={goBack}
               className="p-2 rounded-lg bg-[#111] hover:bg-[#1a1a1a] border border-[#1e1e1e] text-[#888] hover:text-[#F0F0F0] transition-all cursor-pointer"
             >
               <ChevronLeft size={15} />
             </button>
             <button
-              onClick={() => setCurrentWeekStart(new Date())}
+              onClick={goToday}
               className="px-3 py-1.5 rounded-lg bg-[#111] hover:bg-[#1a1a1a] border border-[#1e1e1e] text-xs font-semibold text-[#F0F0F0] transition-all cursor-pointer"
             >
               Hoje
             </button>
             <button
-              onClick={() => setCurrentWeekStart(addWeeks(currentWeekStart, 1))}
+              onClick={goForward}
               className="p-2 rounded-lg bg-[#111] hover:bg-[#1a1a1a] border border-[#1e1e1e] text-[#888] hover:text-[#F0F0F0] transition-all cursor-pointer"
             >
               <ChevronRight size={15} />
             </button>
           </div>
 
-          {/* Current Date Text */}
-          <span className="font-bebas text-base tracking-wider text-[#F0F0F0] hidden sm:block">
-            {format(weekStart, "dd 'de' MMMM", { locale: ptBR })} — {format(weekEnd, "dd 'de' MMMM, yyyy", { locale: ptBR })}
-          </span>
-          <span className="font-bebas text-sm tracking-wider text-[#F0F0F0] sm:hidden">
-            {format(weekStart, 'dd/MM')} — {format(weekEnd, 'dd/MM')}
+          {/* Current Date Label */}
+          <span className="font-bebas text-base tracking-wider text-[#F0F0F0]">
+            {viewMode === 'week'
+              ? `${format(weekStart, "dd 'de' MMMM", { locale: ptBR })} — ${format(weekEnd, "dd 'de' MMMM, yyyy", { locale: ptBR })}`
+              : format(currentDate, "MMMM 'de' yyyy", { locale: ptBR })
+            }
           </span>
 
-          {/* Admin Artist Selector */}
-          {user && user.role === 'admin' && (
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-[#555] uppercase font-bold tracking-wider">Filtrar Artista:</span>
-              <select
-                value={selectedArtistId}
-                onChange={e => setSelectedArtistId(e.target.value)}
-                className="input-dark py-1.5 px-3 text-xs w-44"
+          {/* Right side: Artist filter + View toggle */}
+          <div className="flex items-center gap-3">
+            {/* Admin Artist Selector */}
+            {user && user.role === 'admin' && (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-[#555] uppercase font-bold tracking-wider">Artista:</span>
+                <select
+                  value={selectedArtistId}
+                  onChange={e => setSelectedArtistId(e.target.value)}
+                  className="input-dark py-1.5 px-3 text-xs w-40"
+                >
+                  <option value="todos">Todos</option>
+                  {artistsList.map(art => (
+                    <option key={art.id} value={art.id}>{art.artisticName}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* View Mode Toggle */}
+            <div className="flex rounded-lg border border-[#1e1e1e] overflow-hidden">
+              <button
+                onClick={() => setViewMode('week')}
+                title="Visualização Semanal"
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                  viewMode === 'week'
+                    ? 'bg-[#16a34a]/15 text-[#4ade80] border-r border-[#16a34a]/20'
+                    : 'bg-[#111] text-[#555] hover:text-[#888] border-r border-[#1e1e1e]'
+                }`}
               >
-                <option value="todos">Todos os Artistas</option>
-                {artistsList.map(art => (
-                  <option key={art.id} value={art.id}>{art.artisticName}</option>
-                ))}
-              </select>
+                <Columns size={13} />
+                <span className="hidden sm:inline">Semana</span>
+              </button>
+              <button
+                onClick={() => setViewMode('month')}
+                title="Visualização Mensal"
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                  viewMode === 'month'
+                    ? 'bg-[#16a34a]/15 text-[#4ade80]'
+                    : 'bg-[#111] text-[#555] hover:text-[#888]'
+                }`}
+              >
+                <LayoutGrid size={13} />
+                <span className="hidden sm:inline">Mês</span>
+              </button>
             </div>
-          )}
+          </div>
         </div>
 
         {/* ─── Desktop: Weekly grid ─── */}
-        <div className="hidden md:grid grid-cols-7 gap-3">
+        {viewMode === 'week' && <div className="hidden md:grid grid-cols-7 gap-3">
           {days.map(day => {
             const isToday = isSameDay(day, new Date())
             const daySessions = filteredSessions
@@ -311,10 +365,89 @@ export default function SchedulePage() {
               </div>
             )
           })}
-        </div>
+        </div>}
 
-        {/* ─── Mobile: Stacked daily list ─── */}
-        <div className="md:hidden space-y-3">
+        {/* ─── Visualização Mensal ─── */}
+        {viewMode === 'month' && (
+          <div className="rounded-xl border border-[#1e1e1e] overflow-hidden">
+            {/* Cabeçalho dos dias da semana */}
+            <div className="grid grid-cols-7 border-b border-[#1e1e1e]">
+              {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => (
+                <div key={d} className="py-2 text-center text-[10px] font-bold uppercase tracking-widest text-[#555] bg-[#0a0a0a]">
+                  {d}
+                </div>
+              ))}
+            </div>
+            {/* Grade de dias */}
+            <div className="grid grid-cols-7 bg-[#080808]">
+              {monthGridDays.map(day => {
+                const isToday = isSameDay(day, new Date())
+                const isCurrentMonth = isSameMonth(day, currentDate)
+                const dateStr = format(day, 'yyyy-MM-dd')
+                const daySessions = filteredSessions
+                  .filter(s => s.date === dateStr)
+                  .sort((a, b) => a.startTime.localeCompare(b.startTime))
+
+                // Cores dos dots por tipo de serviço
+                const dotColors: Record<string, string> = {
+                  gravacao: 'bg-[#E74C3C]',
+                  mix:      'bg-[#4ade80]',
+                  master:   'bg-purple-400',
+                  recall:   'bg-sky-400',
+                  producao: 'bg-emerald-400',
+                  outro:    'bg-[#555]',
+                }
+
+                return (
+                  <div
+                    key={dateStr}
+                    onClick={user ? () => handleNewSession(dateStr) : undefined}
+                    className={`min-h-[80px] md:min-h-[100px] p-1.5 border-b border-r border-[#111] flex flex-col transition-colors ${
+                      user ? 'cursor-pointer hover:bg-[#0f0f0f]' : ''
+                    } ${isToday ? 'bg-[#16a34a]/5' : ''} ${!isCurrentMonth ? 'opacity-30' : ''}`}
+                  >
+                    {/* Número do dia */}
+                    <span className={`text-xs font-bebas tracking-wide self-start leading-none px-1 py-0.5 rounded ${
+                      isToday
+                        ? 'bg-[#16a34a] text-white'
+                        : isCurrentMonth ? 'text-[#F0F0F0]' : 'text-[#444]'
+                    }`}>
+                      {format(day, 'd')}
+                    </span>
+
+                    {/* Sessões do dia — até 3 visíveis, depois "+N" */}
+                    <div className="mt-1 flex flex-col gap-0.5 flex-1 min-h-0">
+                      {daySessions.slice(0, 3).map(session => {
+                        const editable = canEditSession(session, user)
+                        return (
+                          <div
+                            key={session.id}
+                            onClick={editable ? e => { e.stopPropagation(); handleEditSession(session) } : undefined}
+                            className={`text-[9px] md:text-[10px] font-semibold truncate rounded px-1 py-0.5 flex items-center gap-1 ${
+                              editable ? 'cursor-pointer hover:brightness-125' : ''
+                            } ${dotColors[session.serviceType] ? `bg-${dotColors[session.serviceType].replace('bg-', '')}/10` : ''}`}
+                            style={{ color: 'inherit' }}
+                          >
+                            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColors[session.serviceType] || 'bg-[#555]'}`} />
+                            <span className="truncate text-[#ccc]">{session.startTime} {session.title}</span>
+                          </div>
+                        )
+                      })}
+                      {daySessions.length > 3 && (
+                        <span className="text-[9px] text-[#555] font-semibold pl-1">
+                          +{daySessions.length - 3} mais
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ─── Mobile: Stacked daily list (só no modo semana) ─── */}
+        {viewMode === 'week' && <div className="md:hidden space-y-3">
           {days.map(day => {
             const isToday = isSameDay(day, new Date())
             const daySessions = filteredSessions
@@ -403,7 +536,7 @@ export default function SchedulePage() {
               </div>
             )
           })}
-        </div>
+        </div>}
 
         {/* ─── Upcoming sessions ─── */}
         <div className="bg-[#0a0a0a] border border-[#1e1e1e] rounded-xl p-5">
