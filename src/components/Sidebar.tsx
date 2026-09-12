@@ -60,13 +60,14 @@ export default function Sidebar() {
       {/* ════════════════════════════════════════════════
           DESKTOP SIDEBAR  (hidden on mobile)
       ════════════════════════════════════════════════ */}
-      <motion.aside
-        initial={false}
-        animate={{ width: collapsed ? 72 : 240 }}
-        transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-        className="hidden md:flex flex-col flex-shrink-0 sticky top-0 left-0 h-screen bg-gradient-to-b from-[#0a0a0c] via-[#050505] to-[#010101] border-r border-[#1e1e1e] z-40 overflow-hidden"
-        style={{ boxShadow: '2px 0 20px rgba(0,0,0,0.6)' }}
-      >
+      <div className="hidden md:flex flex-shrink-0">
+        <motion.aside
+          initial={false}
+          animate={{ width: collapsed ? 72 : 240 }}
+          transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+          className="flex flex-col flex-shrink-0 sticky top-0 left-0 h-screen bg-gradient-to-b from-[#0a0a0c] via-[#050505] to-[#010101] border-r border-[#1e1e1e] z-40 overflow-hidden"
+          style={{ boxShadow: '2px 0 20px rgba(0,0,0,0.6)' }}
+        >
         {/* ── Logo ── */}
         <div className={`
           flex items-center gap-3 border-b border-[#1f1f23]
@@ -266,6 +267,7 @@ export default function Sidebar() {
           </button>
         </div>
       </motion.aside>
+      </div>
 
       {/* ════════════════════════════════════════════════
           MOBILE TOP HEADER BAR

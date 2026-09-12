@@ -18,7 +18,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       ) : (
         <div className="relative flex flex-col md:flex-row flex-1 min-h-screen overflow-x-hidden bg-[#09090b]">
           <Sidebar />
-          <main className="flex-1 w-full min-h-screen flex flex-col pt-16 pb-24 md:py-8 md:px-16 min-w-0 transition-all duration-300 z-10">
+          <main className="flex-1 w-full min-h-screen flex flex-col pt-16 pb-24 md:py-8 md:px-8 lg:px-12 min-w-0 transition-all duration-300 z-10">
             <AnimatePresence mode="wait">
               <motion.div
                 key={pathname}
