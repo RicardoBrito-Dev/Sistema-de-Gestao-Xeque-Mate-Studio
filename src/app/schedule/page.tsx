@@ -172,59 +172,30 @@ export default function SchedulePage() {
           )}
         </div>
 
-        {/* ─── Agenda Tabs + Mode Selector ─── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#1e1e1e]/80 gap-3 pb-2 sm:pb-0">
-          {/* Studio vs Shows Tabs */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setActiveTab('estudio')}
-              className={`py-3 px-4 sm:px-6 text-sm font-bebas tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
-                activeTab === 'estudio'
-                  ? 'border-[#16a34a] text-[#4ade80]'
-                  : 'border-transparent text-[#555] hover:text-[#888]'
-              }`}
-            >
-              <Mic2 size={15} />
-              Agenda de Estúdio
-            </button>
-            <button
-              onClick={() => setActiveTab('show')}
-              className={`py-3 px-4 sm:px-6 text-sm font-bebas tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
-                activeTab === 'show'
-                  ? 'border-[#16a34a] text-[#4ade80]'
-                  : 'border-transparent text-[#555] hover:text-[#888]'
-              }`}
-            >
-              <Music size={15} />
-              Agenda de Shows
-            </button>
-          </div>
-
-          {/* Destaque: Seletor Semana / Mês no topo */}
-          <div className="flex items-center self-start sm:self-auto bg-[#121214] p-1 rounded-xl border border-[#2a2a2a] mb-2 sm:mb-0">
-            <button
-              onClick={() => setViewMode('week')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                viewMode === 'week'
-                  ? 'bg-gradient-to-r from-[#16a34a] to-[#15803d] text-white shadow-md shadow-[#16a34a]/30'
-                  : 'text-[#888] hover:text-white'
-              }`}
-            >
-              <Columns size={14} />
-              <span>Semana</span>
-            </button>
-            <button
-              onClick={() => setViewMode('month')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                viewMode === 'month'
-                  ? 'bg-gradient-to-r from-[#16a34a] to-[#15803d] text-white shadow-md shadow-[#16a34a]/30'
-                  : 'text-[#888] hover:text-white'
-              }`}
-            >
-              <LayoutGrid size={14} />
-              <span>Mês</span>
-            </button>
-          </div>
+        {/* ─── Agenda Tabs ─── */}
+        <div className="flex border-b border-[#1e1e1e]/80 gap-2">
+          <button
+            onClick={() => setActiveTab('estudio')}
+            className={`py-3 px-6 text-sm font-bebas tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'estudio'
+                ? 'border-[#16a34a] text-[#4ade80]'
+                : 'border-transparent text-[#555] hover:text-[#888]'
+            }`}
+          >
+            <Mic2 size={14} />
+            Agenda de Estúdio
+          </button>
+          <button
+            onClick={() => setActiveTab('show')}
+            className={`py-3 px-6 text-sm font-bebas tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'show'
+                ? 'border-[#16a34a] text-[#4ade80]'
+                : 'border-transparent text-[#555] hover:text-[#888]'
+            }`}
+          >
+            <Music size={14} />
+            Agenda de Shows
+          </button>
         </div>
 
         {/* ─── Filters & Navigation Bar ─── */}
@@ -396,82 +367,119 @@ export default function SchedulePage() {
           })}
         </div>}
 
-        {/* ─── Visualização Mensal ─── */}
+        {/* ─── Visualização Mensal: Cards idênticos aos semanais em escala reduzida ─── */}
         {viewMode === 'month' && (
-          <div className="rounded-xl border border-[#1e1e1e] overflow-hidden">
-            {/* Cabeçalho dos dias da semana */}
-            <div className="grid grid-cols-7 border-b border-[#1e1e1e]">
-              {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => (
-                <div key={d} className="py-2 text-center text-[10px] font-bold uppercase tracking-widest text-[#555] bg-[#0a0a0a]">
-                  {d}
-                </div>
-              ))}
-            </div>
-            {/* Grade de dias */}
-            <div className="grid grid-cols-7 bg-[#080808]">
-              {monthGridDays.map(day => {
-                const isToday = isSameDay(day, new Date())
-                const isCurrentMonth = isSameMonth(day, currentDate)
-                const dateStr = format(day, 'yyyy-MM-dd')
-                const daySessions = filteredSessions
-                  .filter(s => s.date === dateStr)
-                  .sort((a, b) => a.startTime.localeCompare(b.startTime))
+          <div className="grid grid-cols-7 gap-1.5 sm:gap-2 md:gap-2.5">
+            {monthGridDays.map(day => {
+              const isToday = isSameDay(day, new Date())
+              const isCurrentMonth = isSameMonth(day, currentDate)
+              const dateStr = format(day, 'yyyy-MM-dd')
+              const daySessions = filteredSessions
+                .filter(s => s.date === dateStr)
+                .sort((a, b) => a.startTime.localeCompare(b.startTime))
 
-                // Cores dos dots por tipo de serviço
-                const dotColors: Record<string, string> = {
-                  gravacao: 'bg-[#E74C3C]',
-                  mix:      'bg-[#4ade80]',
-                  master:   'bg-purple-400',
-                  recall:   'bg-sky-400',
-                  producao: 'bg-emerald-400',
-                  outro:    'bg-[#555]',
-                }
-
-                return (
+              return (
+                <div
+                  key={dateStr}
+                  className={`flex flex-col rounded-xl border bg-[#0a0a0a] min-h-[135px] sm:min-h-[150px] md:min-h-[165px] transition-all ${
+                    isToday
+                      ? 'border-[#16a34a]/40 shadow-sm shadow-[#16a34a]/10'
+                      : isCurrentMonth
+                      ? 'border-[#1e1e1e]'
+                      : 'border-[#141414] opacity-30'
+                  }`}
+                >
+                  {/* Day Header (mesmo estilo do card semanal) */}
                   <div
-                    key={dateStr}
                     onClick={user ? () => handleNewSession(dateStr) : undefined}
-                    className={`min-h-[80px] md:min-h-[100px] p-1.5 border-b border-r border-[#111] flex flex-col transition-colors ${
-                      user ? 'cursor-pointer hover:bg-[#0f0f0f]' : ''
-                    } ${isToday ? 'bg-[#16a34a]/5' : ''} ${!isCurrentMonth ? 'opacity-30' : ''}`}
-                  >
-                    {/* Número do dia */}
-                    <span className={`text-xs font-bebas tracking-wide self-start leading-none px-1 py-0.5 rounded ${
+                    className={`p-1.5 sm:p-2 border-b text-center rounded-t-xl flex-shrink-0 ${
+                      user ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''
+                    } ${
                       isToday
-                        ? 'bg-[#16a34a] text-white'
-                        : isCurrentMonth ? 'text-[#F0F0F0]' : 'text-[#444]'
-                    }`}>
+                        ? 'bg-[#16a34a]/10 border-[#16a34a]/20'
+                        : isCurrentMonth
+                        ? 'bg-[#0f0f0f] border-[#1e1e1e]'
+                        : 'bg-[#080808] border-[#141414]'
+                    }`}
+                  >
+                    <span
+                      className={`text-[8px] sm:text-[9px] uppercase font-bold tracking-widest block ${
+                        isToday ? 'text-[#4ade80]' : isCurrentMonth ? 'text-[#555]' : 'text-[#333]'
+                      }`}
+                    >
+                      {format(day, 'EEE', { locale: ptBR })}
+                    </span>
+                    <span
+                      className={`text-sm sm:text-base md:text-lg font-bebas tracking-wide block mt-0.5 ${
+                        isToday ? 'text-[#4ade80]' : isCurrentMonth ? 'text-[#F0F0F0]' : 'text-[#444]'
+                      }`}
+                    >
                       {format(day, 'd')}
                     </span>
-
-                    {/* Sessões do dia — até 3 visíveis, depois "+N" */}
-                    <div className="mt-1 flex flex-col gap-0.5 flex-1 min-h-0">
-                      {daySessions.slice(0, 3).map(session => {
-                        const editable = canEditSession(session, user)
-                        return (
-                          <div
-                            key={session.id}
-                            onClick={editable ? e => { e.stopPropagation(); handleEditSession(session) } : undefined}
-                            className={`text-[9px] md:text-[10px] font-semibold truncate rounded px-1 py-0.5 flex items-center gap-1 ${
-                              editable ? 'cursor-pointer hover:brightness-125' : ''
-                            } ${dotColors[session.serviceType] ? `bg-${dotColors[session.serviceType].replace('bg-', '')}/10` : ''}`}
-                            style={{ color: 'inherit' }}
-                          >
-                            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColors[session.serviceType] || 'bg-[#555]'}`} />
-                            <span className="truncate text-[#ccc]">{session.startTime} {session.title}</span>
-                          </div>
-                        )
-                      })}
-                      {daySessions.length > 3 && (
-                        <span className="text-[9px] text-[#555] font-semibold pl-1">
-                          +{daySessions.length - 3} mais
-                        </span>
-                      )}
-                    </div>
                   </div>
-                )
-              })}
-            </div>
+
+                  {/* Sessions List (mini cards idênticos aos semanais) */}
+                  <div
+                    onClick={user ? () => handleNewSession(dateStr) : undefined}
+                    className={`flex-1 p-1 sm:p-1.5 space-y-1.5 overflow-y-auto max-h-[110px] sm:max-h-[130px] group ${
+                      user ? 'cursor-pointer' : ''
+                    }`}
+                  >
+                    {daySessions.map(session => {
+                      const clrClass = serviceColors[session.serviceType] || serviceColors.outro
+                      const editable = canEditSession(session, user)
+
+                      return (
+                        <div
+                          key={session.id}
+                          onClick={editable ? e => { e.stopPropagation(); handleEditSession(session) } : undefined}
+                          className={`p-1.5 rounded-lg border bg-[#111] flex flex-col gap-1 relative group/item ${clrClass} ${
+                            editable ? 'cursor-pointer hover:brightness-110 transition-all' : ''
+                          }`}
+                        >
+                          <div className="flex justify-between items-center">
+                            <span className="text-[7.5px] font-semibold uppercase tracking-wide opacity-80 truncate max-w-[75%]">
+                              {serviceLabels[session.serviceType]}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <span className={`w-1.5 h-1.5 rounded-full ${statusDots[session.status]}`} />
+                              {editable && (
+                                <button
+                                  onClick={e => handleDeleteSession(e, session.id, session.title)}
+                                  className="opacity-0 group-hover/item:opacity-100 text-[#444] hover:text-[#E74C3C] transition-all cursor-pointer"
+                                >
+                                  <Trash2 size={8} />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          <h4 className="text-[10px] sm:text-[11px] font-semibold text-[#F0F0F0] truncate leading-tight">
+                            {session.title}
+                          </h4>
+                          <div className="flex items-center justify-between text-[8px] text-[#555] mt-0.5">
+                            <span className="flex items-center gap-0.5">
+                              <Clock size={7} />
+                              {session.startTime}
+                            </span>
+                            {session.value !== undefined && (
+                              <span className="text-gold font-semibold text-[8px]">
+                                {fmt(session.value)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+
+                    {daySessions.length === 0 && user && (
+                      <div className="h-full min-h-[30px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-[#333] text-lg font-light">+</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
           </div>
         )}
 
