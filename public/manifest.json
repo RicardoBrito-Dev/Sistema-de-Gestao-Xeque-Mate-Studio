@@ -1,0 +1,32 @@
+{
+  "name": "Xeque Mate Studio",
+  "short_name": "Xeque Mate",
+  "description": "Sistema de gestão do Xeque Mate Studio — agendamentos, artistas, finanças e kanban.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#060606",
+  "theme_color": "#16a34a",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "pt-BR",
+  "categories": ["music", "productivity", "business"],
+  "icons": [
+    {
+      "src": "/icon-192.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    { "name": "Agenda", "url": "/schedule", "description": "Ver agendamentos do estudio" },
+    { "name": "Financas", "url": "/finances", "description": "Ver receitas e despesas" },
+    { "name": "Kanban", "url": "/kanban", "description": "Ver tarefas do kanban" }
+  ]
+}
