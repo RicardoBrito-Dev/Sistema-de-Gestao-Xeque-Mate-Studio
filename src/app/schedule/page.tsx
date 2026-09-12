@@ -102,12 +102,12 @@ export default function SchedulePage() {
     }).format(val)
 
   const serviceColors: Record<Session['serviceType'], string> = {
-    gravacao: 'border-[#C0392B]/30 text-[#E74C3C]',
-    mix: 'border-[#16a34a]/30 text-[#4ade80]',
-    master: 'border-purple-500/30 text-purple-400',
-    recall: 'border-sky-500/30 text-sky-400',
-    producao: 'border-emerald-500/30 text-emerald-400',
-    outro: 'border-[#222] text-[#888]',
+    gravacao: 'border-rose-900/40 text-rose-300',
+    mix: 'border-emerald-900/40 text-emerald-300',
+    master: 'border-purple-900/40 text-purple-300',
+    recall: 'border-sky-900/40 text-sky-300',
+    producao: 'border-teal-900/40 text-teal-300',
+    outro: 'border-[#27272a] text-[#a1a1aa]',
   }
 
   const serviceLabels: Record<Session['serviceType'], string> = {
@@ -120,10 +120,10 @@ export default function SchedulePage() {
   }
 
   const statusDots: Record<Session['status'], string> = {
-    confirmado: 'bg-emerald-400 shadow-[0_0_6px_#10b981]',
-    pendente: 'bg-amber-400 shadow-[0_0_6px_#f59e0b]',
+    confirmado: 'bg-emerald-500',
+    pendente: 'bg-amber-500',
     cancelado: 'bg-rose-500',
-    concluido: 'bg-[#555]',
+    concluido: 'bg-zinc-600',
   }
 
   // Apply tab filters and artist filter (for admins)

@@ -69,28 +69,20 @@ export default function Sidebar() {
       >
         {/* ── Logo ── */}
         <div className={`
-          flex items-center gap-3 border-b border-[#18181b]
+          flex items-center gap-3 border-b border-[#1f1f23]
           ${collapsed ? 'justify-center px-0 py-5' : 'px-5 py-5'}
         `}>
           <div className="relative flex-shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-[#16a34a]/10 border border-[#16a34a]/30 flex items-center justify-center animate-pulse-gold">
-              <Crown size={20} className="text-[#16a34a]" />
+            <div className="w-9 h-9 rounded-lg bg-[#141417] border border-[#27272a] flex items-center justify-center">
+              <Crown size={18} className="text-[#22c55e]" />
             </div>
           </div>
           {!collapsed && (
             <div>
-              <span
-                className="font-bebas text-xl tracking-widest leading-none block"
-                style={{
-                  background: 'linear-gradient(135deg, #16a34a, #22c55e)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}
-              >
+              <span className="font-bebas text-xl tracking-wider text-white leading-none block">
                 Xeque Mate
               </span>
-              <span className="text-[9px] text-[#444] tracking-[0.25em] uppercase mt-0.5 block">Studio</span>
+              <span className="text-[9px] text-[#71717a] tracking-[0.25em] uppercase mt-0.5 block font-medium">Studio</span>
             </div>
           )}
         </div>
@@ -283,18 +275,10 @@ export default function Sidebar() {
         style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 4px 30px rgba(0,0,0,0.6)' }}
       >
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-[#16a34a]/10 border border-[#16a34a]/30 flex items-center justify-center">
-            <Crown size={14} className="text-[#16a34a]" />
+          <div className="w-7 h-7 rounded-md bg-[#141417] border border-[#27272a] flex items-center justify-center">
+            <Crown size={14} className="text-[#22c55e]" />
           </div>
-          <span
-            className="font-bebas text-lg tracking-widest leading-none block"
-            style={{
-              background: 'linear-gradient(135deg, #16a34a, #22c55e)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}
-          >
+          <span className="font-bebas text-lg tracking-wider text-white leading-none block">
             Xeque Mate
           </span>
         </div>
@@ -302,21 +286,21 @@ export default function Sidebar() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsInstallPwaOpen(true)}
-            className="flex items-center gap-1.5 text-[11px] font-bold text-white bg-gradient-to-r from-[#16a34a] to-[#15803d] px-2.5 py-1.5 rounded-lg transition-all cursor-pointer shadow-md shadow-[#16a34a]/25 active:scale-95 border border-[#16a34a]/30"
+            className="flex items-center gap-1.5 text-[11px] font-medium text-white bg-[#15803d] hover:bg-[#166534] px-2.5 py-1.5 rounded-lg transition-all cursor-pointer border border-white/10 active:scale-95 shadow-sm"
           >
-            <Smartphone size={13} className="text-[#4ade80]" />
+            <Smartphone size={13} className="text-[#86efac]" />
             Instalar
           </button>
           <button
             onClick={() => setIsChangePasswordOpen(true)}
-            className="flex items-center gap-1 text-[11px] font-semibold text-[#4ade80] hover:text-white bg-[#16a34a]/5 border border-[#16a34a]/10 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
+            className="flex items-center gap-1 text-[11px] font-medium text-[#a1a1aa] hover:text-white bg-[#18181b] border border-[#27272a] px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
           >
             <Key size={12} />
             Senha
           </button>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-1 text-[11px] font-semibold text-rose-500 hover:text-rose-400 bg-rose-500/5 border border-rose-500/10 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
+            className="flex items-center gap-1 text-[11px] font-medium text-[#71717a] hover:text-rose-400 bg-[#18181b] border border-[#27272a] px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
           >
             <LogOut size={12} />
             Sair

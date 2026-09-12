@@ -12,19 +12,19 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-gradient-to-r from-[#16a34a] to-[#15803d] text-white shadow-lg shadow-[#16a34a]/20 hover:from-[#22c55e] hover:to-[#16a34a] active:shadow-none border border-white/10",
+          "bg-[#15803d] text-white hover:bg-[#166534] border border-white/10 active:scale-[0.98] shadow-sm",
         destructive:
-          "bg-gradient-to-r from-[#E74C3C] to-[#C0392B] text-white shadow-lg shadow-[#E74C3C]/20 hover:from-[#ec5e50] hover:to-[#E74C3C]",
+          "bg-rose-950/70 text-rose-300 border border-rose-800/30 hover:bg-rose-900/80",
         outline:
-          "border border-[#2a2a2a] bg-transparent text-[#F0F0F0] hover:bg-white/[0.04] hover:border-[#3a3a3a]",
+          "border border-[#26262a] bg-[#111113] text-[#e4e4e7] hover:bg-[#18181b] hover:border-[#38383e]",
         secondary:
-          "bg-[#151518] text-[#D1D1D6] border border-[#26262a] hover:bg-[#1f1f23] hover:text-white",
+          "bg-[#18181b] text-[#d4d4d8] border border-[#27272a] hover:bg-[#222226] hover:text-white",
         ghost:
-          "text-[#888] hover:text-white hover:bg-white/[0.05]",
+          "text-[#888] hover:text-white hover:bg-white/[0.04]",
         link:
-          "text-[#4ade80] underline-offset-4 hover:underline",
+          "text-[#22c55e] underline-offset-4 hover:underline",
         iconGhost:
-          "text-[#666] hover:text-[#4ade80] hover:bg-[#16a34a]/10 rounded-lg p-2 transition-colors",
+          "text-[#71717a] hover:text-white hover:bg-white/[0.05] rounded-lg p-2 transition-colors",
       },
       size: {
         default: "h-10 px-5 py-2.5",

@@ -23,28 +23,28 @@ export default function StatCard({
 }: StatCardProps) {
   const colorMap = {
     gold: {
-      bg: 'bg-[#16a34a]/10',
-      border: 'border-[#16a34a]/20',
-      text: 'text-[#4ade80]',
-      glow: 'shadow-[0_0_20px_rgba(22,163,74,0.1)]',
+      bg: 'bg-[#15803d]/10',
+      border: 'border-[#15803d]/25',
+      text: 'text-[#22c55e]',
+      glow: '',
     },
     crimson: {
       bg: 'bg-rose-500/10',
       border: 'border-rose-500/20',
       text: 'text-rose-400',
-      glow: 'shadow-[0_0_20px_rgba(244,63,94,0.1)]',
+      glow: '',
     },
     green: {
       bg: 'bg-emerald-500/10',
       border: 'border-emerald-500/20',
       text: 'text-emerald-400',
-      glow: 'shadow-[0_0_20px_rgba(16,185,129,0.1)]',
+      glow: '',
     },
     blue: {
       bg: 'bg-sky-500/10',
       border: 'border-sky-500/20',
       text: 'text-sky-400',
-      glow: 'shadow-[0_0_20px_rgba(14,165,233,0.1)]',
+      glow: '',
     },
   }
 
@@ -52,8 +52,8 @@ export default function StatCard({
 
   return (
     <motion.div
-      whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className={`glass rounded-2xl p-5 border border-[#1e1e22] hover:border-[#2e2e34] transition-all flex flex-col justify-between h-full ${selected.glow} min-w-0 bg-[#0d0d10]/90 backdrop-blur-sm`}
+      whileHover={{ y: -2, transition: { duration: 0.15 } }}
+      className="rounded-xl p-5 border border-[#222226] hover:border-[#2e2e35] transition-all flex flex-col justify-between h-full min-w-0 bg-[#121214]"
     >
       <div className="flex items-center justify-between gap-2 min-w-0">
         <span className="text-xs font-semibold text-studio-muted uppercase tracking-wider truncate" title={title}>
