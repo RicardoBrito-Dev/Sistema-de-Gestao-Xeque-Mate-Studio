@@ -48,7 +48,7 @@ export default function RootLayout({
         {/* Splash screen color no iOS */}
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className="bg-[#0a0a0a] text-[#F0F0F0] min-h-screen flex">
+      <body className="bg-[#09090b] text-[#f4f4f5] min-h-screen flex flex-col">
         <PwaRegister />
         <AuthProvider>
           <SupabaseProvider>
