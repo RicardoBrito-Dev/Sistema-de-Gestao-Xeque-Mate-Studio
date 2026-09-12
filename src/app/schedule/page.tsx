@@ -172,39 +172,69 @@ export default function SchedulePage() {
           )}
         </div>
 
-        {/* ─── Agenda Tabs ─── */}
-        <div className="flex border-b border-[#1e1e1e]/80 gap-2">
-          <button
-            onClick={() => setActiveTab('estudio')}
-            className={`py-3 px-6 text-sm font-bebas tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === 'estudio'
-                ? 'border-[#16a34a] text-[#4ade80]'
-                : 'border-transparent text-[#555] hover:text-[#888]'
-            }`}
-          >
-            <Mic2 size={14} />
-            Agenda de Estúdio
-          </button>
-          <button
-            onClick={() => setActiveTab('show')}
-            className={`py-3 px-6 text-sm font-bebas tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === 'show'
-                ? 'border-[#16a34a] text-[#4ade80]'
-                : 'border-transparent text-[#555] hover:text-[#888]'
-            }`}
-          >
-            <Music size={14} />
-            Agenda de Shows
-          </button>
+        {/* ─── Agenda Tabs + Mode Selector ─── */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#1e1e1e]/80 gap-3 pb-2 sm:pb-0">
+          {/* Studio vs Shows Tabs */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setActiveTab('estudio')}
+              className={`py-3 px-4 sm:px-6 text-sm font-bebas tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+                activeTab === 'estudio'
+                  ? 'border-[#16a34a] text-[#4ade80]'
+                  : 'border-transparent text-[#555] hover:text-[#888]'
+              }`}
+            >
+              <Mic2 size={15} />
+              Agenda de Estúdio
+            </button>
+            <button
+              onClick={() => setActiveTab('show')}
+              className={`py-3 px-4 sm:px-6 text-sm font-bebas tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+                activeTab === 'show'
+                  ? 'border-[#16a34a] text-[#4ade80]'
+                  : 'border-transparent text-[#555] hover:text-[#888]'
+              }`}
+            >
+              <Music size={15} />
+              Agenda de Shows
+            </button>
+          </div>
+
+          {/* Destaque: Seletor Semana / Mês no topo */}
+          <div className="flex items-center self-start sm:self-auto bg-[#121214] p-1 rounded-xl border border-[#2a2a2a] mb-2 sm:mb-0">
+            <button
+              onClick={() => setViewMode('week')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                viewMode === 'week'
+                  ? 'bg-gradient-to-r from-[#16a34a] to-[#15803d] text-white shadow-md shadow-[#16a34a]/30'
+                  : 'text-[#888] hover:text-white'
+              }`}
+            >
+              <Columns size={14} />
+              <span>Semana</span>
+            </button>
+            <button
+              onClick={() => setViewMode('month')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                viewMode === 'month'
+                  ? 'bg-gradient-to-r from-[#16a34a] to-[#15803d] text-white shadow-md shadow-[#16a34a]/30'
+                  : 'text-[#888] hover:text-white'
+              }`}
+            >
+              <LayoutGrid size={14} />
+              <span>Mês</span>
+            </button>
+          </div>
         </div>
 
         {/* ─── Filters & Navigation Bar ─── */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-[#0d0d0d] border border-[#1e1e1e] rounded-xl px-4 py-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0d0d0d] border border-[#1e1e1e] rounded-xl px-4 py-3">
           {/* Navigation Controls */}
           <div className="flex items-center gap-2">
             <button
               onClick={goBack}
               className="p-2 rounded-lg bg-[#111] hover:bg-[#1a1a1a] border border-[#1e1e1e] text-[#888] hover:text-[#F0F0F0] transition-all cursor-pointer"
+              title={viewMode === 'week' ? 'Semana anterior' : 'Mês anterior'}
             >
               <ChevronLeft size={15} />
             </button>
@@ -217,13 +247,14 @@ export default function SchedulePage() {
             <button
               onClick={goForward}
               className="p-2 rounded-lg bg-[#111] hover:bg-[#1a1a1a] border border-[#1e1e1e] text-[#888] hover:text-[#F0F0F0] transition-all cursor-pointer"
+              title={viewMode === 'week' ? 'Próxima semana' : 'Próximo mês'}
             >
               <ChevronRight size={15} />
             </button>
           </div>
 
           {/* Current Date Label */}
-          <span className="font-bebas text-base tracking-wider text-[#F0F0F0]">
+          <span className="font-bebas text-lg tracking-wider text-[#F0F0F0] capitalize text-center">
             {viewMode === 'week'
               ? `${format(weekStart, "dd 'de' MMMM", { locale: ptBR })} — ${format(weekEnd, "dd 'de' MMMM, yyyy", { locale: ptBR })}`
               : format(currentDate, "MMMM 'de' yyyy", { locale: ptBR })
@@ -239,7 +270,7 @@ export default function SchedulePage() {
                 <select
                   value={selectedArtistId}
                   onChange={e => setSelectedArtistId(e.target.value)}
-                  className="input-dark py-1.5 px-3 text-xs w-40"
+                  className="input-dark py-1.5 px-3 text-xs w-36 sm:w-40"
                 >
                   <option value="todos">Todos</option>
                   {artistsList.map(art => (
@@ -249,31 +280,29 @@ export default function SchedulePage() {
               </div>
             )}
 
-            {/* View Mode Toggle */}
-            <div className="flex rounded-lg border border-[#1e1e1e] overflow-hidden">
+            {/* View Mode Toggle - redundância na barra de navegação com texto 100% visível */}
+            <div className="flex rounded-lg border border-[#26262a] overflow-hidden bg-[#111]">
               <button
                 onClick={() => setViewMode('week')}
-                title="Visualização Semanal"
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
                   viewMode === 'week'
-                    ? 'bg-[#16a34a]/15 text-[#4ade80] border-r border-[#16a34a]/20'
-                    : 'bg-[#111] text-[#555] hover:text-[#888] border-r border-[#1e1e1e]'
+                    ? 'bg-[#16a34a] text-white'
+                    : 'text-[#666] hover:text-[#bbb]'
                 }`}
               >
                 <Columns size={13} />
-                <span className="hidden sm:inline">Semana</span>
+                <span>Semana</span>
               </button>
               <button
                 onClick={() => setViewMode('month')}
-                title="Visualização Mensal"
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
                   viewMode === 'month'
-                    ? 'bg-[#16a34a]/15 text-[#4ade80]'
-                    : 'bg-[#111] text-[#555] hover:text-[#888]'
+                    ? 'bg-[#16a34a] text-white'
+                    : 'text-[#666] hover:text-[#bbb]'
                 }`}
               >
                 <LayoutGrid size={13} />
-                <span className="hidden sm:inline">Mês</span>
+                <span>Mês</span>
               </button>
             </div>
           </div>

@@ -17,12 +17,14 @@ import {
   Eye,
   Key,
   Camera,
+  Smartphone,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { getNavItemsForUser } from '@/lib/permissions'
 import ChangePasswordModal from '@/components/auth/ChangePasswordModal'
 import AvatarModal from '@/components/auth/AvatarModal'
+import InstallPwaModal from '@/components/pwa/InstallPwaModal'
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip'
 
 const iconMap = {
@@ -40,6 +42,7 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false)
   const [isAvatarOpen, setIsAvatarOpen] = useState(false)
+  const [isInstallPwaOpen, setIsInstallPwaOpen] = useState(false)
   const { user, logout, canEdit } = useAuth()
 
   const handleLogout = () => {
@@ -206,6 +209,22 @@ export default function Sidebar() {
         {/* ── Logout & Security ── */}
         <div className={`border-t border-[#1e1e1e] p-3 ${collapsed ? '' : 'px-4'}`}>
           <button
+            onClick={() => setIsInstallPwaOpen(true)}
+            className={`
+              w-full flex items-center gap-3 py-2.5 px-3 rounded-lg mb-1
+              text-[#4ade80] bg-[#16a34a]/10 hover:bg-[#16a34a]/20 border border-[#16a34a]/20
+              transition-all duration-200 group cursor-pointer
+              ${collapsed ? 'justify-center' : ''}
+            `}
+            title="Instalar App no Celular ou PC"
+          >
+            <Smartphone size={15} className="flex-shrink-0 text-[#22c55e]" />
+            {!collapsed && (
+              <span className="text-[11px] font-semibold text-[#4ade80]">Instalar App</span>
+            )}
+          </button>
+
+          <button
             onClick={() => setIsChangePasswordOpen(true)}
             className={`
               w-full flex items-center gap-3 py-2.5 px-3 rounded-lg mb-1
@@ -282,6 +301,13 @@ export default function Sidebar() {
 
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setIsInstallPwaOpen(true)}
+            className="flex items-center gap-1.5 text-[11px] font-bold text-white bg-gradient-to-r from-[#16a34a] to-[#15803d] px-2.5 py-1.5 rounded-lg transition-all cursor-pointer shadow-md shadow-[#16a34a]/25 active:scale-95 border border-[#16a34a]/30"
+          >
+            <Smartphone size={13} className="text-[#4ade80]" />
+            Instalar
+          </button>
+          <button
             onClick={() => setIsChangePasswordOpen(true)}
             className="flex items-center gap-1 text-[11px] font-semibold text-[#4ade80] hover:text-white bg-[#16a34a]/5 border border-[#16a34a]/10 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
           >
@@ -348,6 +374,12 @@ export default function Sidebar() {
       <AvatarModal
         isOpen={isAvatarOpen}
         onClose={() => setIsAvatarOpen(false)}
+      />
+
+      {/* Global PWA Install Modal */}
+      <InstallPwaModal
+        isOpen={isInstallPwaOpen}
+        onClose={() => setIsInstallPwaOpen(false)}
       />
     </TooltipProvider>
   )
