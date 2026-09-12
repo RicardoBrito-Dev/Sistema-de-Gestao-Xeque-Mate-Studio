@@ -5,8 +5,30 @@ import { getClientsAsync, deleteClient } from '@/lib/storage'
 import { Client } from '@/lib/types'
 import ClientModal from '@/components/clients/ClientModal'
 import Badge from '@/components/ui/Badge'
+import { Button } from '@/components/ui/button'
+import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { Users, Plus, Search, Instagram, Edit2, Trash2, Phone, Mail, AlertCircle } from 'lucide-react'
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 14, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.25, ease: 'easeOut' as const },
+  },
+}
 
 export default function ClientsPage() {
   const { canEdit } = useAuth()
@@ -22,7 +44,10 @@ export default function ClientsPage() {
   useEffect(() => { loadData() }, [])
 
   const handleDelete = (id: string, name: string) => {
-    if (confirm(`Remover cliente "${name}"?`)) { deleteClient(id); loadData() }
+    if (confirm(`Remover cliente "${name}"?`)) {
+      setClients(prev => prev.filter(c => c.id !== id))
+      deleteClient(id)
+    }
   }
   const handleEdit = (client: Client) => { setSelectedClient(client); setIsModalOpen(true) }
   const handleNew = () => { setSelectedClient(null); setIsModalOpen(true) }
@@ -49,9 +74,9 @@ export default function ClientsPage() {
             <p className="text-sm text-[#888] mt-1.5">Controle de clientes, sessões e pagamentos</p>
           </div>
           {canEdit && (
-            <button onClick={handleNew} className="btn-primary">
+            <Button onClick={handleNew} variant="default" size="default">
               <Plus size={16} />Novo Cliente
-            </button>
+            </Button>
           )}
         </div>
 
@@ -95,10 +120,19 @@ export default function ClientsPage() {
             <p className="text-sm text-[#555] font-medium">Nenhum cliente encontrado</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5"
+          >
             {filtered.map(client => (
-              <div key={client.id} className="bg-[#111] border border-[#1e1e1e] rounded-2xl p-5 flex flex-col gap-4 hover:border-[#2a2a2a] transition-all">
-
+              <motion.div
+                key={client.id}
+                variants={itemVariants}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className="bg-[#111] border border-[#1e1e1e] rounded-2xl p-5 flex flex-col gap-4 hover:border-[#2a2a2a] transition-all shadow-md hover:shadow-xl hover:shadow-black/50"
+              >
                 {/* Top */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
@@ -174,9 +208,9 @@ export default function ClientsPage() {
                     </span>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
 

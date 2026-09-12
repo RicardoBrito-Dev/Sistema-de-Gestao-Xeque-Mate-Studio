@@ -32,9 +32,12 @@ export function canAccessRoute(pathname: string, user: AuthSession | null): bool
 }
 
 export function getArtistName(user: AuthSession | null): string | null {
-  if (!user?.artistId) return null
-  const artist = getArtists().find(a => a.id === user.artistId)
-  return artist?.artisticName ?? null
+  if (!user) return null
+  if (user.artistId) {
+    const artist = getArtists().find(a => a.id === user.artistId)
+    if (artist?.artisticName) return artist.artisticName
+  }
+  return user.name || null
 }
 
 export function filterArtistsForUser(artists: Artist[], user: AuthSession | null): Artist[] {
@@ -46,8 +49,12 @@ export function filterArtistsForUser(artists: Artist[], user: AuthSession | null
 export function filterKanbanForUser(cards: KanbanCard[], user: AuthSession | null): KanbanCard[] {
   if (!user || user.role === 'admin') return cards
   const artistName = getArtistName(user)
-  if (!artistName) return []
-  return cards.filter(c => c.artistName === artistName)
+  return cards.filter(c => {
+    if (user.artistId && c.clientId === user.artistId) return true
+    if (artistName && c.artistName?.trim().toLowerCase() === artistName.trim().toLowerCase()) return true
+    if (user.name && c.artistName?.trim().toLowerCase() === user.name.trim().toLowerCase()) return true
+    return false
+  })
 }
 
 export function filterSessionsForUser(sessions: Session[], user: AuthSession | null): Session[] {

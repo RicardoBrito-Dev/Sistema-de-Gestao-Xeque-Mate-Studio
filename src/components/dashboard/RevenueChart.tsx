@@ -66,7 +66,7 @@ export default function RevenueChart() {
                 color: '#fff',
               }}
               formatter={(value: any) => [formatCurrency(Number(value) || 0), '']}
-              labelStyle={{ color: '#8B5CF6', fontWeight: 'bold' }}
+              labelStyle={{ color: '#16a34a', fontWeight: 'bold' }}
             />
             <Legend
               verticalAlign="top"
@@ -78,7 +78,7 @@ export default function RevenueChart() {
             <Bar
               name="Receitas"
               dataKey="receita"
-              fill="#8B5CF6"
+              fill="#16a34a"
               radius={[4, 4, 0, 0]}
               maxBarSize={40}
             />

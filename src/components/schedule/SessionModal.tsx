@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Modal from '@/components/ui/Modal'
 import { Session, ServiceType, SessionStatus } from '@/lib/types'
-import { saveSession, generateId, getClients, getArtists, getSessions } from '@/lib/storage'
+import { saveSession, generateId, getClientsAsync, getArtistsAsync, getSessionsAsync } from '@/lib/storage'
 import { AlertCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -38,13 +38,18 @@ export default function SessionModal({
   const [sessionType, setSessionType] = useState<'estudio' | 'show'>('estudio')
   const [address, setAddress] = useState('')
 
-  const [availableClients, setAvailableClients] = useState<{ id: string; name: string }[]>([])
+  const [availableClients, setAvailableClients] = useState<{ id: string; name: string; displayName: string }[]>([])
 
   useEffect(() => {
-    // Collect clients and artists for dropdown
-    const clients = getClients().map(c => ({ id: c.id, name: c.name }))
-    const artists = getArtists().map(a => ({ id: a.id, name: `${a.artisticName} (Casa)` }))
-    setAvailableClients([...clients, ...artists])
+    let isMounted = true
+    // Collect clients and artists asynchronously for dropdown
+    Promise.all([getClientsAsync(), getArtistsAsync()]).then(([clients, artists]) => {
+      if (!isMounted) return
+      const mappedClients = clients.map(c => ({ id: c.id, name: c.name, displayName: c.name }))
+      const mappedArtists = artists.map(a => ({ id: a.id, name: a.artisticName, displayName: `${a.artisticName} (Casa)` }))
+      setAvailableClients([...mappedClients, ...mappedArtists])
+    })
+
     setErrorMsg('') // Clear error message when modal state changes
 
     if (session) {
@@ -80,6 +85,10 @@ export default function SessionModal({
       setSessionType('estudio')
       setAddress('')
     }
+
+    return () => {
+      isMounted = false
+    }
   }, [session, isOpen, defaultDate, user])
 
   const handleSelectClient = (id: string) => {
@@ -94,7 +103,7 @@ export default function SessionModal({
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!title || !clientName || !date || !startTime || !endTime) {
       setErrorMsg('Preencha os campos obrigatórios (*).')
@@ -116,19 +125,23 @@ export default function SessionModal({
       return
     }
 
-    // Get all sessions from storage to check for overlap
-    const allSessions = getSessions()
+    // Get all sessions to check for overlap
+    const allSessions = await getSessionsAsync()
     
-    // Find overlapping session on the same date (excluding the current one and cancelled ones)
+    // Find overlapping studio session on the same date (excluding the current one and cancelled ones)
+    // Note: Studio sessions overlap check applies to studio bookings
     const overlappingSession = allSessions.find(s => {
       if (session && s.id === session.id) return false
       if (s.status === 'cancelado') return false
       if (s.date !== date) return false
-      return startTime < s.endTime && endTime > s.startTime
+      if (sessionType === 'estudio' && (s.sessionType || 'estudio') === 'estudio') {
+        return startTime < s.endTime && endTime > s.startTime
+      }
+      return false
     })
 
     if (overlappingSession) {
-      setErrorMsg(`Horário indisponível. Já existe outro agendamento neste período:\n"${overlappingSession.title}" (${overlappingSession.startTime} - ${overlappingSession.endTime})`)
+      setErrorMsg(`Horário indisponível no estúdio. Já existe outro agendamento neste período:\n"${overlappingSession.title}" (${overlappingSession.startTime} - ${overlappingSession.endTime})`)
       return
     }
 
@@ -182,7 +195,7 @@ export default function SessionModal({
               onClick={() => setSessionType('estudio')}
               className={`py-2.5 px-4 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                 sessionType === 'estudio'
-                  ? 'bg-[#8B5CF6]/10 border-[#8B5CF6] text-[#A78BFA] shadow-[0_0_10px_rgba(139,92,246,0.1)]'
+                  ? 'bg-[#16a34a]/10 border-[#16a34a] text-[#4ade80] shadow-[0_0_10px_rgba(22,163,74,0.1)]'
                   : 'bg-transparent border-[#1e1e1e] text-[#555] hover:text-[#888]'
               }`}
             >
@@ -193,7 +206,7 @@ export default function SessionModal({
               onClick={() => setSessionType('show')}
               className={`py-2.5 px-4 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                 sessionType === 'show'
-                  ? 'bg-[#8B5CF6]/10 border-[#8B5CF6] text-[#A78BFA] shadow-[0_0_10px_rgba(139,92,246,0.1)]'
+                  ? 'bg-[#16a34a]/10 border-[#16a34a] text-[#4ade80] shadow-[0_0_10px_rgba(22,163,74,0.1)]'
                   : 'bg-transparent border-[#1e1e1e] text-[#555] hover:text-[#888]'
               }`}
             >
@@ -229,7 +242,7 @@ export default function SessionModal({
               >
                 <option value="">-- Selecione ou digite abaixo --</option>
                 {availableClients.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                  <option key={c.id} value={c.id}>{c.displayName}</option>
                 ))}
               </select>
               <input

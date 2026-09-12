@@ -6,6 +6,7 @@ import { useSessionsRealtime } from '@/hooks/useSessionsRealtime'
 import { Session, Artist } from '@/lib/types'
 import SessionModal from '@/components/schedule/SessionModal'
 import Badge from '@/components/ui/Badge'
+import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/AuthContext'
 import { filterSessionsForUser, canEditSession } from '@/lib/permissions'
 import {
@@ -65,8 +66,8 @@ export default function SchedulePage() {
   const handleDeleteSession = (e: React.MouseEvent, id: string, title: string) => {
     e.stopPropagation()
     if (confirm(`Remover "${title}"?`)) {
+      setSessions(prev => prev.filter(s => s.id !== id))
       deleteSession(id)
-      loadData()
     }
   }
 
@@ -79,7 +80,7 @@ export default function SchedulePage() {
 
   const serviceColors: Record<Session['serviceType'], string> = {
     gravacao: 'border-[#C0392B]/30 text-[#E74C3C]',
-    mix: 'border-[#8B5CF6]/30 text-[#A78BFA]',
+    mix: 'border-[#16a34a]/30 text-[#4ade80]',
     master: 'border-purple-500/30 text-purple-400',
     recall: 'border-sky-500/30 text-sky-400',
     producao: 'border-emerald-500/30 text-emerald-400',
@@ -142,9 +143,9 @@ export default function SchedulePage() {
             </p>
           </div>
           {user && (
-            <button onClick={() => handleNewSession()} className="btn-primary cursor-pointer">
+            <Button onClick={() => handleNewSession()} variant="default" size="default">
               <Plus size={16} />Agendar {activeTab === 'estudio' ? 'Sessão' : 'Show'}
-            </button>
+            </Button>
           )}
         </div>
 
@@ -154,7 +155,7 @@ export default function SchedulePage() {
             onClick={() => setActiveTab('estudio')}
             className={`py-3 px-6 text-sm font-bebas tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'estudio'
-                ? 'border-[#8B5CF6] text-[#A78BFA]'
+                ? 'border-[#16a34a] text-[#4ade80]'
                 : 'border-transparent text-[#555] hover:text-[#888]'
             }`}
           >
@@ -165,7 +166,7 @@ export default function SchedulePage() {
             onClick={() => setActiveTab('show')}
             className={`py-3 px-6 text-sm font-bebas tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'show'
-                ? 'border-[#8B5CF6] text-[#A78BFA]'
+                ? 'border-[#16a34a] text-[#4ade80]'
                 : 'border-transparent text-[#555] hover:text-[#888]'
             }`}
           >
@@ -236,7 +237,7 @@ export default function SchedulePage() {
               <div
                 key={day.toString()}
                 className={`flex flex-col rounded-xl border bg-[#0a0a0a] min-h-[280px] ${
-                  isToday ? 'border-[#8B5CF6]/30' : 'border-[#1e1e1e]'
+                  isToday ? 'border-[#16a34a]/30' : 'border-[#1e1e1e]'
                 }`}
               >
                 {/* Day Header */}
@@ -244,12 +245,12 @@ export default function SchedulePage() {
                   onClick={user ? () => handleNewSession(format(day, 'yyyy-MM-dd')) : undefined}
                   className={`p-3 border-b text-center rounded-t-xl flex-shrink-0 ${
                     user ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''
-                  } ${isToday ? 'bg-[#8B5CF6]/10 border-[#8B5CF6]/20' : 'bg-[#0f0f0f] border-[#1e1e1e]'}`}
+                  } ${isToday ? 'bg-[#16a34a]/10 border-[#16a34a]/20' : 'bg-[#0f0f0f] border-[#1e1e1e]'}`}
                 >
-                  <span className={`text-[9px] uppercase font-bold tracking-widest block ${isToday ? 'text-[#A78BFA]' : 'text-[#555]'}`}>
+                  <span className={`text-[9px] uppercase font-bold tracking-widest block ${isToday ? 'text-[#4ade80]' : 'text-[#555]'}`}>
                     {format(day, 'EEE', { locale: ptBR })}
                   </span>
-                  <span className={`text-xl font-bebas tracking-wide block mt-0.5 ${isToday ? 'text-[#A78BFA]' : 'text-[#F0F0F0]'}`}>
+                  <span className={`text-xl font-bebas tracking-wide block mt-0.5 ${isToday ? 'text-[#4ade80]' : 'text-[#F0F0F0]'}`}>
                     {format(day, 'd')}
                   </span>
                 </div>
@@ -290,7 +291,7 @@ export default function SchedulePage() {
                         <h4 className="text-[11px] font-semibold text-[#F0F0F0] truncate">{session.title}</h4>
                         {session.sessionType === 'show' && session.address && (
                           <div className="flex items-center gap-0.5 text-[9px] text-[#555] truncate mt-0.5" title={session.address}>
-                            <MapPin size={8} className="text-[#8B5CF6] shrink-0" />
+                            <MapPin size={8} className="text-[#16a34a] shrink-0" />
                             <span className="truncate">{session.address}</span>
                           </div>
                         )}
@@ -323,19 +324,19 @@ export default function SchedulePage() {
             return (
               <div
                 key={day.toString() + '-m'}
-                className={`rounded-xl border overflow-hidden ${isToday ? 'border-[#8B5CF6]/30' : 'border-[#1e1e1e]'}`}
+                className={`rounded-xl border overflow-hidden ${isToday ? 'border-[#16a34a]/30' : 'border-[#1e1e1e]'}`}
               >
                 <div
                   onClick={user ? () => handleNewSession(format(day, 'yyyy-MM-dd')) : undefined}
                   className={`px-4 py-3 flex justify-between items-center ${user ? 'cursor-pointer' : ''} ${
-                    isToday ? 'bg-[#8B5CF6]/10' : 'bg-[#0d0d0d]'
+                    isToday ? 'bg-[#16a34a]/10' : 'bg-[#0d0d0d]'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <span className={`text-xs font-bold uppercase tracking-wider ${isToday ? 'text-[#A78BFA]' : 'text-[#555]'}`}>
+                    <span className={`text-xs font-bold uppercase tracking-wider ${isToday ? 'text-[#4ade80]' : 'text-[#555]'}`}>
                       {format(day, 'EEE', { locale: ptBR })}
                     </span>
-                    <span className={`text-sm font-semibold ${isToday ? 'text-[#A78BFA]' : 'text-[#F0F0F0]'}`}>
+                    <span className={`text-sm font-semibold ${isToday ? 'text-[#4ade80]' : 'text-[#F0F0F0]'}`}>
                       {format(day, 'dd/MM')}
                     </span>
                   </div>
@@ -367,7 +368,7 @@ export default function SchedulePage() {
                               <p className="text-sm font-semibold text-[#F0F0F0] truncate">{session.title}</p>
                               {session.sessionType === 'show' && session.address && (
                                 <p className="text-[10px] text-[#666] truncate flex items-center gap-1 mt-0.5">
-                                  <MapPin size={9} className="text-[#8B5CF6] shrink-0" />
+                                  <MapPin size={9} className="text-[#16a34a] shrink-0" />
                                   <span>{session.address}</span>
                                 </p>
                               )}
@@ -407,7 +408,7 @@ export default function SchedulePage() {
         {/* ─── Upcoming sessions ─── */}
         <div className="bg-[#0a0a0a] border border-[#1e1e1e] rounded-xl p-5">
           <h3 className="font-bebas text-base text-[#F0F0F0] tracking-wider mb-4 flex items-center gap-2">
-            <CalendarIcon size={15} className="text-[#8B5CF6]" />
+            <CalendarIcon size={15} className="text-[#16a34a]" />
             Próximos Compromissos
           </h3>
           {upcomingSessions.length === 0 ? (
@@ -420,7 +421,7 @@ export default function SchedulePage() {
                   <div
                     key={session.id}
                     onClick={editable ? () => handleEditSession(session) : undefined}
-                    className={`bg-[#0d0d0d] border border-[#1a1a1a] hover:border-[#8B5CF6]/20 rounded-xl p-3 transition-colors ${
+                    className={`bg-[#0d0d0d] border border-[#1a1a1a] hover:border-[#16a34a]/20 rounded-xl p-3 transition-colors ${
                       editable ? 'cursor-pointer' : ''
                     }`}
                   >
@@ -433,7 +434,7 @@ export default function SchedulePage() {
                     <h4 className="text-xs font-semibold text-[#F0F0F0] truncate">{session.title}</h4>
                     {session.sessionType === 'show' && session.address && (
                       <p className="text-[9px] text-[#666] truncate flex items-center gap-1 mt-0.5" title={session.address}>
-                        <MapPin size={9} className="text-[#8B5CF6] shrink-0" />
+                        <MapPin size={9} className="text-[#16a34a] shrink-0" />
                         <span>{session.address}</span>
                       </p>
                     )}

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { registerArtist, updatePasswordByEmail } from '@/lib/auth'
 import { Crown, Mail, Lock, LogIn, LogOut, Eye, EyeOff, Camera, Check, ArrowLeft, Key } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export default function LoginPage() {
   const { login, logout, user } = useAuth()
@@ -180,16 +181,21 @@ export default function LoginPage() {
 
   return (
     <div className="w-full min-h-screen flex items-center justify-center bg-[#060606] px-4 py-8 sm:py-12">
-      <div className="w-full max-w-md animate-slide-up">
+      <motion.div
+        initial={{ opacity: 0, y: 15, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+        className="w-full max-w-md"
+      >
         {/* Logo */}
         <div className="flex flex-col items-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-[#8B5CF6]/10 border border-[#8B5CF6]/30 flex items-center justify-center animate-pulse-gold mb-3">
-            <Crown size={28} className="text-[#8B5CF6]" />
+          <div className="w-14 h-14 rounded-2xl bg-[#16a34a]/10 border border-[#16a34a]/30 flex items-center justify-center animate-pulse-gold mb-3">
+            <Crown size={28} className="text-[#16a34a]" />
           </div>
           <h1
             className="font-bebas text-3xl md:text-4xl tracking-widest leading-none"
             style={{
-              background: 'linear-gradient(135deg, #8B5CF6, #C084FC)',
+              background: 'linear-gradient(135deg, #16a34a, #22c55e)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -209,7 +215,7 @@ export default function LoginPage() {
               <button
                 onClick={() => { setIsRegistering(false); setIsChangingPassword(false); setError(''); }}
                 className={`font-bebas text-xl tracking-wider pb-1 transition-all cursor-pointer ${
-                  !isRegistering && !isChangingPassword ? 'text-[#8B5CF6] border-b border-[#8B5CF6]' : 'text-[#555] hover:text-[#888]'
+                  !isRegistering && !isChangingPassword ? 'text-[#16a34a] border-b border-[#16a34a]' : 'text-[#555] hover:text-[#888]'
                 }`}
               >
                 Login
@@ -217,7 +223,7 @@ export default function LoginPage() {
               <button
                 onClick={() => { setIsRegistering(true); setIsChangingPassword(false); setError(''); }}
                 className={`font-bebas text-xl tracking-wider pb-1 transition-all cursor-pointer ${
-                  isRegistering && !isChangingPassword ? 'text-[#8B5CF6] border-b border-[#8B5CF6]' : 'text-[#555] hover:text-[#888]'
+                  isRegistering && !isChangingPassword ? 'text-[#16a34a] border-b border-[#16a34a]' : 'text-[#555] hover:text-[#888]'
                 }`}
               >
                 {user && user.role === 'admin' ? 'Cadastrar Usuário' : 'Cadastrar Artista'}
@@ -409,7 +415,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => { setIsChangingPassword(true); setIsRegistering(false); setError(''); }}
-                  className="text-xs text-[#8B5CF6] hover:text-[#A78BFA] transition-colors cursor-pointer animate-fade-in"
+                  className="text-xs text-[#16a34a] hover:text-[#4ade80] transition-colors cursor-pointer animate-fade-in"
                 >
                   Alterar minha senha?
                 </button>
@@ -521,7 +527,7 @@ export default function LoginPage() {
                       <img
                         src={avatarUrl}
                         alt="Avatar Preview"
-                        className="w-12 h-12 rounded-full object-cover border border-[#8B5CF6]"
+                        className="w-12 h-12 rounded-full object-cover border border-[#16a34a]"
                       />
                     ) : (
                       <div className="w-12 h-12 rounded-full bg-[#1e1e1e] border border-[#2a2a2a] flex items-center justify-center text-[#555]">
@@ -544,13 +550,13 @@ export default function LoginPage() {
                           type="button"
                           onClick={() => setAvatarUrl(preset.url)}
                           className={`w-9 h-9 rounded-full overflow-hidden border-2 relative transition-all cursor-pointer ${
-                            selected ? 'border-[#8B5CF6] scale-105' : 'border-transparent opacity-60 hover:opacity-100'
+                            selected ? 'border-[#16a34a] scale-105' : 'border-transparent opacity-60 hover:opacity-100'
                           }`}
                           title={preset.name}
                         >
                           <img src={preset.url} alt={preset.name} className="w-full h-full object-cover" />
                           {selected && (
-                            <div className="absolute inset-0 bg-[#8B5CF6]/30 flex items-center justify-center text-white">
+                            <div className="absolute inset-0 bg-[#16a34a]/30 flex items-center justify-center text-white">
                               <Check size={10} strokeWidth={4} />
                             </div>
                           )}
@@ -559,7 +565,7 @@ export default function LoginPage() {
                     })}
                     
                     {/* File upload button */}
-                    <label className="w-9 h-9 rounded-full border border-dashed border-[#3a3a3a] hover:border-[#8B5CF6] flex items-center justify-center cursor-pointer transition-colors text-[#555] hover:text-[#A78BFA]">
+                    <label className="w-9 h-9 rounded-full border border-dashed border-[#3a3a3a] hover:border-[#16a34a] flex items-center justify-center cursor-pointer transition-colors text-[#555] hover:text-[#4ade80]">
                       <Camera size={14} />
                       <input
                         type="file"
@@ -586,12 +592,12 @@ export default function LoginPage() {
 
               <button type="submit" className="btn-primary w-full justify-center mt-2 cursor-pointer" disabled={loading}>
                 <LogIn size={15} />
-                {loading ? 'Cadastrando...' : (user && user.role === 'admin' ? 'Cadastrar Novo Usuário' : 'Cadastrar e Entrar')}
+                {loading ? 'Cadastrando...' : (user && user.role === 'admin' ? 'Cadastrar Novo Usuário' : 'Solicitar Cadastro')}
               </button>
             </form>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }

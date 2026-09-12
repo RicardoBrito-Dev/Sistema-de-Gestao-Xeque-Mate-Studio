@@ -5,11 +5,11 @@
   --font-bebas: 'Bebas Neue', Impact, sans-serif;
   --font-inter: 'Inter', system-ui, sans-serif;
 
-  /* Accent Color: replaced yellow/gold with Electric Purple/Violet */
-  --color-gold: #8B5CF6;
-  --color-gold-light: #A78BFA;
-  --color-gold-dark: #6D28D9;
-  --color-gold-muted: rgba(139, 92, 246, 0.15);
+  /* Accent Color: Dark Studio Green */
+  --color-gold: #16a34a;
+  --color-gold-light: #4ade80;
+  --color-gold-dark: #15803d;
+  --color-gold-muted: rgba(22, 163, 74, 0.15);
 
   --color-crimson: #C0392B;
   --color-crimson-light: #E74C3C;
@@ -37,7 +37,7 @@ html {
 body {
   background-color: #060606;
   background-image: 
-    radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.05) 0%, transparent 45%),
+    radial-gradient(circle at 10% 20%, rgba(22, 163, 74, 0.05) 0%, transparent 45%),
     radial-gradient(circle at 90% 80%, rgba(192, 57, 43, 0.04) 0%, transparent 45%);
   color: #F0F0F0;
   font-family: 'Inter', system-ui, sans-serif;
@@ -59,12 +59,12 @@ body {
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #8B5CF6;
+  background: #16a34a;
 }
 
 /* Selection */
 ::selection {
-  background: rgba(139, 92, 246, 0.3);
+  background: rgba(22, 163, 74, 0.3);
   color: #F0F0F0;
 }
 
@@ -82,8 +82,8 @@ body {
   to { opacity: 1; transform: translateX(0); }
 }
 @keyframes pulseGold {
-  0%, 100% { box-shadow: 0 0 10px rgba(139, 92, 246, 0.2); }
-  50% { box-shadow: 0 0 25px rgba(139, 92, 246, 0.5); }
+  0%, 100% { box-shadow: 0 0 10px rgba(22, 163, 74, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(22, 163, 74, 0.5); }
 }
 @keyframes float {
   0%, 100% { transform: translateY(0); }
@@ -109,14 +109,14 @@ body {
 }
 
 .glass-gold {
-  background: rgba(139, 92, 246, 0.08);
+  background: rgba(22, 163, 74, 0.08);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(22, 163, 74, 0.15);
 }
 
 /* Gradient text */
 .text-gold-gradient {
-  background: linear-gradient(135deg, #8B5CF6 0%, #C084FC 50%, #6D28D9 100%);
+  background: linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #15803d 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -124,7 +124,7 @@ body {
 
 /* Neon glow */
 .glow-gold {
-  text-shadow: 0 0 20px rgba(139, 92, 246, 0.6), 0 0 40px rgba(139, 92, 246, 0.3);
+  text-shadow: 0 0 20px rgba(22, 163, 74, 0.6), 0 0 40px rgba(22, 163, 74, 0.3);
 }
 .glow-crimson {
   text-shadow: 0 0 20px rgba(192, 57, 43, 0.6), 0 0 40px rgba(192, 57, 43, 0.3);
@@ -136,7 +136,7 @@ body {
 }
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.65), 0 0 0 1px rgba(139, 92, 246, 0.15);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.65), 0 0 0 1px rgba(22, 163, 74, 0.15);
 }
 
 /* Skeleton loading */
@@ -160,8 +160,8 @@ body {
   outline: none;
 }
 .input-dark:focus {
-  border-color: #8B5CF6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
   background-color: #121215;
 }
 .input-dark::placeholder {
@@ -207,40 +207,40 @@ input[type="month"].input-dark {
   cursor: grabbing;
 }
 .kanban-drop-target {
-  border-color: rgba(139, 92, 246, 0.4) !important;
-  background: rgba(139, 92, 246, 0.04) !important;
+  border-color: rgba(22, 163, 74, 0.4) !important;
+  background: rgba(22, 163, 74, 0.04) !important;
 }
 
 /* ─── Button Design System ─── */
 
-/* Primary: gradient purple — main CTA */
+/* Primary: gradient green — main CTA */
 .btn-primary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
   color: #ffffff;
   font-size: 14px;
   font-weight: 600;
   font-family: 'Inter', sans-serif;
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  border: 1px solid rgba(22, 163, 74, 0.3);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.2);
   white-space: nowrap;
   flex-shrink: 0;
   user-select: none;
 }
 .btn-primary:hover {
-  background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.35);
+  background: linear-gradient(135deg, #4ade80 0%, #16a34a 100%);
+  box-shadow: 0 6px 20px rgba(22, 163, 74, 0.35);
   transform: translateY(-1px);
 }
 .btn-primary:active {
   transform: scale(0.97);
-  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.2);
 }
 
 /* Secondary: ghost with border */
@@ -286,9 +286,9 @@ input[type="month"].input-dark {
   user-select: none;
 }
 .btn-icon:hover {
-  color: #8B5CF6;
-  background: rgba(139, 92, 246, 0.1);
-  border-color: rgba(139, 92, 246, 0.2);
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.1);
+  border-color: rgba(22, 163, 74, 0.2);
 }
 .btn-icon:active {
   transform: scale(0.9);

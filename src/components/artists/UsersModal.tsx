@@ -127,14 +127,14 @@ export default function UsersModal({ isOpen, onClose }: UsersModalProps) {
             confirm.type === 'delete'
               ? 'bg-rose-950/20 border-rose-500/20'
               : confirm.newRole === 'admin'
-              ? 'bg-[#8B5CF6]/10 border-[#8B5CF6]/20'
+              ? 'bg-[#16a34a]/10 border-[#16a34a]/20'
               : 'bg-[#161618] border-[#2a2a2c]'
           }`}>
             <div className="flex items-start gap-2">
               {confirm.type === 'delete' ? (
                 <Trash2 size={15} className="text-rose-400 shrink-0 mt-0.5" />
               ) : confirm.newRole === 'admin' ? (
-                <ShieldAlert size={15} className="text-[#A78BFA] shrink-0 mt-0.5" />
+                <ShieldAlert size={15} className="text-[#4ade80] shrink-0 mt-0.5" />
               ) : (
                 <User size={15} className="text-[#888] shrink-0 mt-0.5" />
               )}
@@ -142,7 +142,7 @@ export default function UsersModal({ isOpen, onClose }: UsersModalProps) {
                 {confirm.type === 'delete' ? (
                   <>Tem certeza que deseja <span className="text-rose-400 font-semibold">excluir</span> a conta de <span className="text-white font-semibold">"{confirm.userName}"</span>? Esta ação não pode ser desfeita.</>
                 ) : confirm.newRole === 'admin' ? (
-                  <>Tem certeza que deseja tornar <span className="text-white font-semibold">"{confirm.userName}"</span> um <span className="text-[#A78BFA] font-semibold">Administrador</span>? Ele terá acesso total ao estúdio, clientes e financeiro.</>
+                  <>Tem certeza que deseja tornar <span className="text-white font-semibold">"{confirm.userName}"</span> um <span className="text-[#4ade80] font-semibold">Administrador</span>? Ele terá acesso total ao estúdio, clientes e financeiro.</>
                 ) : (
                   <>Tem certeza que deseja rebaixar <span className="text-white font-semibold">"{confirm.userName}"</span> para <span className="text-[#888] font-semibold">Artista</span>? Ele perderá o acesso administrativo.</>
                 )}
@@ -162,7 +162,7 @@ export default function UsersModal({ isOpen, onClose }: UsersModalProps) {
                   confirm.type === 'delete'
                     ? 'bg-rose-500/20 border border-rose-500/30 text-rose-400 hover:bg-rose-500/30'
                     : confirm.newRole === 'admin'
-                    ? 'bg-[#8B5CF6]/20 border border-[#8B5CF6]/30 text-[#A78BFA] hover:bg-[#8B5CF6]/30'
+                    ? 'bg-[#16a34a]/20 border border-[#16a34a]/30 text-[#4ade80] hover:bg-[#16a34a]/30'
                     : 'bg-[#1e1e1e] border border-[#333] text-[#999] hover:bg-[#252525]'
                 }`}
               >
@@ -209,7 +209,7 @@ export default function UsersModal({ isOpen, onClose }: UsersModalProps) {
                         </span>
                       )}
                       {isMaster && (
-                        <span className="text-[9px] bg-[#8B5CF6]/10 border border-[#8B5CF6]/20 text-[#A78BFA] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                        <span className="text-[9px] bg-[#16a34a]/10 border border-[#16a34a]/20 text-[#4ade80] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
                           Master
                         </span>
                       )}
@@ -241,7 +241,7 @@ export default function UsersModal({ isOpen, onClose }: UsersModalProps) {
                           isMaster || isSelf ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:brightness-125'
                         } ${
                           u.role === 'admin'
-                            ? 'bg-[#8B5CF6]/10 border-[#8B5CF6]/30 text-[#A78BFA]'
+                            ? 'bg-[#16a34a]/10 border-[#16a34a]/30 text-[#4ade80]'
                             : 'bg-[#161618] border-[#2a2a2c] text-[#888]'
                         }`}
                       >

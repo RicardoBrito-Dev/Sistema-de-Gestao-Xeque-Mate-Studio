@@ -84,8 +84,8 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#1e1e1e]/60 mb-6">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#8B5CF6]/10 border border-[#8B5CF6]/30 flex items-center justify-center">
-              <Key size={16} className="text-[#8B5CF6]" />
+            <div className="w-8 h-8 rounded-lg bg-[#16a34a]/10 border border-[#16a34a]/30 flex items-center justify-center">
+              <Key size={16} className="text-[#16a34a]" />
             </div>
             <div>
               <h2 className="font-bebas text-lg tracking-wider text-white">Alterar Senha</h2>

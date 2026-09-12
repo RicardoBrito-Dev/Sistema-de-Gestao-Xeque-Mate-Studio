@@ -18,10 +18,12 @@ import {
   Key,
   Camera,
 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { getNavItemsForUser } from '@/lib/permissions'
 import ChangePasswordModal from '@/components/auth/ChangePasswordModal'
 import AvatarModal from '@/components/auth/AvatarModal'
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip'
 
 const iconMap = {
   '/dashboard': LayoutDashboard,
@@ -51,17 +53,15 @@ export default function Sidebar() {
   }))
 
   return (
-    <>
+    <TooltipProvider delayDuration={150}>
       {/* ════════════════════════════════════════════════
           DESKTOP SIDEBAR  (hidden on mobile)
       ════════════════════════════════════════════════ */}
-      <aside
-        className={`
-          max-md:!hidden md:flex flex-col flex-shrink-0 sticky top-0 left-0 h-screen
-          bg-gradient-to-b from-[#0a0a0c] via-[#050505] to-[#010101] border-r border-[#1e1e1e] z-40
-          transition-all duration-300 ease-in-out
-          ${collapsed ? 'w-[72px]' : 'w-60'}
-        `}
+      <motion.aside
+        initial={false}
+        animate={{ width: collapsed ? 72 : 240 }}
+        transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+        className="max-md:!hidden md:flex flex-col flex-shrink-0 sticky top-0 left-0 h-screen bg-gradient-to-b from-[#0a0a0c] via-[#050505] to-[#010101] border-r border-[#1e1e1e] z-40 overflow-hidden"
         style={{ boxShadow: '2px 0 20px rgba(0,0,0,0.6)' }}
       >
         {/* ── Logo ── */}
@@ -70,8 +70,8 @@ export default function Sidebar() {
           ${collapsed ? 'justify-center px-0 py-5' : 'px-5 py-5'}
         `}>
           <div className="relative flex-shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-[#8B5CF6]/10 border border-[#8B5CF6]/30 flex items-center justify-center animate-pulse-gold">
-              <Crown size={20} className="text-[#8B5CF6]" />
+            <div className="w-10 h-10 rounded-xl bg-[#16a34a]/10 border border-[#16a34a]/30 flex items-center justify-center animate-pulse-gold">
+              <Crown size={20} className="text-[#16a34a]" />
             </div>
           </div>
           {!collapsed && (
@@ -79,7 +79,7 @@ export default function Sidebar() {
               <span
                 className="font-bebas text-xl tracking-widest leading-none block"
                 style={{
-                  background: 'linear-gradient(135deg, #8B5CF6, #C084FC)',
+                  background: 'linear-gradient(135deg, #16a34a, #22c55e)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
@@ -104,10 +104,10 @@ export default function Sidebar() {
                 <img
                   src={user.avatarUrl}
                   alt={user.name}
-                  className="w-8 h-8 rounded-full object-cover border border-[#8B5CF6]/30"
+                  className="w-8 h-8 rounded-full object-cover border border-[#16a34a]/30"
                 />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-[#8B5CF6]/10 border border-[#8B5CF6]/30 flex items-center justify-center font-bebas text-xs text-[#A78BFA]">
+                <div className="w-8 h-8 rounded-full bg-[#16a34a]/10 border border-[#16a34a]/30 flex items-center justify-center font-bebas text-xs text-[#4ade80]">
                   {user.name.slice(0, 2).toUpperCase()}
                 </div>
               )}
@@ -119,11 +119,11 @@ export default function Sidebar() {
               <p className="text-xs font-medium text-[#F0F0F0] truncate leading-none">{user.name}</p>
               <div className="flex items-center gap-1.5 mt-1">
                 {canEdit ? (
-                  <Shield size={10} className="text-[#8B5CF6]" />
+                  <Shield size={10} className="text-[#16a34a]" />
                 ) : (
                   <Eye size={10} className="text-[#666]" />
                 )}
-                <span className={`text-[9px] uppercase tracking-wider font-bold ${canEdit ? 'text-[#8B5CF6]' : 'text-[#666]'}`}>
+                <span className={`text-[9px] uppercase tracking-wider font-bold ${canEdit ? 'text-[#16a34a]' : 'text-[#666]'}`}>
                   {canEdit ? 'Admin' : 'Artista'}
                 </span>
               </div>
@@ -142,23 +142,23 @@ export default function Sidebar() {
         <nav className={`flex-1 overflow-y-auto py-2 space-y-1.5 ${collapsed ? 'px-2' : 'px-3'}`}>
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(href + '/')
-            return (
+
+            const linkElement = (
               <Link
-                key={href}
                 href={href}
                 className={`
                   relative flex items-center gap-3
                   transition-all duration-200 group
                   ${collapsed ? 'justify-center p-3 rounded-xl' : 'px-3.5 py-2.5'}
                   ${active
-                    ? 'bg-gradient-to-r from-[#8B5CF6]/10 to-transparent text-[#A78BFA] border-l-2 border-[#8B5CF6] rounded-r-lg rounded-l-none font-medium'
-                    : 'text-[#666] hover:text-[#eee] hover:bg-white/[0.02] border-l-2 border-transparent rounded-lg'
+                    ? 'bg-gradient-to-r from-[#16a34a]/15 to-transparent text-[#4ade80] border-l-2 border-[#16a34a] rounded-r-lg rounded-l-none font-medium'
+                    : 'text-[#666] hover:text-[#eee] hover:bg-white/[0.03] border-l-2 border-transparent rounded-lg'
                   }
                 `}
               >
                 <Icon
                   size={18}
-                  className={`flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${active ? 'text-[#A78BFA]' : ''}`}
+                  className={`flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${active ? 'text-[#4ade80]' : ''}`}
                 />
 
                 {!collapsed && (
@@ -166,20 +166,23 @@ export default function Sidebar() {
                     {label}
                   </span>
                 )}
-
-                {collapsed && (
-                  <span className="
-                    absolute left-[calc(100%+12px)] top-1/2 -translate-y-1/2
-                    bg-[#1a1a1a] border border-[#222] text-[#F0F0F0]
-                    text-xs font-medium rounded-lg px-3 py-1.5 whitespace-nowrap
-                    opacity-0 group-hover:opacity-100 pointer-events-none
-                    transition-all duration-200 -translate-x-2 group-hover:translate-x-0 z-50
-                  ">
-                    {label}
-                  </span>
-                )}
               </Link>
             )
+
+            if (collapsed) {
+              return (
+                <Tooltip key={href}>
+                  <TooltipTrigger asChild>
+                    {linkElement}
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="font-medium text-xs">
+                    {label}
+                  </TooltipContent>
+                </Tooltip>
+              )
+            }
+
+            return <div key={href}>{linkElement}</div>
           })}
         </nav>
 
@@ -195,7 +198,7 @@ export default function Sidebar() {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-xs font-bebas text-[#fff] tracking-wider">Sala Principal</span>
-              <span className="text-[8px] bg-[#8B5CF6]/10 text-[#A78BFA] px-1.5 py-0.5 rounded border border-[#8B5CF6]/20 font-bold uppercase tracking-wider">ON-AIR</span>
+              <span className="text-[8px] bg-[#16a34a]/10 text-[#4ade80] px-1.5 py-0.5 rounded border border-[#16a34a]/20 font-bold uppercase tracking-wider">ON-AIR</span>
             </div>
           </div>
         )}
@@ -206,7 +209,7 @@ export default function Sidebar() {
             onClick={() => setIsChangePasswordOpen(true)}
             className={`
               w-full flex items-center gap-3 py-2.5 px-3 rounded-lg mb-1
-              text-[#666] hover:text-[#A78BFA] hover:bg-[#8B5CF6]/5
+              text-[#666] hover:text-[#4ade80] hover:bg-[#16a34a]/5
               transition-all duration-200 group
               ${collapsed ? 'justify-center' : ''}
             `}
@@ -251,7 +254,7 @@ export default function Sidebar() {
             )}
           </button>
         </div>
-      </aside>
+      </motion.aside>
 
       {/* ════════════════════════════════════════════════
           MOBILE TOP HEADER BAR
@@ -261,13 +264,13 @@ export default function Sidebar() {
         style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 4px 30px rgba(0,0,0,0.6)' }}
       >
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-[#8B5CF6]/10 border border-[#8B5CF6]/30 flex items-center justify-center">
-            <Crown size={14} className="text-[#8B5CF6]" />
+          <div className="w-7 h-7 rounded-lg bg-[#16a34a]/10 border border-[#16a34a]/30 flex items-center justify-center">
+            <Crown size={14} className="text-[#16a34a]" />
           </div>
           <span
             className="font-bebas text-lg tracking-widest leading-none block"
             style={{
-              background: 'linear-gradient(135deg, #8B5CF6, #C084FC)',
+              background: 'linear-gradient(135deg, #16a34a, #22c55e)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -280,7 +283,7 @@ export default function Sidebar() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsChangePasswordOpen(true)}
-            className="flex items-center gap-1 text-[11px] font-semibold text-[#A78BFA] hover:text-white bg-[#8B5CF6]/5 border border-[#8B5CF6]/10 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
+            className="flex items-center gap-1 text-[11px] font-semibold text-[#4ade80] hover:text-white bg-[#16a34a]/5 border border-[#16a34a]/10 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
           >
             <Key size={12} />
             Senha
@@ -318,12 +321,12 @@ export default function Sidebar() {
                   <Icon
                     size={20}
                     className={`transition-transform duration-200 ${
-                      active ? 'text-[#A78BFA] scale-110' : 'text-[#555]'
+                      active ? 'text-[#4ade80] scale-110' : 'text-[#555]'
                     }`}
                   />
                   <span
                     className={`text-[9px] font-semibold tracking-wide mt-1 transition-colors duration-200 ${
-                      active ? 'text-[#A78BFA]' : 'text-[#555]'
+                      active ? 'text-[#4ade80]' : 'text-[#555]'
                     }`}
                   >
                     {label === 'Financeiro' ? 'Financ.' : label}
@@ -346,6 +349,6 @@ export default function Sidebar() {
         isOpen={isAvatarOpen}
         onClose={() => setIsAvatarOpen(false)}
       />
-    </>
+    </TooltipProvider>
   )
 }

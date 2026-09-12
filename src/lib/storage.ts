@@ -50,7 +50,11 @@ export function getArtists(): Artist[] {
 }
 
 export async function getArtistsAsync(): Promise<Artist[]> {
-  if (USE_SUPABASE) return (await db()).dbGetArtists()
+  if (USE_SUPABASE) {
+    const data = await (await db()).dbGetArtists()
+    setItem(KEYS.artists, data)
+    return data
+  }
   return getArtists()
 }
 
@@ -76,7 +80,11 @@ export function getClients(): Client[] {
 }
 
 export async function getClientsAsync(): Promise<Client[]> {
-  if (USE_SUPABASE) return (await db()).dbGetClients()
+  if (USE_SUPABASE) {
+    const data = await (await db()).dbGetClients()
+    setItem(KEYS.clients, data)
+    return data
+  }
   return getClients()
 }
 
@@ -102,7 +110,11 @@ export function getKanbanCards(): KanbanCard[] {
 }
 
 export async function getKanbanCardsAsync(): Promise<KanbanCard[]> {
-  if (USE_SUPABASE) return (await db()).dbGetKanbanCards()
+  if (USE_SUPABASE) {
+    const data = await (await db()).dbGetKanbanCards()
+    setItem(KEYS.kanban, data)
+    return data
+  }
   return getKanbanCards()
 }
 
@@ -148,7 +160,11 @@ export function getTransactions(): Transaction[] {
 }
 
 export async function getTransactionsAsync(): Promise<Transaction[]> {
-  if (USE_SUPABASE) return (await db()).dbGetTransactions()
+  if (USE_SUPABASE) {
+    const data = await (await db()).dbGetTransactions()
+    setItem(KEYS.transactions, data)
+    return data
+  }
   return getTransactions()
 }
 
@@ -174,7 +190,11 @@ export function getSessions(): Session[] {
 }
 
 export async function getSessionsAsync(): Promise<Session[]> {
-  if (USE_SUPABASE) return (await db()).dbGetSessions()
+  if (USE_SUPABASE) {
+    const data = await (await db()).dbGetSessions()
+    setItem(KEYS.sessions, data)
+    return data
+  }
   return getSessions()
 }
 
@@ -356,7 +376,11 @@ export function getUsers(): AppUser[] {
 }
 
 export async function getUsersAsync(): Promise<AppUser[]> {
-  if (USE_SUPABASE) return (await db()).dbGetUsers()
+  if (USE_SUPABASE) {
+    const data = await (await db()).dbGetUsers()
+    setItem(KEYS.users, data)
+    return data
+  }
   return getUsers()
 }
 

@@ -6,6 +6,7 @@ import {
 } from '@/lib/storage'
 import { Transaction } from '@/lib/types'
 import TransactionModal from '@/components/finances/TransactionModal'
+import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/AuthContext'
 import {
   TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Search,
@@ -15,6 +16,16 @@ import {
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { motion } from 'framer-motion'
+
+const containerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.06 } },
+}
+const itemVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' as const } },
+}
 
 const catIcons: Record<string, any> = {
   gravacao: Mic2, mix: Sliders, master: Headphones, recall: RotateCcw,
@@ -52,7 +63,11 @@ export default function FinancesPage() {
   useEffect(() => { loadData() }, [])
 
   const handleDelete = (id: string, desc: string) => {
-    if (confirm(`Excluir lançamento "${desc}"?`)) { deleteTransaction(id); loadData() }
+    if (confirm(`Excluir lançamento "${desc}"?`)) {
+      setTransactions(prev => prev.filter(tx => tx.id !== id))
+      deleteTransaction(id)
+      loadData() // atualiza summary e chart em background
+    }
   }
 
   const fmt = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
@@ -97,9 +112,9 @@ export default function FinancesPage() {
             <p className="text-sm text-[#888] mt-1.5">Controle de receitas e despesas da produtora</p>
           </div>
           {canEdit && (
-            <button onClick={() => setIsModalOpen(true)} className="btn-primary">
+            <Button onClick={() => setIsModalOpen(true)} variant="default" size="default">
               <Plus size={16} />Novo Lançamento
-            </button>
+            </Button>
           )}
         </div>
 
@@ -132,7 +147,7 @@ export default function FinancesPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" vertical={false} />
                 <XAxis dataKey="month" stroke="#333" tickLine={false} tick={{ fill: '#555', fontSize: 11 }} />
                 <YAxis stroke="#333" tickLine={false} tick={{ fill: '#555', fontSize: 11 }} tickFormatter={v => `R$${v}`} />
-                <Bar dataKey="receita" name="Receitas" fill="#8B5CF6" radius={[3, 3, 0, 0]} maxBarSize={24} />
+                <Bar dataKey="receita" name="Receitas" fill="#16a34a" radius={[3, 3, 0, 0]} maxBarSize={24} />
                 <Bar dataKey="despesa" name="Despesas" fill="#C0392B" radius={[3, 3, 0, 0]} maxBarSize={24} />
               </BarChart>
             </ResponsiveContainer>
@@ -184,15 +199,20 @@ export default function FinancesPage() {
         </div>
 
         {/* ─── Transaction list ─── */}
-        <div className="space-y-6">
+        <motion.div
+          className="space-y-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {sortedDates.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 border border-dashed border-[#222] rounded-2xl">
+            <motion.div variants={itemVariants} className="flex flex-col items-center justify-center py-20 border border-dashed border-[#222] rounded-2xl">
               <DollarSign size={32} className="text-[#333] mb-2 animate-float" />
               <p className="text-sm text-[#555]">Nenhum lançamento encontrado.</p>
-            </div>
+            </motion.div>
           ) : (
             sortedDates.map(dateStr => (
-              <div key={dateStr}>
+              <motion.div key={dateStr} variants={itemVariants}>
                 <h3 className="text-[11px] text-[#444] uppercase tracking-widest font-semibold mb-3 pl-1">
                   {dayHeader(dateStr)}
                 </h3>
@@ -201,7 +221,12 @@ export default function FinancesPage() {
                     const Icon = catIcons[tx.category] || MoreHorizontal
                     const isIn = tx.type === 'receita'
                     return (
-                      <div key={tx.id} className="bg-[#0f0f0f] border border-[#1e1e1e] hover:border-[#2a2a2a] rounded-xl px-4 py-3.5 flex items-center justify-between gap-4 group transition-all">
+                      <motion.div
+                        key={tx.id}
+                        variants={itemVariants}
+                        whileHover={{ x: 2 }}
+                        className="bg-[#0f0f0f] border border-[#1e1e1e] hover:border-[#2a2a2a] rounded-xl px-4 py-3.5 flex items-center justify-between gap-4 group transition-colors"
+                      >
                         <div className="flex items-center gap-3 min-w-0">
                           <div className={`p-2 rounded-lg flex-shrink-0 ${isIn ? 'bg-emerald-500/10 text-emerald-400' : 'bg-[#C0392B]/10 text-[#E74C3C]'}`}>
                             <Icon size={14} />
@@ -227,14 +252,14 @@ export default function FinancesPage() {
                             </button>
                           )}
                         </div>
-                      </div>
+                      </motion.div>
                     )
                   })}
                 </div>
-              </div>
+              </motion.div>
             ))
           )}
-        </div>
+        </motion.div>
       </div>
 
       {canEdit && (

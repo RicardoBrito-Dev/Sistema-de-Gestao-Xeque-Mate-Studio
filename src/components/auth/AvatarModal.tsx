@@ -78,8 +78,8 @@ export default function AvatarModal({ isOpen, onClose }: AvatarModalProps) {
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#1e1e1e]/60 mb-5">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#8B5CF6]/10 border border-[#8B5CF6]/30 flex items-center justify-center">
-              <Camera size={16} className="text-[#8B5CF6]" />
+            <div className="w-8 h-8 rounded-lg bg-[#16a34a]/10 border border-[#16a34a]/30 flex items-center justify-center">
+              <Camera size={16} className="text-[#16a34a]" />
             </div>
             <div>
               <h2 className="font-bebas text-lg tracking-wider text-white">Foto de Perfil</h2>
@@ -101,10 +101,10 @@ export default function AvatarModal({ isOpen, onClose }: AvatarModalProps) {
               <img
                 src={preview}
                 alt="Preview"
-                className="w-24 h-24 rounded-full object-cover border-2 border-[#8B5CF6]/50 shadow-[0_0_24px_rgba(139,92,246,0.2)]"
+                className="w-24 h-24 rounded-full object-cover border-2 border-[#16a34a]/50 shadow-[0_0_24px_rgba(22,163,74,0.2)]"
               />
             ) : (
-              <div className="w-24 h-24 rounded-full bg-[#8B5CF6]/10 border-2 border-[#8B5CF6]/30 flex items-center justify-center font-bebas text-2xl text-[#A78BFA]">
+              <div className="w-24 h-24 rounded-full bg-[#16a34a]/10 border-2 border-[#16a34a]/30 flex items-center justify-center font-bebas text-2xl text-[#4ade80]">
                 {user.name.slice(0, 2).toUpperCase()}
               </div>
             )}
@@ -119,7 +119,7 @@ export default function AvatarModal({ isOpen, onClose }: AvatarModalProps) {
           <div className="flex gap-2">
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-1.5 text-xs text-[#A78BFA] bg-[#8B5CF6]/10 border border-[#8B5CF6]/20 px-3 py-1.5 rounded-lg hover:bg-[#8B5CF6]/20 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 text-xs text-[#4ade80] bg-[#16a34a]/10 border border-[#16a34a]/20 px-3 py-1.5 rounded-lg hover:bg-[#16a34a]/20 transition-all cursor-pointer"
             >
               <Upload size={12} /> Enviar foto
             </button>
@@ -155,13 +155,13 @@ export default function AvatarModal({ isOpen, onClose }: AvatarModalProps) {
                   title={preset.name}
                   className={`relative w-full aspect-square rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
                     isSelected
-                      ? 'border-[#8B5CF6] scale-105 shadow-[0_0_12px_rgba(139,92,246,0.4)]'
+                      ? 'border-[#16a34a] scale-105 shadow-[0_0_12px_rgba(22,163,74,0.4)]'
                       : 'border-transparent opacity-60 hover:opacity-100 hover:border-[#2a2a2a]'
                   }`}
                 >
                   <img src={preset.url} alt={preset.name} className="w-full h-full object-cover" />
                   {isSelected && (
-                    <div className="absolute inset-0 bg-[#8B5CF6]/30 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-[#16a34a]/30 flex items-center justify-center">
                       <Check size={14} strokeWidth={3} className="text-white" />
                     </div>
                   )}

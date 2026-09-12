@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { LucideIcon, TrendingUp, TrendingDown } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 interface StatCardProps {
   title: string
@@ -22,35 +23,38 @@ export default function StatCard({
 }: StatCardProps) {
   const colorMap = {
     gold: {
-      bg: 'bg-gold/10',
-      border: 'border-gold/20',
-      text: 'text-gold',
-      glow: 'shadow-[0_0_15px_rgba(139,92,246,0.15)]',
+      bg: 'bg-[#16a34a]/10',
+      border: 'border-[#16a34a]/20',
+      text: 'text-[#4ade80]',
+      glow: 'shadow-[0_0_20px_rgba(22,163,74,0.1)]',
     },
     crimson: {
-      bg: 'bg-crimson/10',
-      border: 'border-crimson/20',
-      text: 'text-crimson',
-      glow: 'shadow-[0_0_15px_rgba(192,57,43,0.15)]',
+      bg: 'bg-rose-500/10',
+      border: 'border-rose-500/20',
+      text: 'text-rose-400',
+      glow: 'shadow-[0_0_20px_rgba(244,63,94,0.1)]',
     },
     green: {
       bg: 'bg-emerald-500/10',
       border: 'border-emerald-500/20',
       text: 'text-emerald-400',
-      glow: 'shadow-[0_0_15px_rgba(16,185,129,0.15)]',
+      glow: 'shadow-[0_0_20px_rgba(16,185,129,0.1)]',
     },
     blue: {
       bg: 'bg-sky-500/10',
       border: 'border-sky-500/20',
       text: 'text-sky-400',
-      glow: 'shadow-[0_0_15px_rgba(14,165,233,0.15)]',
+      glow: 'shadow-[0_0_20px_rgba(14,165,233,0.1)]',
     },
   }
 
   const selected = colorMap[color]
 
   return (
-    <div className={`glass rounded-xl p-5 border border-studio-border card-hover flex flex-col justify-between h-full ${selected.glow} animate-slide-up min-w-0`}>
+    <motion.div
+      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+      className={`glass rounded-2xl p-5 border border-[#1e1e22] hover:border-[#2e2e34] transition-all flex flex-col justify-between h-full ${selected.glow} min-w-0 bg-[#0d0d10]/90 backdrop-blur-sm`}
+    >
       <div className="flex items-center justify-between gap-2 min-w-0">
         <span className="text-xs font-semibold text-studio-muted uppercase tracking-wider truncate" title={title}>
           {title}
@@ -91,6 +95,6 @@ export default function StatCard({
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   )
 }

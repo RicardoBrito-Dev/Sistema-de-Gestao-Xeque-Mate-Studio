@@ -6,9 +6,31 @@ import { Artist } from '@/lib/types'
 import ArtistModal from '@/components/artists/ArtistModal'
 import UsersModal from '@/components/artists/UsersModal'
 import Badge from '@/components/ui/Badge'
+import { Button } from '@/components/ui/button'
+import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { filterArtistsForUser } from '@/lib/permissions'
 import { Mic2, Plus, Search, Instagram, Play, Youtube, Trash2, Edit2, Phone, Users } from 'lucide-react'
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 14, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.25, ease: 'easeOut' as const },
+  },
+}
 
 export default function ArtistsPage() {
   const { user, canEdit } = useAuth()
@@ -25,7 +47,10 @@ export default function ArtistsPage() {
   useEffect(() => { loadData() }, [user])
 
   const handleDelete = (id: string, name: string) => {
-    if (confirm(`Excluir artista "${name}"?`)) { deleteArtist(id); loadData() }
+    if (confirm(`Excluir artista "${name}"?`)) {
+      setArtists(prev => prev.filter(a => a.id !== id))
+      deleteArtist(id)
+    }
   }
   const handleEdit = (artist: Artist) => { setSelectedArtist(artist); setIsModalOpen(true) }
   const handleNew = () => { setSelectedArtist(null); setIsModalOpen(true) }
@@ -61,12 +86,12 @@ export default function ArtistsPage() {
           </div>
           {canEdit && (
             <div className="flex gap-3">
-              <button onClick={() => setIsUsersModalOpen(true)} className="btn-secondary cursor-pointer">
+              <Button onClick={() => setIsUsersModalOpen(true)} variant="secondary" size="default">
                 <Users size={16} />Gerenciar Contas
-              </button>
-              <button onClick={handleNew} className="btn-primary cursor-pointer">
+              </Button>
+              <Button onClick={handleNew} variant="default" size="default">
                 <Plus size={16} />Novo Artista
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -94,11 +119,18 @@ export default function ArtistsPage() {
             <p className="text-xs text-[#444] mt-1">Ajuste a busca ou cadastre um novo artista.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5"
+          >
             {filtered.map(artist => (
-              <div
+              <motion.div
                 key={artist.id}
-                className="bg-[#111] border border-[#1e1e1e] rounded-2xl p-5 flex flex-col gap-4 hover:border-[#2a2a2a] transition-all"
+                variants={itemVariants}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className="bg-[#111] border border-[#1e1e1e] rounded-2xl p-5 flex flex-col gap-4 hover:border-[#2a2a2a] transition-all shadow-md hover:shadow-xl hover:shadow-black/50"
               >
                 {/* Top: Avatar + Name + Actions */}
                 <div className="flex items-start justify-between gap-3">
@@ -107,7 +139,7 @@ export default function ArtistsPage() {
                       <img
                         src={artist.avatar}
                         alt={artist.artisticName}
-                        className="w-12 h-12 rounded-full object-cover border border-[#8B5CF6]/30 flex-shrink-0"
+                        className="w-12 h-12 rounded-full object-cover border border-[#16a34a]/30 flex-shrink-0"
                       />
                     ) : (
                       <div className="w-12 h-12 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center font-bebas text-base text-gold flex-shrink-0">
@@ -187,9 +219,9 @@ export default function ArtistsPage() {
                     </span>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
 

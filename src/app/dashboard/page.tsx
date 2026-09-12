@@ -18,6 +18,16 @@ import { useAuth } from '@/contexts/AuthContext'
 import { filterKanbanForUser, filterSessionsForUser, filterTransactionsForUser } from '@/lib/permissions'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { motion } from 'framer-motion'
+
+const containerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08 } },
+}
+const itemVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' as const } },
+}
 
 export default function DashboardPage() {
   const { user, canEdit } = useAuth()
@@ -58,9 +68,13 @@ export default function DashboardPage() {
         const myKanban = filterKanbanForUser(kanban, user)
         const mySessions = filterSessionsForUser(sessions, user)
         const myTransactions = filterTransactionsForUser(txs, user)
-        const myRevenue = myTransactions
+        const txRevenue = myTransactions
           .filter(t => t.type === 'receita')
           .reduce((sum, t) => sum + t.amount, 0)
+        const sessionRevenue = mySessions
+          .filter(s => s.status !== 'cancelado' && s.value)
+          .reduce((sum, s) => sum + (s.value || 0), 0)
+        const myRevenue = txRevenue > 0 ? txRevenue : sessionRevenue
 
         setKanbanCount(myKanban.filter(k => k.stage !== 'entregue').length)
         setSessionsToday(mySessions.filter(s => s.date === today).length)
@@ -90,7 +104,7 @@ export default function DashboardPage() {
               <>
                 Bem-vindo ao{' '}
                 <span style={{
-                  background: 'linear-gradient(135deg, #8B5CF6, #C084FC)',
+                  background: 'linear-gradient(135deg, #16a34a, #22c55e)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
@@ -114,37 +128,50 @@ export default function DashboardPage() {
         {canEdit ? (
           <>
             {/* ─── KPI Cards (Admin) ──────────────────────────────────────── */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-              <StatCard
-                title="Faturamento Mês"
-                value={fmt(summary.monthRevenue)}
-                subtitle="entradas no período"
-                icon={DollarSign}
-                trend={summary.revenueGrowth}
-                color="gold"
-              />
-              <StatCard
-                title="Despesas Mês"
-                value={fmt(summary.monthExpenses)}
-                subtitle="saídas no período"
-                icon={TrendingUp}
-                color="crimson"
-              />
-              <StatCard
-                title="Resultado Líquido"
-                value={fmt(summary.monthNetProfit)}
-                subtitle="saldo do mês"
-                icon={DollarSign}
-                color={summary.monthNetProfit >= 0 ? 'green' : 'crimson'}
-              />
-              <StatCard
-                title="Artistas Ativos"
-                value={artistsCount}
-                subtitle="na produtora"
-                icon={Mic2}
-                color="blue"
-              />
-            </div>
+            <motion.div
+              className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <motion.div variants={itemVariants}>
+                <StatCard
+                  title="Faturamento Mês"
+                  value={fmt(summary.monthRevenue)}
+                  subtitle="entradas no período"
+                  icon={DollarSign}
+                  trend={summary.revenueGrowth}
+                  color="gold"
+                />
+              </motion.div>
+              <motion.div variants={itemVariants}>
+                <StatCard
+                  title="Despesas Mês"
+                  value={fmt(summary.monthExpenses)}
+                  subtitle="saídas no período"
+                  icon={TrendingUp}
+                  color="crimson"
+                />
+              </motion.div>
+              <motion.div variants={itemVariants}>
+                <StatCard
+                  title="Resultado Líquido"
+                  value={fmt(summary.monthNetProfit)}
+                  subtitle="saldo do mês"
+                  icon={DollarSign}
+                  color={summary.monthNetProfit >= 0 ? 'green' : 'crimson'}
+                />
+              </motion.div>
+              <motion.div variants={itemVariants}>
+                <StatCard
+                  title="Artistas Ativos"
+                  value={artistsCount}
+                  subtitle="na produtora"
+                  icon={Mic2}
+                  color="blue"
+                />
+              </motion.div>
+            </motion.div>
 
             {/* ─── Quick stats bar ────────────────────────────────── */}
             <div className="grid grid-cols-2 md:grid-cols-4 rounded-xl border border-[#1e1e1e] bg-[#0f0f0f] overflow-hidden">
@@ -190,31 +217,47 @@ export default function DashboardPage() {
         ) : (
           <>
             {/* ─── KPI Cards (Artista) ──────────────────────────────────────── */}
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              <StatCard
-                title="Minhas Faixas"
-                value={kanbanCount}
-                subtitle="em produção"
-                icon={Kanban}
-                color="gold"
-              />
-              <StatCard
-                title="Sessões Hoje"
-                value={sessionsToday}
-                subtitle="agendadas"
-                icon={Calendar}
-                color="blue"
-              />
-              <StatCard
-                title="Meu Faturamento"
-                value={fmt(artistRevenue)}
-                subtitle="receitas registradas"
-                icon={Music}
-                color="green"
-              />
-            </div>
+            <motion.div
+              className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <motion.div variants={itemVariants}>
+                <StatCard
+                  title="Minhas Faixas"
+                  value={kanbanCount}
+                  subtitle="em produção"
+                  icon={Kanban}
+                  color="gold"
+                />
+              </motion.div>
+              <motion.div variants={itemVariants}>
+                <StatCard
+                  title="Sessões Hoje"
+                  value={sessionsToday}
+                  subtitle="agendadas"
+                  icon={Calendar}
+                  color="blue"
+                />
+              </motion.div>
+              <motion.div variants={itemVariants}>
+                <StatCard
+                  title="Meu Faturamento"
+                  value={fmt(artistRevenue)}
+                  subtitle="receitas registradas"
+                  icon={Music}
+                  color="green"
+                />
+              </motion.div>
+            </motion.div>
 
-            <div className="bg-[#0f0f0f] border border-[#1e1e1e] rounded-xl p-6">
+            <motion.div
+              className="bg-[#0f0f0f] border border-[#1e1e1e] rounded-xl p-6"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.4 }}
+            >
               <h3 className="font-bebas text-lg text-[#F0F0F0] tracking-wider mb-3">Acesso Rápido</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
@@ -222,18 +265,20 @@ export default function DashboardPage() {
                   { label: 'Agenda', desc: 'Veja suas sessões agendadas', href: '/schedule', icon: Calendar },
                   { label: 'Perfil', desc: 'Suas informações no estúdio', href: '/artists', icon: Mic2 },
                 ].map(({ label, desc, href, icon: Icon }) => (
-                  <a
+                  <motion.a
                     key={href}
                     href={href}
-                    className="bg-[#111] border border-[#1e1e1e] hover:border-[#8B5CF6]/30 rounded-xl p-4 transition-all group"
+                    whileHover={{ y: -3 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="bg-[#111] border border-[#1e1e1e] hover:border-[#16a34a]/30 rounded-xl p-4 transition-colors group block"
                   >
-                    <Icon size={18} className="text-[#8B5CF6] mb-2 group-hover:scale-110 transition-transform" />
+                    <Icon size={18} className="text-[#16a34a] mb-2 group-hover:scale-110 transition-transform" />
                     <p className="text-sm font-semibold text-[#F0F0F0]">{label}</p>
                     <p className="text-xs text-[#555] mt-1">{desc}</p>
-                  </a>
+                  </motion.a>
                 ))}
               </div>
-            </div>
+            </motion.div>
           </>
         )}
 

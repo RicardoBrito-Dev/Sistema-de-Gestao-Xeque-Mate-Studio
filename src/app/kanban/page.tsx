@@ -6,6 +6,7 @@ import { getKanbanCardsAsync, saveKanbanCardAsync, deleteKanbanCardAsync } from 
 import { KanbanCard, KanbanStage } from '@/lib/types'
 import KanbanCardModal from '@/components/kanban/KanbanCardModal'
 import Badge from '@/components/ui/Badge'
+import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/AuthContext'
 import { filterKanbanForUser } from '@/lib/permissions'
 import { Mic2, Sliders, Headphones, RotateCcw, CheckCircle2, Plus, Calendar, Trash2, Edit2, ExternalLink } from 'lucide-react'
@@ -107,9 +108,9 @@ export default function KanbanPage() {
           </p>
         </div>
         {canEdit && (
-          <button onClick={handleNew} className="btn-primary">
+          <Button onClick={handleNew} variant="default" size="default">
             <Plus size={16} />Nova Música
-          </button>
+          </Button>
         )}
       </div>
 
@@ -157,7 +158,7 @@ export default function KanbanPage() {
                                   className={`bg-[#111] border rounded-xl p-4 flex flex-col gap-3 group transition-all
                                     ${canEdit ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}
                                     ${ds.isDragging
-                                      ? 'border-gold/40 shadow-[0_8px_32px_rgba(139,92,246,0.25)] scale-[1.03] rotate-1'
+                                      ? 'border-gold/40 shadow-[0_8px_32px_rgba(22,163,74,0.25)] scale-[1.03] rotate-1'
                                       : 'border-[#1e1e1e] hover:border-[#2a2a2a] hover:shadow-[0_4px_16px_rgba(0,0,0,0.4)]'
                                     }`}
                                 >
@@ -197,7 +198,7 @@ export default function KanbanPage() {
                                           href={card.driveLink}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className="flex items-center gap-1 bg-[#8B5CF6]/10 hover:bg-[#8B5CF6]/20 border border-[#8B5CF6]/20 text-[#A78BFA] px-2 py-1 rounded-lg transition-all truncate"
+                                          className="flex items-center gap-1 bg-[#16a34a]/10 hover:bg-[#16a34a]/20 border border-[#16a34a]/20 text-[#4ade80] px-2 py-1 rounded-lg transition-all truncate"
                                           onClick={(e) => e.stopPropagation()}
                                         >
                                           <span>Drive</span>
