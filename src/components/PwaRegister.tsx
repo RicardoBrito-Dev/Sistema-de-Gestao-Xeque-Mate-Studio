@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useEffect } from "react"
 
@@ -8,11 +8,12 @@ import { useEffect } from "react"
  */
 export default function PwaRegister() {
   useEffect(() => {
-    if ("serviceWorker" in navigator) {
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("/sw.js", { scope: "/" })
         .then((reg) => {
-          console.log("[PWA] Service Worker registrado:", reg.scope)
+          reg.update()
+          console.log("[PWA] Service Worker registrado e atualizado:", reg.scope)
         })
         .catch((err) => {
           console.warn("[PWA] Falha ao registrar SW:", err)

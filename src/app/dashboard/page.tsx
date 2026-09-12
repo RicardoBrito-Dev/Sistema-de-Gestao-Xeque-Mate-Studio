@@ -90,30 +90,25 @@ export default function DashboardPage() {
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
 
   return (
-    <div className="flex-1 w-full animate-fade-in">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-12 space-y-8">
+    <div className="flex-1 w-full min-w-0 animate-fade-in">
+      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-12 space-y-6 md:space-y-8 min-w-0">
 
         {/* ─── Header ─────────────────────────────────────────── */}
         <div className="flex flex-col gap-1 pb-6 border-b border-[#1e1e1e]">
-          <p className="text-xs font-semibold text-gold uppercase tracking-widest flex items-center gap-1.5">
-            <Sparkles size={11} className="animate-float" />
+          <p className="text-xs font-semibold text-[#22c55e] uppercase tracking-widest flex items-center gap-1.5">
+            <Sparkles size={11} />
             {canEdit ? 'Painel de Controle' : 'Meu Painel'}
           </p>
           <h1 className="font-bebas text-3xl md:text-4xl text-[#F0F0F0] tracking-wider leading-none">
             {canEdit ? (
               <>
                 Bem-vindo ao{' '}
-                <span style={{
-                  background: 'linear-gradient(135deg, #16a34a, #22c55e)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}>
+                <span className="text-[#22c55e]">
                   Xeque Mate Studio
                 </span>
               </>
             ) : (
-              <>Olá, <span className="text-gold">{user?.name}</span></>
+              <>Olá, <span className="text-[#22c55e]">{user?.name}</span></>
             )}
           </h1>
           <p className="text-sm text-[#666] mt-0.5 capitalize">{currentDateStr}</p>

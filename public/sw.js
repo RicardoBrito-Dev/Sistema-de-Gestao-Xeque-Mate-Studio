@@ -1,40 +1,22 @@
-﻿// ─── Xeque Mate Studio — Service Worker ───
-// Cache-first para assets estáticos, Network-first para páginas
-
-const CACHE_NAME = "xm-cache-v1";
+// ─── Xeque Mate Studio — Service Worker ───
+const CACHE_NAME = "xm-cache-v3";
 const STATIC_ASSETS = [
-  "/",
-  "/dashboard",
-  "/schedule",
-  "/artists",
-  "/clients",
-  "/finances",
-  "/kanban",
   "/manifest.json",
   "/icon-192.jpg",
   "/icon-512.jpg",
 ];
 
-// Instalação: pre-cache dos assets principais
+// Instalação: ativa imediatamente
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch(() => {
-        // Ignora erros de pré-cache (páginas dinâmicas podem falhar)
-      });
-    })
-  );
   self.skipWaiting();
 });
 
-// Ativação: limpa caches antigos
+// Ativação: limpa TODOS os caches antigos imediatamente
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
+        keys.map((key) => caches.delete(key))
       )
     )
   );
