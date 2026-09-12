@@ -1,8 +1,8 @@
-{
+ï»¿{
   "name": "Xeque Mate Studio",
   "short_name": "Xeque Mate",
-  "description": "Sistema de gestão do Xeque Mate Studio — agendamentos, artistas, finanças e kanban.",
-  "start_url": "/dashboard",
+  "description": "Sistema de gestÃ£o do Xeque Mate Studio â€” agendamentos, artistas, finanÃ§as e kanban.",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#060606",
   "theme_color": "#16a34a",
