@@ -1,5 +1,5 @@
 // ─── Xeque Mate Studio — Service Worker ───
-const CACHE_NAME = "xm-cache-v5";
+const CACHE_NAME = "xm-cache-v6";
 const STATIC_ASSETS = [
   "/manifest.json",
   "/icon-192.jpg",
