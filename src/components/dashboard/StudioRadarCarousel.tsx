@@ -13,7 +13,8 @@ import {
   ChevronRight, 
   Sparkles,
   Layers,
-  Music2
+  Music2,
+  Play
 } from "lucide-react"
 import {
   Carousel,
@@ -25,6 +26,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import Badge from "@/components/ui/Badge"
 import { Session, KanbanCard } from "@/lib/types"
+import { useAudioPlayer } from "@/contexts/AudioPlayerContext"
 
 interface StudioRadarCarouselProps {
   sessions: Session[]
@@ -37,6 +39,7 @@ export default function StudioRadarCarousel({
   activeTracks,
   canEdit,
 }: StudioRadarCarouselProps) {
+  const { playTrack } = useAudioPlayer()
   const today = format(new Date(), "yyyy-MM-dd")
   const todaySessions = sessions.filter(
     (s) => s.date === today && s.status !== "cancelado"
@@ -212,9 +215,24 @@ export default function StudioRadarCarousel({
 
                   {/* Bottom info */}
                   <div className="mt-4 pt-3 border-t border-[#1e1e22] flex items-center justify-between text-xs text-[#71717a]">
-                    <div className="flex items-center gap-1">
-                      <Layers size={11} />
-                      <span>{track.daysInStage === 0 ? "Hoje" : `${track.daysInStage}d no estágio`}</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() =>
+                          playTrack({
+                            id: track.id,
+                            title: track.trackName,
+                            artist: track.artistName,
+                          })
+                        }
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#4ade80] bg-[#15803d]/15 hover:bg-[#15803d]/30 border border-[#15803d]/30 px-2 py-0.5 rounded-lg transition-all cursor-pointer active:scale-95"
+                        title="Ouvir prévia"
+                      >
+                        <Play size={10} className="fill-[#4ade80]" />
+                        <span>Ouvir</span>
+                      </button>
+                      <span className="text-[11px] text-[#71717a]">
+                        {track.daysInStage === 0 ? "Hoje" : `${track.daysInStage}d`}
+                      </span>
                     </div>
 
                     <Link

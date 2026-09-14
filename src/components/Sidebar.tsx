@@ -18,6 +18,7 @@ import {
   Key,
   Camera,
   Smartphone,
+  Search,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
@@ -27,6 +28,7 @@ import AvatarModal from '@/components/auth/AvatarModal'
 import InstallPwaModal from '@/components/pwa/InstallPwaModal'
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
 
 const iconMap = {
   '/dashboard': LayoutDashboard,
@@ -125,9 +127,33 @@ export default function Sidebar() {
           </div>
         )}
 
+        {/* ── Search / Command Menu Trigger ── */}
+        {!collapsed ? (
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('open-command-menu'))}
+            className="mx-3 mt-3 px-3 py-2 rounded-xl bg-[#0f0f11] border border-[#1e1e22] hover:border-[#2e2e36] text-[#71717a] hover:text-[#f4f4f5] flex items-center justify-between transition-all cursor-pointer text-xs group"
+          >
+            <span className="flex items-center gap-2">
+              <Search size={13} className="group-hover:text-[#22c55e] transition-colors" />
+              <span>Buscar...</span>
+            </span>
+            <kbd className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded bg-[#1c1c20] text-[#71717a] border border-[#27272a] group-hover:border-[#15803d]/40 group-hover:text-[#4ade80] transition-colors">
+              Ctrl K
+            </kbd>
+          </button>
+        ) : (
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('open-command-menu'))}
+            className="mx-auto mt-3 p-2.5 rounded-xl bg-[#0f0f11] border border-[#1e1e22] text-[#71717a] hover:text-[#22c55e] transition-all cursor-pointer"
+            title="Buscar (Ctrl + K)"
+          >
+            <Search size={16} />
+          </button>
+        )}
+
         {/* ── Label section ── */}
         {!collapsed && (
-          <div className="px-5 pt-5 pb-1">
+          <div className="px-5 pt-4 pb-1">
             <span className="text-[9px] text-[#444] uppercase tracking-[0.2em] font-semibold">Menu</span>
           </div>
         )}
@@ -283,7 +309,15 @@ export default function Sidebar() {
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('open-command-menu'))}
+            className="p-2 rounded-lg bg-[#141417] border border-[#27272a] text-[#a1a1aa] hover:text-white transition-all cursor-pointer active:scale-95"
+            title="Buscar (Ctrl + K)"
+          >
+            <Search size={14} />
+          </button>
+          <NotificationBell />
           <button
             onClick={() => setIsInstallPwaOpen(true)}
             className="flex items-center gap-1.5 text-[11px] font-medium text-white bg-[#15803d] hover:bg-[#166534] px-2.5 py-1.5 rounded-lg transition-all cursor-pointer border border-white/10 active:scale-95 shadow-sm"

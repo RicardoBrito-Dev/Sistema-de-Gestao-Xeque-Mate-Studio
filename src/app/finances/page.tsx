@@ -12,7 +12,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import {
   TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Search,
   Mic2, Sliders, Headphones, RotateCcw, Music, Settings, Home,
-  Megaphone, User, MoreHorizontal, Calendar, ArrowUpRight, ArrowDownRight
+  Megaphone, User, MoreHorizontal, Calendar, ArrowUpRight, ArrowDownRight,
+  Share2, Check
 } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import { format } from 'date-fns'
@@ -102,6 +103,26 @@ export default function FinancesPage() {
     return format(new Date(dateStr + 'T00:00:00'), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
   }
 
+  const [copiedFinances, setCopiedFinances] = useState(false)
+
+  const handleShareFinancialSummary = () => {
+    const monthName = format(new Date(), "MMMM 'de' yyyy", { locale: ptBR })
+
+    let text = `💰 *XEQUE MATE STUDIO — FECHAMENTO FINANCEIRO*\n`
+    text += `📅 *Período: ${monthName.toUpperCase()}*\n`
+    text += `━━━━━━━━━━━━━━━━━━━━━\n`
+    text += `📈 *Receita do Mês:* ${fmt(summary.monthRevenue)}\n`
+    text += `💵 *Receita Total:* ${fmt(summary.totalRevenue)}\n`
+    text += `📉 *Despesas Total:* ${fmt(summary.totalExpenses)}\n`
+    text += `💎 *Lucro Líquido:* ${fmt(summary.netProfit)}\n`
+    text += `━━━━━━━━━━━━━━━━━━━━━\n`
+    text += `_Gerado via Xeque Mate Studio OS_`
+
+    navigator.clipboard.writeText(text)
+    setCopiedFinances(true)
+    setTimeout(() => setCopiedFinances(false), 3000)
+  }
+
   return (
     <div className="flex-1 w-full animate-fade-in">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-12 space-y-8">
@@ -112,11 +133,30 @@ export default function FinancesPage() {
             <h1 className="font-bebas text-3xl md:text-4xl text-[#F0F0F0] tracking-wider leading-none">Fluxo Financeiro</h1>
             <p className="text-sm text-[#888] mt-1.5">Controle de receitas e despesas da produtora</p>
           </div>
-          {canEdit && (
-            <Button onClick={() => setIsModalOpen(true)} variant="default" size="default">
-              <Plus size={16} />Novo Lançamento
-            </Button>
-          )}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <button
+              onClick={handleShareFinancialSummary}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#141417] hover:bg-[#1a1a1e] border border-[#27272a] text-xs font-semibold text-[#d4d4d8] hover:text-white transition-all cursor-pointer active:scale-95 shadow-sm"
+              title="Copiar resumo financeiro para enviar aos sócios no WhatsApp"
+            >
+              {copiedFinances ? (
+                <>
+                  <Check size={14} className="text-[#22c55e]" />
+                  <span className="text-[#4ade80]">Copiado para WhatsApp!</span>
+                </>
+              ) : (
+                <>
+                  <Share2 size={14} className="text-[#22c55e]" />
+                  <span>Resumo para WhatsApp</span>
+                </>
+              )}
+            </button>
+            {canEdit && (
+              <Button onClick={() => setIsModalOpen(true)} variant="default" size="default">
+                <Plus size={16} />Novo Lançamento
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* ─── KPI Cards ─── */}

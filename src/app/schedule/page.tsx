@@ -11,7 +11,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { filterSessionsForUser, canEditSession } from '@/lib/permissions'
 import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight,
-  Plus, Trash2, Clock, User, Music, Mic2, MapPin, LayoutGrid, Columns
+  Plus, Trash2, Clock, User, Music, Mic2, MapPin, LayoutGrid, Columns,
+  Share2, Check
 } from 'lucide-react'
 import {
   format, startOfWeek, endOfWeek, eachDayOfInterval,
@@ -150,6 +151,36 @@ export default function SchedulePage() {
     .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime))
     .slice(0, 6)
 
+  const [copiedAgenda, setCopiedAgenda] = useState(false)
+
+  const handleShareTodayAgenda = () => {
+    const todayStr = format(new Date(), 'yyyy-MM-dd')
+    const todaySessions = sessions
+      .filter((s) => s.date === todayStr && s.status !== 'cancelado')
+      .sort((a, b) => a.startTime.localeCompare(b.startTime))
+
+    const dateFormatted = format(new Date(), "dd/MM/yyyy (EEEE)", { locale: ptBR })
+
+    let text = `🎙️ *XEQUE MATE STUDIO — AGENDA DO DIA*\n`
+    text += `📅 *${dateFormatted}*\n`
+    text += `━━━━━━━━━━━━━━━━━━━━━\n`
+
+    if (todaySessions.length === 0) {
+      text += `• Nenhuma sessão agendada para hoje. Estúdio livre!\n`
+    } else {
+      todaySessions.forEach((s) => {
+        text += `• *${s.startTime} - ${s.endTime}* | ${s.clientName} (${s.serviceType})\n`
+      })
+    }
+
+    text += `━━━━━━━━━━━━━━━━━━━━━\n`
+    text += `_Sistema de Gestão Xeque Mate Studio_`
+
+    navigator.clipboard.writeText(text)
+    setCopiedAgenda(true)
+    setTimeout(() => setCopiedAgenda(false), 3000)
+  }
+
   return (
     <div className="flex-1 w-full animate-fade-in">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-12 space-y-6">
@@ -166,11 +197,30 @@ export default function SchedulePage() {
                 : 'Visualize e gerencie seus próprios compromissos e datas'}
             </p>
           </div>
-          {user && (
-            <Button onClick={() => handleNewSession()} variant="default" size="default">
-              <Plus size={16} />Agendar {activeTab === 'estudio' ? 'Sessão' : 'Show'}
-            </Button>
-          )}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <button
+              onClick={handleShareTodayAgenda}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#141417] hover:bg-[#1a1a1e] border border-[#27272a] text-xs font-semibold text-[#d4d4d8] hover:text-white transition-all cursor-pointer active:scale-95 shadow-sm"
+              title="Copiar texto formatado para enviar no WhatsApp"
+            >
+              {copiedAgenda ? (
+                <>
+                  <Check size={14} className="text-[#22c55e]" />
+                  <span className="text-[#4ade80]">Copiado para WhatsApp!</span>
+                </>
+              ) : (
+                <>
+                  <Share2 size={14} className="text-[#22c55e]" />
+                  <span>Copiar Agenda de Hoje</span>
+                </>
+              )}
+            </button>
+            {user && (
+              <Button onClick={() => handleNewSession()} variant="default" size="default">
+                <Plus size={16} />Agendar {activeTab === 'estudio' ? 'Sessão' : 'Show'}
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* ─── Agenda Tabs (shadcn Tabs) ─── */}

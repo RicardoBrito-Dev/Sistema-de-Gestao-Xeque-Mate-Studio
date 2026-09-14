@@ -10,8 +10,9 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Progress } from '@/components/ui/progress'
 import { useAuth } from '@/contexts/AuthContext'
+import { useAudioPlayer } from '@/contexts/AudioPlayerContext'
 import { filterKanbanForUser } from '@/lib/permissions'
-import { Mic2, Sliders, Headphones, RotateCcw, CheckCircle2, Plus, Calendar, Trash2, Edit2, ExternalLink } from 'lucide-react'
+import { Mic2, Sliders, Headphones, RotateCcw, CheckCircle2, Plus, Calendar, Trash2, Edit2, ExternalLink, Play } from 'lucide-react'
 import { format, differenceInDays } from 'date-fns'
 
 const STAGE_PROGRESS: Record<KanbanStage, number> = {
@@ -32,6 +33,7 @@ const COLUMNS: { id: KanbanStage; label: string; color: string; bg: string; bord
 
 export default function KanbanPage() {
   const { user, canEdit } = useAuth()
+  const { playTrack } = useAudioPlayer()
   const [cards, setCards] = useState<KanbanCard[]>([])
   const [mounted, setMounted] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -191,13 +193,29 @@ export default function KanbanPage() {
                                     </div>
                                   </div>
 
-                                  {/* Track name + Artist Avatar */}
+                                  {/* Track name + Artist Avatar + Play Trigger */}
                                   <div className="flex items-start gap-3">
-                                    <Avatar className="h-8 w-8 shrink-0 border border-[#27272a] mt-0.5">
-                                      <AvatarFallback className="text-[10px] text-[#4ade80] bg-[#141417]">
-                                        {card.artistName.slice(0, 2).toUpperCase()}
-                                      </AvatarFallback>
-                                    </Avatar>
+                                    <div className="relative group/play shrink-0">
+                                      <Avatar className="h-8 w-8 border border-[#27272a] mt-0.5">
+                                        <AvatarFallback className="text-[10px] text-[#4ade80] bg-[#141417]">
+                                          {card.artistName.slice(0, 2).toUpperCase()}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          playTrack({
+                                            id: card.id,
+                                            title: card.trackName,
+                                            artist: card.artistName,
+                                          })
+                                        }}
+                                        className="absolute inset-0 mt-0.5 rounded-full bg-black/75 flex items-center justify-center opacity-0 group-hover/play:opacity-100 transition-opacity cursor-pointer text-[#22c55e]"
+                                        title="Ouvir prévia"
+                                      >
+                                        <Play size={11} className="ml-0.5 fill-[#22c55e]" />
+                                      </button>
+                                    </div>
                                     <div className="min-w-0 flex-1">
                                       <h4 className="font-bebas text-[15px] text-[#F0F0F0] tracking-wide leading-none truncate">{card.trackName}</h4>
                                       <p className="text-[11px] text-[#555] mt-1 truncate">{card.artistName}</p>
@@ -230,9 +248,21 @@ export default function KanbanPage() {
                                   {/* Footer */}
                                   <div className="pt-2.5 border-t border-[#1a1a1a] flex items-center justify-between text-[10px] text-[#444]">
                                     <div className="flex items-center gap-1.5 min-w-0">
-                                      <span className="bg-[#0d0d0d] border border-[#1a1a1a] px-2 py-1 rounded-lg flex-shrink-0">
-                                        {getDaysText(card.entryDate)}
-                                      </span>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          playTrack({
+                                            id: card.id,
+                                            title: card.trackName,
+                                            artist: card.artistName,
+                                          })
+                                        }}
+                                        className="flex items-center gap-1 bg-[#22c55e]/10 hover:bg-[#22c55e]/20 border border-[#22c55e]/20 text-[#4ade80] px-2 py-1 rounded-lg transition-all text-[10px] cursor-pointer"
+                                        title="Ouvir prévia no player do estúdio"
+                                      >
+                                        <Play size={9} className="fill-[#4ade80]" />
+                                        <span>Ouvir</span>
+                                      </button>
                                       {card.driveLink && (
                                         <a
                                           href={card.driveLink}
