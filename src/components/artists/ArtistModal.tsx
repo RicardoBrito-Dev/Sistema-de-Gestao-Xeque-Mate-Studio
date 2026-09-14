@@ -20,7 +20,7 @@ export default function ArtistModal({
 }: ArtistModalProps) {
   const [artisticName, setArtisticName] = useState('')
   const [realName, setRealName] = useState('')
-  const [genre, setGenre] = useState<Genre>('rap')
+  const [genre, setGenre] = useState<Genre>('funk')
   const [status, setStatus] = useState<ArtistStatus>('ativo')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
@@ -44,7 +44,7 @@ export default function ArtistModal({
     } else {
       setArtisticName('')
       setRealName('')
-      setGenre('rap')
+      setGenre('funk')
       setStatus('ativo')
       setPhone('')
       setEmail('')
@@ -119,11 +119,12 @@ export default function ArtistModal({
               value={genre}
               onChange={(e) => setGenre(e.target.value as Genre)}
             >
+              <option value="funk">Funk</option>
               <option value="rap">Rap</option>
+              <option value="dj">DJ / Produtor</option>
               <option value="trap">Trap</option>
               <option value="drill">Drill</option>
               <option value="r&b">R&B</option>
-              <option value="funk">Funk</option>
               <option value="outro">Outro</option>
             </select>
           </div>

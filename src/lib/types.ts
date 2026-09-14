@@ -3,7 +3,7 @@
 // ============================================================
 
 export type ArtistStatus = 'ativo' | 'pausado' | 'inativo'
-export type Genre = 'rap' | 'trap' | 'drill' | 'r&b' | 'funk' | 'outro'
+export type Genre = 'funk' | 'rap' | 'dj' | 'trap' | 'drill' | 'r&b' | 'outro'
 
 export interface Artist {
   id: string

@@ -156,7 +156,7 @@ export default function ArtistsPage() {
   artists.forEach((a) => {
     genreCounts[a.genre] = (genreCounts[a.genre] || 0) + 1
   })
-  const dominantGenre = Object.entries(genreCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Trap'
+  const dominantGenre = Object.entries(genreCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Funk'
 
   const fmt = (val: number) =>
     new Intl.NumberFormat('pt-BR', {
@@ -293,11 +293,10 @@ export default function ArtistsPage() {
                 <Tabs value={genreFilter} onValueChange={setGenreFilter} className="w-full sm:w-auto overflow-x-auto">
                   <TabsList className="bg-[#0f0f11] border-[#1e1e22] p-1 flex-wrap sm:flex-nowrap">
                     <TabsTrigger value="todos" className="text-xs">Todos</TabsTrigger>
-                    <TabsTrigger value="trap" className="text-xs">Trap</TabsTrigger>
-                    <TabsTrigger value="rap" className="text-xs">Rap</TabsTrigger>
-                    <TabsTrigger value="drill" className="text-xs">Drill</TabsTrigger>
                     <TabsTrigger value="funk" className="text-xs">Funk</TabsTrigger>
-                    <TabsTrigger value="r&b" className="text-xs">R&B</TabsTrigger>
+                    <TabsTrigger value="rap" className="text-xs">Rap</TabsTrigger>
+                    <TabsTrigger value="dj" className="text-xs">DJ</TabsTrigger>
+                    <TabsTrigger value="trap" className="text-xs">Trap</TabsTrigger>
                     <TabsTrigger value="outro" className="text-xs">Outro</TabsTrigger>
                   </TabsList>
                 </Tabs>
