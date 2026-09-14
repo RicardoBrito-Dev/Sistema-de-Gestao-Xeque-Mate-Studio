@@ -26,6 +26,7 @@ import ChangePasswordModal from '@/components/auth/ChangePasswordModal'
 import AvatarModal from '@/components/auth/AvatarModal'
 import InstallPwaModal from '@/components/pwa/InstallPwaModal'
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 
 const iconMap = {
   '/dashboard': LayoutDashboard,
@@ -96,17 +97,14 @@ export default function Sidebar() {
               className="relative group flex-shrink-0 cursor-pointer"
               title="Alterar foto de perfil"
             >
-              {user.avatarUrl ? (
-                <img
-                  src={user.avatarUrl}
-                  alt={user.name}
-                  className="w-8 h-8 rounded-full object-cover border border-[#16a34a]/30"
-                />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-[#16a34a]/10 border border-[#16a34a]/30 flex items-center justify-center font-bebas text-xs text-[#4ade80]">
+              <Avatar className="h-9 w-9 border border-[#16a34a]/30 transition-opacity group-hover:opacity-75">
+                {user.avatarUrl ? (
+                  <AvatarImage src={user.avatarUrl} alt={user.name} />
+                ) : null}
+                <AvatarFallback className="text-[#4ade80] bg-[#141417] text-[11px]">
                   {user.name.slice(0, 2).toUpperCase()}
-                </div>
-              )}
+                </AvatarFallback>
+              </Avatar>
               <div className="absolute inset-0 rounded-full bg-[#000]/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <Camera size={10} className="text-white" />
               </div>

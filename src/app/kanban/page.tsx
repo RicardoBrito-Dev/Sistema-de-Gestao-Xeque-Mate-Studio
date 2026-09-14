@@ -7,6 +7,7 @@ import { KanbanCard, KanbanStage } from '@/lib/types'
 import KanbanCardModal from '@/components/kanban/KanbanCardModal'
 import Badge from '@/components/ui/Badge'
 import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { useAuth } from '@/contexts/AuthContext'
 import { filterKanbanForUser } from '@/lib/permissions'
 import { Mic2, Sliders, Headphones, RotateCcw, CheckCircle2, Plus, Calendar, Trash2, Edit2, ExternalLink } from 'lucide-react'
@@ -181,10 +182,17 @@ export default function KanbanPage() {
                                     </div>
                                   </div>
 
-                                  {/* Track name */}
-                                  <div>
-                                    <h4 className="font-bebas text-[15px] text-[#F0F0F0] tracking-wide leading-none truncate">{card.trackName}</h4>
-                                    <p className="text-[11px] text-[#555] mt-1 truncate">{card.artistName}</p>
+                                  {/* Track name + Artist Avatar */}
+                                  <div className="flex items-start gap-3">
+                                    <Avatar className="h-8 w-8 shrink-0 border border-[#27272a] mt-0.5">
+                                      <AvatarFallback className="text-[10px] text-[#4ade80] bg-[#141417]">
+                                        {card.artistName.slice(0, 2).toUpperCase()}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="min-w-0 flex-1">
+                                      <h4 className="font-bebas text-[15px] text-[#F0F0F0] tracking-wide leading-none truncate">{card.trackName}</h4>
+                                      <p className="text-[11px] text-[#555] mt-1 truncate">{card.artistName}</p>
+                                    </div>
                                   </div>
 
                                   {/* Footer */}

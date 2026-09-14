@@ -14,8 +14,10 @@ import StatCard from '@/components/ui/StatCard'
 import RevenueChart from '@/components/dashboard/RevenueChart'
 import ServicePieChart from '@/components/dashboard/ServicePieChart'
 import RecentTransactions from '@/components/dashboard/RecentTransactions'
+import StudioRadarCarousel from '@/components/dashboard/StudioRadarCarousel'
 import { useAuth } from '@/contexts/AuthContext'
 import { filterKanbanForUser, filterSessionsForUser, filterTransactionsForUser } from '@/lib/permissions'
+import { Session, KanbanCard } from '@/lib/types'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { motion } from 'framer-motion'
@@ -40,6 +42,8 @@ export default function DashboardPage() {
   const [kanbanCount, setKanbanCount] = useState(0)
   const [sessionsToday, setSessionsToday] = useState(0)
   const [artistRevenue, setArtistRevenue] = useState(0)
+  const [sessionsList, setSessionsList] = useState<Session[]>([])
+  const [activeTracks, setActiveTracks] = useState<KanbanCard[]>([])
   const [currentDateStr, setCurrentDateStr] = useState('')
 
   useEffect(() => {
@@ -59,6 +63,8 @@ export default function DashboardPage() {
         setClientsCount(clients.length)
         setKanbanCount(kanban.filter(k => k.stage !== 'entregue').length)
         setSessionsToday(sessions.filter(s => s.date === today).length)
+        setSessionsList(sessions)
+        setActiveTracks(kanban.filter(k => k.stage !== 'entregue'))
       } else {
         const [kanban, sessions, txs] = await Promise.all([
           getKanbanCardsAsync(),
@@ -79,6 +85,8 @@ export default function DashboardPage() {
         setKanbanCount(myKanban.filter(k => k.stage !== 'entregue').length)
         setSessionsToday(mySessions.filter(s => s.date === today).length)
         setArtistRevenue(myRevenue)
+        setSessionsList(mySessions)
+        setActiveTracks(myKanban.filter(k => k.stage !== 'entregue'))
       }
     }
 
@@ -197,6 +205,13 @@ export default function DashboardPage() {
               ))}
             </div>
 
+            {/* ─── Studio Radar Carousel (shadcn Carousel + Avatar) ─── */}
+            <StudioRadarCarousel
+              sessions={sessionsList}
+              activeTracks={activeTracks}
+              canEdit={canEdit}
+            />
+
             {/* ─── Charts ─────────────────────────────────────────── */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-w-0">
               <div className="lg:col-span-2 min-w-0">
@@ -246,6 +261,13 @@ export default function DashboardPage() {
                 />
               </motion.div>
             </motion.div>
+
+            {/* ─── Studio Radar Carousel (shadcn Carousel + Avatar) ─── */}
+            <StudioRadarCarousel
+              sessions={sessionsList}
+              activeTracks={activeTracks}
+              canEdit={canEdit}
+            />
 
             <motion.div
               className="bg-[#0f0f0f] border border-[#1e1e1e] rounded-xl p-6"
