@@ -8,10 +8,19 @@ import KanbanCardModal from '@/components/kanban/KanbanCardModal'
 import Badge from '@/components/ui/Badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Progress } from '@/components/ui/progress'
 import { useAuth } from '@/contexts/AuthContext'
 import { filterKanbanForUser } from '@/lib/permissions'
 import { Mic2, Sliders, Headphones, RotateCcw, CheckCircle2, Plus, Calendar, Trash2, Edit2, ExternalLink } from 'lucide-react'
 import { format, differenceInDays } from 'date-fns'
+
+const STAGE_PROGRESS: Record<KanbanStage, number> = {
+  gravacao: 20,
+  mix: 45,
+  master: 70,
+  recall: 85,
+  entregue: 100,
+}
 
 const COLUMNS: { id: KanbanStage; label: string; color: string; bg: string; border: string; icon: any }[] = [
   { id: 'gravacao', label: 'Gravação', color: 'text-[#E74C3C]', bg: 'bg-[#C0392B]/5', border: 'border-[#C0392B]/20', icon: Mic2 },
@@ -193,6 +202,29 @@ export default function KanbanPage() {
                                       <h4 className="font-bebas text-[15px] text-[#F0F0F0] tracking-wide leading-none truncate">{card.trackName}</h4>
                                       <p className="text-[11px] text-[#555] mt-1 truncate">{card.artistName}</p>
                                     </div>
+                                  </div>
+
+                                  {/* Production Stage Progress */}
+                                  <div className="space-y-1">
+                                    <div className="flex items-center justify-between text-[9px] text-[#71717a] font-semibold uppercase tracking-wider">
+                                      <span>Etapa</span>
+                                      <span className={card.stage === 'entregue' ? 'text-[#4ade80]' : 'text-[#a1a1aa]'}>
+                                        {STAGE_PROGRESS[card.stage]}%
+                                      </span>
+                                    </div>
+                                    <Progress
+                                      value={STAGE_PROGRESS[card.stage]}
+                                      className="h-1 bg-[#1e1e22]"
+                                      indicatorClassName={
+                                        card.stage === 'entregue'
+                                          ? 'bg-emerald-400'
+                                          : card.stage === 'recall'
+                                          ? 'bg-rose-400'
+                                          : card.stage === 'master'
+                                          ? 'bg-purple-400'
+                                          : 'bg-[#22c55e]'
+                                      }
+                                    />
                                   </div>
 
                                   {/* Footer */}

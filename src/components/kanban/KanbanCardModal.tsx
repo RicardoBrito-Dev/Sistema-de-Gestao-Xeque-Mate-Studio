@@ -1,7 +1,14 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import Modal from '@/components/ui/Modal'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+} from '@/components/ui/sheet'
 import { KanbanCard, KanbanStage, Priority } from '@/lib/types'
 import { saveKanbanCardAsync, generateId } from '@/lib/storage'
 
@@ -75,112 +82,121 @@ export default function KanbanCardModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={card ? 'Editar Música' : 'Nova Música'} size="md">
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
-          <label className="label-field">Nome da Faixa / Música *</label>
-          <input
-            type="text"
-            className="input-dark"
-            placeholder="Ex: Favela Vive Pt. 5"
-            value={trackName}
-            onChange={(e) => setTrackName(e.target.value)}
-            required
-          />
-        </div>
+    <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
+      <SheetContent side="right" className="w-full sm:max-w-md md:max-w-lg">
+        <SheetHeader>
+          <SheetTitle>{card ? 'Editar Música' : 'Nova Música'}</SheetTitle>
+          <SheetDescription>
+            {card ? `Ajuste os dados de "${card.trackName}"` : 'Adicione uma nova faixa ao fluxo de produção'}
+          </SheetDescription>
+        </SheetHeader>
 
-        <div>
-          <label className="label-field">Artista / Cliente *</label>
-          <input
-            type="text"
-            className="input-dark"
-            placeholder="Ex: MC Sombra"
-            value={artistName}
-            onChange={(e) => setArtistName(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-5 mt-5">
           <div>
-            <label className="label-field">Estágio de Produção</label>
-            <select
-              className="input-dark"
-              value={stage}
-              onChange={(e) => setStage(e.target.value as KanbanStage)}
-            >
-              <option value="gravacao">Gravação</option>
-              <option value="mix">Mixagem</option>
-              <option value="master">Masterização</option>
-              <option value="recall">Recall</option>
-              <option value="entregue">Entregue / Concluído</option>
-            </select>
-          </div>
-          <div>
-            <label className="label-field">Prioridade</label>
-            <select
-              className="input-dark"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value as Priority)}
-            >
-              <option value="normal">Normal</option>
-              <option value="urgente">Urgente</option>
-              <option value="espera">Em Espera</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="label-field">Data de Entrada</label>
+            <label className="label-field">Nome da Faixa / Música *</label>
             <input
-              type="date"
+              type="text"
               className="input-dark"
-              value={entryDate}
-              onChange={(e) => setEntryDate(e.target.value)}
+              placeholder="Ex: Favela Vive Pt. 5"
+              value={trackName}
+              onChange={(e) => setTrackName(e.target.value)}
+              required
             />
           </div>
+
           <div>
-            <label className="label-field">Prazo de Entrega (Opcional)</label>
+            <label className="label-field">Artista / Cliente *</label>
             <input
-              type="date"
+              type="text"
               className="input-dark"
-              value={deadline}
-              onChange={(e) => setDeadline(e.target.value)}
+              placeholder="Ex: MC Sombra"
+              value={artistName}
+              onChange={(e) => setArtistName(e.target.value)}
+              required
             />
           </div>
-        </div>
 
-        <div>
-          <label className="label-field">Link do Google Drive / Guia (Opcional)</label>
-          <input
-            type="url"
-            className="input-dark"
-            placeholder="Ex: https://drive.google.com/file/d/..."
-            value={driveLink}
-            onChange={(e) => setDriveLink(e.target.value)}
-          />
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="label-field">Estágio de Produção</label>
+              <select
+                className="input-dark"
+                value={stage}
+                onChange={(e) => setStage(e.target.value as KanbanStage)}
+              >
+                <option value="gravacao">Gravação</option>
+                <option value="mix">Mixagem</option>
+                <option value="master">Masterização</option>
+                <option value="recall">Recall</option>
+                <option value="entregue">Entregue / Concluído</option>
+              </select>
+            </div>
+            <div>
+              <label className="label-field">Prioridade</label>
+              <select
+                className="input-dark"
+                value={priority}
+                onChange={(e) => setPriority(e.target.value as Priority)}
+              >
+                <option value="normal">Normal</option>
+                <option value="urgente">Urgente</option>
+                <option value="espera">Em Espera</option>
+              </select>
+            </div>
+          </div>
 
-        <div>
-          <label className="label-field">Anotações da Música</label>
-          <textarea
-            className="input-dark h-24 resize-none"
-            placeholder="Ajustes pendentes na mix, referências musicais, prazos..."
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="label-field">Data de Entrada</label>
+              <input
+                type="date"
+                className="input-dark"
+                value={entryDate}
+                onChange={(e) => setEntryDate(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="label-field">Prazo de Entrega (Opcional)</label>
+              <input
+                type="date"
+                className="input-dark"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+              />
+            </div>
+          </div>
 
-        <div className="flex justify-end gap-3 pt-5 border-t border-[#1e1e1e]">
-          <button type="button" onClick={onClose} className="btn-secondary">
-            Cancelar
-          </button>
-          <button type="submit" className="btn-primary">
-            Salvar Música
-          </button>
-        </div>
-      </form>
-    </Modal>
+          <div>
+            <label className="label-field">Link do Google Drive / Guia (Opcional)</label>
+            <input
+              type="url"
+              className="input-dark"
+              placeholder="Ex: https://drive.google.com/file/d/..."
+              value={driveLink}
+              onChange={(e) => setDriveLink(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className="label-field">Anotações da Música</label>
+            <textarea
+              className="input-dark h-24 resize-none"
+              placeholder="Ajustes pendentes na mix, referências musicais, prazos..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
+
+          <SheetFooter className="px-0">
+            <button type="button" onClick={onClose} className="btn-secondary">
+              Cancelar
+            </button>
+            <button type="submit" className="btn-primary">
+              Salvar Música
+            </button>
+          </SheetFooter>
+        </form>
+      </SheetContent>
+    </Sheet>
   )
 }

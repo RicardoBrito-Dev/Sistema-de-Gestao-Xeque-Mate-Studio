@@ -6,6 +6,7 @@ import { useSessionsRealtime } from '@/hooks/useSessionsRealtime'
 import { Session, Artist } from '@/lib/types'
 import SessionModal from '@/components/schedule/SessionModal'
 import { Button } from '@/components/ui/button'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/contexts/AuthContext'
 import { filterSessionsForUser, canEditSession } from '@/lib/permissions'
 import {
@@ -172,31 +173,19 @@ export default function SchedulePage() {
           )}
         </div>
 
-        {/* ─── Agenda Tabs ─── */}
-        <div className="flex border-b border-[#1e1e1e]/80 gap-2">
-          <button
-            onClick={() => setActiveTab('estudio')}
-            className={`py-3 px-6 text-sm font-bebas tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === 'estudio'
-                ? 'border-[#16a34a] text-[#4ade80]'
-                : 'border-transparent text-[#555] hover:text-[#888]'
-            }`}
-          >
-            <Mic2 size={14} />
-            Agenda de Estúdio
-          </button>
-          <button
-            onClick={() => setActiveTab('show')}
-            className={`py-3 px-6 text-sm font-bebas tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === 'show'
-                ? 'border-[#16a34a] text-[#4ade80]'
-                : 'border-transparent text-[#555] hover:text-[#888]'
-            }`}
-          >
-            <Music size={14} />
-            Agenda de Shows
-          </button>
-        </div>
+        {/* ─── Agenda Tabs (shadcn Tabs) ─── */}
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'estudio' | 'show')}>
+          <TabsList className="bg-[#0f0f11] border-[#1e1e22]">
+            <TabsTrigger value="estudio" className="flex items-center gap-2 font-bebas text-sm tracking-wider px-5 py-2">
+              <Mic2 size={14} />
+              Agenda de Estúdio
+            </TabsTrigger>
+            <TabsTrigger value="show" className="flex items-center gap-2 font-bebas text-sm tracking-wider px-5 py-2">
+              <Music size={14} />
+              Agenda de Shows
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         {/* ─── Filters & Navigation Bar ─── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0d0d0d] border border-[#1e1e1e] rounded-xl px-4 py-3">
@@ -251,31 +240,19 @@ export default function SchedulePage() {
               </div>
             )}
 
-            {/* View Mode Toggle - redundância na barra de navegação com texto 100% visível */}
-            <div className="flex rounded-lg border border-[#26262a] overflow-hidden bg-[#111]">
-              <button
-                onClick={() => setViewMode('week')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
-                  viewMode === 'week'
-                    ? 'bg-[#16a34a] text-white'
-                    : 'text-[#666] hover:text-[#bbb]'
-                }`}
-              >
-                <Columns size={13} />
-                <span>Semana</span>
-              </button>
-              <button
-                onClick={() => setViewMode('month')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
-                  viewMode === 'month'
-                    ? 'bg-[#16a34a] text-white'
-                    : 'text-[#666] hover:text-[#bbb]'
-                }`}
-              >
-                <LayoutGrid size={13} />
-                <span>Mês</span>
-              </button>
-            </div>
+            {/* View Mode Toggle (shadcn Tabs) */}
+            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'week' | 'month')}>
+              <TabsList className="bg-[#111] border-[#26262a] p-0.5">
+                <TabsTrigger value="week" className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold">
+                  <Columns size={13} />
+                  <span>Semana</span>
+                </TabsTrigger>
+                <TabsTrigger value="month" className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold">
+                  <LayoutGrid size={13} />
+                  <span>Mês</span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
         </div>
 

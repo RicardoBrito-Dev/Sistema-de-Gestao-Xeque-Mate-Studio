@@ -7,6 +7,7 @@ import {
 import { Transaction } from '@/lib/types'
 import TransactionModal from '@/components/finances/TransactionModal'
 import { Button } from '@/components/ui/button'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/contexts/AuthContext'
 import {
   TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Search,
@@ -161,23 +162,17 @@ export default function FinancesPage() {
             <input type="text" className="input-dark pl-9 text-sm" placeholder="Buscar descrição..." value={search} onChange={e => setSearch(e.target.value)} />
           </div>
 
-          <div className="flex bg-[#111] border border-[#1e1e1e] rounded-lg p-0.5 text-xs w-full sm:w-auto justify-around sm:justify-start">
-            {(['all', 'receita', 'despesa'] as const).map(t => (
-              <button
-                key={t}
-                onClick={() => setTypeFilter(t)}
-                className={`px-3.5 py-1.5 rounded-lg font-medium transition-all duration-200 active:scale-[0.95] cursor-pointer flex-1 sm:flex-none text-center ${
-                  typeFilter === t
-                    ? t === 'all' ? 'bg-[#222] text-[#F0F0F0]'
-                      : t === 'receita' ? 'bg-emerald-500/15 text-emerald-400'
-                      : 'bg-[#C0392B]/15 text-[#E74C3C]'
-                    : 'text-[#555] hover:text-[#888]'
-                }`}
-              >
-                {t === 'all' ? 'Todos' : t === 'receita' ? 'Entradas' : 'Saídas'}
-              </button>
-            ))}
-          </div>
+          <Tabs
+            value={typeFilter}
+            onValueChange={(v) => setTypeFilter(v as 'all' | 'receita' | 'despesa')}
+            className="w-full sm:w-auto"
+          >
+            <TabsList className="w-full sm:w-auto grid grid-cols-3 sm:flex">
+              <TabsTrigger value="all">Todos</TabsTrigger>
+              <TabsTrigger value="receita">Entradas</TabsTrigger>
+              <TabsTrigger value="despesa">Saídas</TabsTrigger>
+            </TabsList>
+          </Tabs>
 
           <select className="input-dark text-sm w-full sm:w-auto sm:min-w-[180px]" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
             <option value="all">Todas Categorias</option>
