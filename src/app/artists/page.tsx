@@ -428,8 +428,8 @@ export default function ArtistsPage() {
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between text-xs text-[#71717a]" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center gap-1.5">
+                        <div className="flex items-center justify-between text-xs text-[#71717a]">
+                          <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                             {artist.instagram && (
                               <a
                                 href={`https://instagram.com/${artist.instagram.replace('@', '')}`}
@@ -462,10 +462,17 @@ export default function ArtistsPage() {
                             )}
                           </div>
 
-                          <span className="text-[11px] text-[#a1a1aa] flex items-center gap-1 group-hover:text-white transition-colors">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleOpenDetail(artist)
+                            }}
+                            className="text-[11px] font-semibold text-[#22c55e] hover:text-[#4ade80] flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#15803d]/15 hover:bg-[#15803d]/25 border border-[#15803d]/30 transition-all cursor-pointer active:scale-95 shadow-sm"
+                          >
                             <span>Ver ficha</span>
-                            <ArrowUpRight size={12} />
-                          </span>
+                            <ArrowUpRight size={13} />
+                          </button>
                         </div>
                       </div>
                     </motion.div>
