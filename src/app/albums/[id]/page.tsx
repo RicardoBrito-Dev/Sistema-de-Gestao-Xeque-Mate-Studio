@@ -20,7 +20,15 @@ import {
   ChevronDown,
   ChevronUp,
   GripVertical,
+  MoreVertical,
 } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd"
 import PageWrapper from "@/components/ui/PageWrapper"
 import { Album, AlbumTrack, TrackVersion, TrackFeedback } from "@/lib/types"
@@ -464,8 +472,8 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                               }`}
                             >
                               {/* Main Track Row */}
-                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5 sm:gap-3 p-3 sm:p-4">
-                                {/* Top/Left: Drag Handle, Play Button, Track Title & Artist */}
+                              <div className="flex items-center justify-between gap-2.5 sm:gap-3 p-3 sm:px-4 sm:py-3.5">
+                                {/* Left: Drag Handle, Play Button, Number, Title & Artist */}
                                 <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
                                   {/* Drag Handle */}
                                   <div
@@ -495,8 +503,8 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                                     </button>
                                   </div>
 
-                                  {/* Track Info (Title & Artist) - Gets maximum horizontal space */}
-                                  <div className="flex-1 min-w-0 pr-1">
+                                  {/* Track Info (Title & Artist) - Gets all available space */}
+                                  <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
                                       <span className="text-xs font-mono text-[#52525b] flex-shrink-0">
                                         {String(idx + 1).padStart(2, "0")}
@@ -518,19 +526,11 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                                       {track.artistName || album.artistName}
                                     </p>
                                   </div>
-
-                                  {/* Mobile Delete Button */}
-                                  <button
-                                    onClick={() => handleRemoveTrack(track.kanbanCardId)}
-                                    title="Remover faixa deste álbum"
-                                    className="md:hidden text-[#52525b] hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition-all flex-shrink-0 cursor-pointer"
-                                  >
-                                    <Trash2 size={15} />
-                                  </button>
                                 </div>
 
-                                {/* Bottom/Right: Version Selector, + Versão, Feedbacks, and Desktop Delete */}
-                                <div className="flex items-center gap-2 pl-9 sm:pl-12 md:pl-0 flex-shrink-0 flex-wrap sm:flex-nowrap">
+                                {/* Right: Version Selector Pill + Feedback Badge (if any) + 3 Dots Menu */}
+                                <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                                  {/* Compact Version Selector Pill */}
                                   <VersionSelector
                                     versions={versions}
                                     selectedVersionId={track.selectedVersionId}
@@ -539,55 +539,82 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                                     }
                                   />
 
-                                  <button
-                                    type="button"
-                                    onClick={() => setVersionModalTrack(track)}
-                                    title="Gerenciar versões e subir novos áudios desta faixa"
-                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#18181b] hover:bg-[#222226] border border-[#27272a] text-[11px] font-medium text-[#d4d4d8] hover:text-white transition-all cursor-pointer"
-                                  >
-                                    <Layers size={12} className="text-[#22c55e]" />
-                                    <span>+ Versão</span>
-                                  </button>
+                                  {/* Quick Feedback Indicator Badge (if there are feedbacks) */}
+                                  {feedbacks.length > 0 && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setActiveFeedbackTrackId(
+                                          isFeedbackExpanded ? null : track.kanbanCardId
+                                        )
+                                      }
+                                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-mono transition-all border cursor-pointer ${
+                                        isFeedbackExpanded
+                                          ? "bg-[#22c55e]/20 border-[#22c55e]/40 text-[#4ade80]"
+                                          : completedFeedbacks === feedbacks.length
+                                          ? "bg-[#22c55e]/10 border-[#22c55e]/30 text-[#4ade80]"
+                                          : "bg-[#18181b] border-[#272730] text-[#a1a1aa]"
+                                      }`}
+                                      title="Ver feedbacks desta faixa"
+                                    >
+                                      <MessageSquareQuote size={11} />
+                                      <span>{completedFeedbacks}/{feedbacks.length}</span>
+                                    </button>
+                                  )}
 
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      setActiveFeedbackTrackId(
-                                        isFeedbackExpanded ? null : track.kanbanCardId
-                                      )
-                                    }
-                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all border cursor-pointer ${
-                                      isFeedbackExpanded
-                                        ? "bg-[#22c55e]/15 border-[#22c55e]/40 text-[#4ade80]"
-                                        : feedbacks.length > 0 && completedFeedbacks === feedbacks.length
-                                        ? "bg-[#22c55e]/10 border-[#22c55e]/30 text-[#4ade80]"
-                                        : feedbacks.length > 0
-                                        ? "bg-[#18181b] hover:bg-[#222226] border-[#3f3f46] text-[#e4e4e7]"
-                                        : "bg-[#141416] hover:bg-[#1a1a1e] border-[#27272a] text-[#71717a] hover:text-[#d4d4d8]"
-                                    }`}
-                                    title="Abrir anotações e feedbacks de revisão"
-                                  >
-                                    <MessageSquareQuote size={13} />
-                                    <span>
-                                      {feedbacks.length === 0
-                                        ? "Feedbacks"
-                                        : `${completedFeedbacks}/${feedbacks.length} OK`}
-                                    </span>
-                                    {isFeedbackExpanded ? (
-                                      <ChevronUp size={12} />
-                                    ) : (
-                                      <ChevronDown size={12} />
-                                    )}
-                                  </button>
+                                  {/* 3 Pontinhos Menu */}
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <button
+                                        type="button"
+                                        className="h-8 w-8 rounded-lg flex items-center justify-center text-[#71717a] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                                        title="Mais opções da faixa"
+                                      >
+                                        <MoreVertical size={16} />
+                                      </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-52">
+                                      {/* Opção 1: Adicionar/Gerenciar Versões */}
+                                      <DropdownMenuItem
+                                        onClick={() => setVersionModalTrack(track)}
+                                        className="gap-2.5"
+                                      >
+                                        <Layers size={14} className="text-[#22c55e]" />
+                                        <span>+ Versão (Mixagens)</span>
+                                      </DropdownMenuItem>
 
-                                  {/* Desktop Delete Action */}
-                                  <button
-                                    onClick={() => handleRemoveTrack(track.kanbanCardId)}
-                                    title="Remover faixa deste álbum"
-                                    className="hidden md:inline-flex opacity-0 group-hover:opacity-100 text-[#52525b] hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition-all flex-shrink-0 cursor-pointer"
-                                  >
-                                    <Trash2 size={15} />
-                                  </button>
+                                      {/* Opção 2: Feedbacks */}
+                                      <DropdownMenuItem
+                                        onClick={() =>
+                                          setActiveFeedbackTrackId(
+                                            isFeedbackExpanded ? null : track.kanbanCardId
+                                          )
+                                        }
+                                        className="gap-2.5"
+                                      >
+                                        <MessageSquareQuote size={14} className="text-[#38bdf8]" />
+                                        <div className="flex items-center justify-between flex-1">
+                                          <span>Feedbacks & Revisão</span>
+                                          {feedbacks.length > 0 && (
+                                            <span className="text-[10px] font-mono text-[#22c55e] ml-2">
+                                              {completedFeedbacks}/{feedbacks.length} OK
+                                            </span>
+                                          )}
+                                        </div>
+                                      </DropdownMenuItem>
+
+                                      <DropdownMenuSeparator />
+
+                                      {/* Opção 3: Remover Faixa */}
+                                      <DropdownMenuItem
+                                        onClick={() => handleRemoveTrack(track.kanbanCardId)}
+                                        className="gap-2.5 text-rose-400 focus:text-rose-300 focus:bg-rose-500/10"
+                                      >
+                                        <Trash2 size={14} />
+                                        <span>Remover do Álbum</span>
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
                                 </div>
                               </div>
 
