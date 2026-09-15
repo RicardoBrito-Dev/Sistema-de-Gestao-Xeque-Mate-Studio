@@ -613,6 +613,7 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
           onClose={() => setIsPickerOpen(false)}
           existingTrackIds={album.tracks.map((t) => t.kanbanCardId)}
           onAddTracks={handleAddTracks}
+          defaultArtistName={album.artistName}
         />
 
         <AlbumCreateSheet
