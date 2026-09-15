@@ -53,8 +53,11 @@ export function AlbumCreateSheet({ isOpen, onClose, album, onSave }: AlbumCreate
       // Upload da capa se um novo arquivo foi selecionado
       if (coverFile) {
         const uploadedUrl = await uploadAlbumCover(coverFile, id)
-        if (uploadedUrl) coverUrl = uploadedUrl
-        else if (coverPreview) coverUrl = coverPreview // fallback blob url local
+        if (uploadedUrl) {
+          coverUrl = uploadedUrl
+        } else {
+          console.warn('Upload de capa para Supabase falhou, capa não persistida na nuvem.')
+        }
       }
 
       const now = new Date().toISOString()

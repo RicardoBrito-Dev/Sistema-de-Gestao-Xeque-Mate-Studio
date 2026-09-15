@@ -48,7 +48,7 @@ export async function uploadAlbumCover(
   try {
     const supabase = createClient()
     const ext = file.name.split('.').pop() || 'jpg'
-    const path = `${albumId}.${ext}`
+    const path = `${albumId}_${Date.now()}.${ext}`
 
     const { error } = await supabase.storage
       .from(BUCKET_COVERS)
