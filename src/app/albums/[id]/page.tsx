@@ -244,37 +244,40 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
 
   return (
     <PageWrapper>
-      <div className="space-y-8 max-w-6xl mx-auto pb-24">
+      <div className="space-y-6 sm:space-y-8 max-w-6xl mx-auto pb-40 md:pb-24">
         {/* Navigation & Actions Top */}
         <div className="flex items-center justify-between">
           <Link
             href="/albums"
-            className="inline-flex items-center gap-2 text-xs font-semibold text-[#a1a1aa] hover:text-white transition-colors bg-[#141416] hover:bg-[#1a1a1e] border border-[#27272a] px-3 py-1.5 rounded-xl cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#a1a1aa] hover:text-white transition-colors bg-[#141416] hover:bg-[#1a1a1e] border border-[#27272a] px-3 py-1.5 rounded-xl cursor-pointer"
           >
             <ArrowLeft size={14} />
-            <span>Voltar para Álbuns</span>
+            <span className="hidden sm:inline">Voltar para Álbuns</span>
+            <span className="sm:hidden">Álbuns</span>
           </Link>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsEditOpen(true)}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-[#d4d4d8] hover:text-white bg-[#18181b] hover:bg-[#222226] border border-[#27272a] px-3 py-1.5 rounded-xl transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-[#d4d4d8] hover:text-white bg-[#18181b] hover:bg-[#222226] border border-[#27272a] px-2.5 sm:px-3 py-1.5 rounded-xl transition-all cursor-pointer"
+              title="Editar informações do álbum"
             >
               <Edit2 size={13} />
-              <span>Editar</span>
+              <span className="hidden sm:inline">Editar</span>
             </button>
             <button
               onClick={handleDeleteAlbum}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 px-3 py-1.5 rounded-xl transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all cursor-pointer"
+              title="Excluir álbum"
             >
               <Trash2 size={13} />
-              <span>Excluir</span>
+              <span className="hidden sm:inline">Excluir</span>
             </button>
           </div>
         </div>
 
         {/* Hero Section — Untitled Style Banner */}
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-b from-[#18181c]/90 via-[#111114]/90 to-[#0c0c0e] border border-[#27272a] p-6 md:p-8 shadow-2xl">
+        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-b from-[#18181c]/90 via-[#111114]/90 to-[#0c0c0e] border border-[#27272a] p-4 sm:p-6 md:p-8 shadow-2xl">
           {/* Background Blurred Ambient Glow */}
           {album.coverUrl && (
             <div
@@ -283,9 +286,9 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
             />
           )}
 
-          <div className="relative z-10 flex flex-col md:flex-row items-center md:items-end gap-6 md:gap-8">
+          <div className="relative z-10 flex flex-col md:flex-row items-center md:items-end gap-5 md:gap-8">
             {/* Cover Art */}
-            <div className="relative w-44 h-44 md:w-56 md:h-56 rounded-2xl overflow-hidden bg-[#18181b] border border-[#3f3f46]/40 shadow-2xl flex-shrink-0 group">
+            <div className="relative w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 rounded-2xl overflow-hidden bg-[#18181b] border border-[#3f3f46]/40 shadow-2xl flex-shrink-0 group">
               {album.coverUrl ? (
                 <img
                   src={album.coverUrl}
@@ -294,13 +297,13 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                 />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center text-[#52525b]">
-                  <Disc3 size={64} className="stroke-[1.5]" />
+                  <Disc3 size={56} className="stroke-[1.5]" />
                 </div>
               )}
             </div>
 
             {/* Album Metadata */}
-            <div className="flex-1 text-center md:text-left min-w-0 space-y-3">
+            <div className="flex-1 text-center md:text-left min-w-0 space-y-2.5 sm:space-y-3">
               <div className="flex items-center justify-center md:justify-start gap-2">
                 <span className="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-md bg-[#22c55e]/10 text-[#4ade80] border border-[#22c55e]/20 font-bold">
                   Projeto / Álbum
@@ -312,7 +315,7 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                 )}
               </div>
 
-              <h1 className="font-bebas text-4xl md:text-6xl text-white tracking-wider leading-none truncate">
+              <h1 className="font-bebas text-3xl sm:text-4xl md:text-6xl text-white tracking-wider leading-none truncate">
                 {album.title}
               </h1>
 
@@ -320,10 +323,10 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                 {album.artistName || "Artista não informado"}
               </p>
 
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs text-[#71717a] font-mono pt-1">
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-4 text-xs text-[#71717a] font-mono pt-1">
                 <span>{album.tracks.length} {album.tracks.length === 1 ? "faixa" : "faixas"}</span>
-                <span>•</span>
-                <span>Untitled Stream Engine</span>
+                <span className="hidden sm:inline">•</span>
+                <span className="hidden sm:inline">Untitled Stream Engine</span>
               </div>
 
               {/* Play All button */}
@@ -331,15 +334,15 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                 <button
                   onClick={handlePlayAll}
                   disabled={album.tracks.length === 0}
-                  className="inline-flex items-center gap-2 bg-[#22c55e] hover:bg-[#16a34a] disabled:opacity-50 text-black font-bold text-xs md:text-sm px-6 py-3 rounded-2xl transition-all shadow-lg shadow-[#22c55e]/20 active:scale-95 cursor-pointer"
+                  className="inline-flex items-center gap-2 bg-[#22c55e] hover:bg-[#16a34a] disabled:opacity-50 text-black font-bold text-xs md:text-sm px-5 sm:px-6 py-2.5 sm:py-3 rounded-2xl transition-all shadow-lg shadow-[#22c55e]/20 active:scale-95 cursor-pointer"
                 >
-                  <Play size={16} className="fill-black" />
+                  <Play size={15} className="fill-black" />
                   <span>Ouvir Álbum</span>
                 </button>
 
                 <button
                   onClick={() => setIsPickerOpen(true)}
-                  className="inline-flex items-center gap-2 bg-[#18181b] hover:bg-[#222226] text-white border border-[#27272a] font-semibold text-xs md:text-sm px-4 py-3 rounded-2xl transition-all active:scale-95 cursor-pointer"
+                  className="inline-flex items-center gap-2 bg-[#18181b] hover:bg-[#222226] text-white border border-[#27272a] font-semibold text-xs md:text-sm px-4 py-2.5 sm:py-3 rounded-2xl transition-all active:scale-95 cursor-pointer"
                 >
                   <Plus size={15} className="text-[#22c55e]" />
                   <span>Adicionar Faixa</span>
@@ -351,12 +354,12 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
 
         {/* Tracklist Section */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between px-2">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
               <Music size={18} className="text-[#22c55e]" />
               <span>Tracklist & Versões</span>
             </h2>
-            <span className="text-xs text-[#71717a] font-mono">
+            <span className="hidden sm:inline text-xs text-[#71717a] font-mono">
               Selecione a versão da mixagem para escuta
             </span>
           </div>

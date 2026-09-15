@@ -20,6 +20,7 @@ import {
   Smartphone,
   Search,
   Disc3,
+  Settings2,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
@@ -27,6 +28,7 @@ import { getNavItemsForUser } from '@/lib/permissions'
 import ChangePasswordModal from '@/components/auth/ChangePasswordModal'
 import AvatarModal from '@/components/auth/AvatarModal'
 import InstallPwaModal from '@/components/pwa/InstallPwaModal'
+import { MobileSettingsSheet } from '@/components/navigation/MobileSettingsSheet'
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { NotificationBell } from '@/components/notifications/NotificationBell'
@@ -48,6 +50,7 @@ export default function Sidebar() {
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false)
   const [isAvatarOpen, setIsAvatarOpen] = useState(false)
   const [isInstallPwaOpen, setIsInstallPwaOpen] = useState(false)
+  const [isMobileSettingsOpen, setIsMobileSettingsOpen] = useState(false)
   const { user, logout, canEdit } = useAuth()
 
   const handleLogout = () => {
@@ -296,56 +299,49 @@ export default function Sidebar() {
       </div>
 
       {/* ════════════════════════════════════════════════
-          MOBILE TOP HEADER BAR
+          MOBILE TOP HEADER BAR (Clean & Minimalist)
       ════════════════════════════════════════════════ */}
       <header
         className="md:hidden fixed top-0 left-0 right-0 h-14 bg-[#0a0a0a]/95 border-b border-[#1e1e1e] flex items-center justify-between px-4 z-50"
         style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 4px 30px rgba(0,0,0,0.6)' }}
       >
-        <div className="flex items-center gap-2">
+        <Link href="/dashboard" className="flex items-center gap-2 cursor-pointer">
           <div className="w-7 h-7 rounded-md bg-[#141417] border border-[#27272a] flex items-center justify-center">
             <Crown size={14} className="text-[#22c55e]" />
           </div>
           <span className="font-bebas text-lg tracking-wider text-white leading-none block">
             Xeque Mate
           </span>
-        </div>
+        </Link>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => window.dispatchEvent(new CustomEvent('open-command-menu'))}
-            className="p-2 rounded-lg bg-[#141417] border border-[#27272a] text-[#a1a1aa] hover:text-white transition-all cursor-pointer active:scale-95"
+            className="p-2 rounded-xl bg-[#141417] border border-[#27272a] text-[#a1a1aa] hover:text-white transition-all cursor-pointer active:scale-95"
             title="Buscar (Ctrl + K)"
           >
-            <Search size={14} />
+            <Search size={15} />
           </button>
           <NotificationBell />
           <button
-            onClick={() => setIsInstallPwaOpen(true)}
-            className="flex items-center gap-1.5 text-[11px] font-medium text-white bg-[#15803d] hover:bg-[#166534] px-2.5 py-1.5 rounded-lg transition-all cursor-pointer border border-white/10 active:scale-95 shadow-sm"
+            onClick={() => setIsMobileSettingsOpen(true)}
+            className="flex items-center gap-1.5 p-0.5 rounded-full border border-[#22c55e]/30 hover:border-[#22c55e]/60 transition-all cursor-pointer active:scale-95 bg-[#141417]"
+            title="Menu e Configurações"
           >
-            <Smartphone size={13} className="text-[#86efac]" />
-            Instalar
-          </button>
-          <button
-            onClick={() => setIsChangePasswordOpen(true)}
-            className="flex items-center gap-1 text-[11px] font-medium text-[#a1a1aa] hover:text-white bg-[#18181b] border border-[#27272a] px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
-          >
-            <Key size={12} />
-            Senha
-          </button>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-1 text-[11px] font-medium text-[#71717a] hover:text-rose-400 bg-[#18181b] border border-[#27272a] px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
-          >
-            <LogOut size={12} />
-            Sair
+            <Avatar className="h-7 w-7">
+              {user?.avatarUrl ? (
+                <AvatarImage src={user.avatarUrl} alt={user.name} />
+              ) : null}
+              <AvatarFallback className="text-[#4ade80] bg-[#1a1a1f] text-[10px] font-bold">
+                {user ? user.name.slice(0, 2).toUpperCase() : 'XM'}
+              </AvatarFallback>
+            </Avatar>
           </button>
         </div>
       </header>
 
       {/* ════════════════════════════════════════════════
-          MOBILE BOTTOM NAVIGATION BAR
+          MOBILE BOTTOM NAVIGATION BAR (Clean 5 Tabs)
       ════════════════════════════════════════════════ */}
       <nav
         className="md:hidden fixed bottom-0 left-0 right-0 z-50"
@@ -355,34 +351,124 @@ export default function Sidebar() {
           className="bg-[#0a0a0a]/95 border-t border-[#1e1e1e]"
           style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
         >
-          <div className="flex items-center justify-around px-1 py-1.5 safe-area-pb">
-            {navItems.map(({ href, label, icon: Icon }) => {
-              const active = pathname === href || pathname.startsWith(href + '/')
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className="flex flex-col items-center justify-center flex-1 py-1.5 transition-all duration-200"
-                >
-                  <Icon
-                    size={20}
-                    className={`transition-transform duration-200 ${
-                      active ? 'text-[#4ade80] scale-110' : 'text-[#555]'
-                    }`}
-                  />
-                  <span
-                    className={`text-[9px] font-semibold tracking-wide mt-1 transition-colors duration-200 ${
-                      active ? 'text-[#4ade80]' : 'text-[#555]'
-                    }`}
-                  >
-                    {label === 'Financeiro' ? 'Financ.' : label}
-                  </span>
-                </Link>
-              )
-            })}
+          <div className="flex items-center justify-around px-2 py-1.5 safe-area-pb">
+            {/* 1. Início */}
+            <Link
+              href="/dashboard"
+              className="flex flex-col items-center justify-center flex-1 py-1.5 transition-all duration-200"
+            >
+              <LayoutDashboard
+                size={20}
+                className={`transition-transform duration-200 ${
+                  pathname === '/dashboard' ? 'text-[#4ade80] scale-110' : 'text-[#71717a]'
+                }`}
+              />
+              <span
+                className={`text-[9px] font-semibold tracking-wide mt-1 transition-colors duration-200 ${
+                  pathname === '/dashboard' ? 'text-[#4ade80]' : 'text-[#71717a]'
+                }`}
+              >
+                Início
+              </span>
+            </Link>
+
+            {/* 2. Produção */}
+            <Link
+              href="/kanban"
+              className="flex flex-col items-center justify-center flex-1 py-1.5 transition-all duration-200"
+            >
+              <Kanban
+                size={20}
+                className={`transition-transform duration-200 ${
+                  pathname.startsWith('/kanban') ? 'text-[#4ade80] scale-110' : 'text-[#71717a]'
+                }`}
+              />
+              <span
+                className={`text-[9px] font-semibold tracking-wide mt-1 transition-colors duration-200 ${
+                  pathname.startsWith('/kanban') ? 'text-[#4ade80]' : 'text-[#71717a]'
+                }`}
+              >
+                Produção
+              </span>
+            </Link>
+
+            {/* 3. Álbuns */}
+            <Link
+              href="/albums"
+              className="flex flex-col items-center justify-center flex-1 py-1.5 transition-all duration-200"
+            >
+              <Disc3
+                size={20}
+                className={`transition-transform duration-200 ${
+                  pathname.startsWith('/albums') ? 'text-[#4ade80] scale-110' : 'text-[#71717a]'
+                }`}
+              />
+              <span
+                className={`text-[9px] font-semibold tracking-wide mt-1 transition-colors duration-200 ${
+                  pathname.startsWith('/albums') ? 'text-[#4ade80]' : 'text-[#71717a]'
+                }`}
+              >
+                Álbuns
+              </span>
+            </Link>
+
+            {/* 4. Artistas */}
+            <Link
+              href="/artists"
+              className="flex flex-col items-center justify-center flex-1 py-1.5 transition-all duration-200"
+            >
+              <Mic2
+                size={20}
+                className={`transition-transform duration-200 ${
+                  pathname.startsWith('/artists') ? 'text-[#4ade80] scale-110' : 'text-[#71717a]'
+                }`}
+              />
+              <span
+                className={`text-[9px] font-semibold tracking-wide mt-1 transition-colors duration-200 ${
+                  pathname.startsWith('/artists') ? 'text-[#4ade80]' : 'text-[#71717a]'
+                }`}
+              >
+                Artistas
+              </span>
+            </Link>
+
+            {/* 5. Menu / Configurações */}
+            <button
+              type="button"
+              onClick={() => setIsMobileSettingsOpen(true)}
+              className="flex flex-col items-center justify-center flex-1 py-1.5 transition-all duration-200 cursor-pointer"
+            >
+              <Settings2
+                size={20}
+                className={`transition-transform duration-200 ${
+                  ['/schedule', '/clients', '/finances'].some(p => pathname.startsWith(p)) || isMobileSettingsOpen
+                    ? 'text-[#4ade80] scale-110'
+                    : 'text-[#71717a]'
+                }`}
+              />
+              <span
+                className={`text-[9px] font-semibold tracking-wide mt-1 transition-colors duration-200 ${
+                  ['/schedule', '/clients', '/finances'].some(p => pathname.startsWith(p)) || isMobileSettingsOpen
+                    ? 'text-[#4ade80]'
+                    : 'text-[#71717a]'
+                }`}
+              >
+                Menu
+              </span>
+            </button>
           </div>
         </div>
       </nav>
+
+      {/* Mobile Settings Drawer */}
+      <MobileSettingsSheet
+        isOpen={isMobileSettingsOpen}
+        onClose={() => setIsMobileSettingsOpen(false)}
+        onOpenInstallPwa={() => setIsInstallPwaOpen(true)}
+        onOpenChangePassword={() => setIsChangePasswordOpen(true)}
+        onOpenAvatarModal={() => setIsAvatarOpen(true)}
+        onLogout={handleLogout}
+      />
 
       {/* Global Change Password Modal */}
       <ChangePasswordModal
