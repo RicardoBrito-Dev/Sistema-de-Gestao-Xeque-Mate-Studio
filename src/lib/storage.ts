@@ -446,11 +446,30 @@ export async function getAlbumsAsync(): Promise<import('./types').Album[]> {
   if (USE_SUPABASE) {
     try {
       const { dbGetAlbums } = await db()
-      const data = await dbGetAlbums()
-      if (data && data.length > 0) {
-        setItem(KEYS.albums, data)
-        return data
+      const remoteData = await dbGetAlbums()
+
+      // Sincroniza albums locais que ainda não foram para o Supabase
+      const localAlbums = getAlbums()
+      if (localAlbums.length > 0) {
+        const remoteIds = new Set(remoteData.map(a => a.id))
+        const notSynced = localAlbums.filter(a => !remoteIds.has(a.id))
+        if (notSynced.length > 0) {
+          const { dbSaveAlbum } = await db()
+          for (const album of notSynced) {
+            await dbSaveAlbum(album).catch(e =>
+              console.warn('Sync local→Supabase falhou para', album.title, e)
+            )
+          }
+          // Busca novamente após sync para ter o estado completo
+          const merged = await dbGetAlbums()
+          setItem(KEYS.albums, merged)
+          return merged
+        }
       }
+
+      // Atualiza o cache local com os dados do Supabase
+      setItem(KEYS.albums, remoteData)
+      return remoteData
     } catch (err) {
       console.warn('Supabase dbGetAlbums falhou, usando localStorage fallback:', err)
     }
