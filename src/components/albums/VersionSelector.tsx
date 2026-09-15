@@ -2,7 +2,13 @@
 
 import React from "react"
 import { TrackVersion } from "@/lib/types"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, Check } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface VersionSelectorProps {
   versions: TrackVersion[]
@@ -11,32 +17,64 @@ interface VersionSelectorProps {
   className?: string
 }
 
-export function VersionSelector({ versions, selectedVersionId, onChange, className = "" }: VersionSelectorProps) {
+export function VersionSelector({
+  versions,
+  selectedVersionId,
+  onChange,
+  className = "",
+}: VersionSelectorProps) {
   if (!versions || versions.length === 0) {
-    return (
-      <span className="text-[11px] text-[#3f3f46] italic">Sem versões</span>
-    )
+    return <span className="text-[11px] text-[#3f3f46] italic">Sem versões</span>
   }
 
   const activeId = selectedVersionId || versions[versions.length - 1]?.id
+  const activeIndex = versions.findIndex((v) => v.id === activeId)
+  const activeVer = versions[activeIndex !== -1 ? activeIndex : 0]
+  const displayLabel = `v${activeIndex !== -1 ? activeIndex + 1 : 1}`
 
   return (
-    <div className={`relative inline-flex items-center ${className}`}>
-      <select
-        value={activeId}
-        onChange={(e) => onChange(e.target.value)}
-        className="appearance-none bg-[#18181b] border border-[#27272a] hover:border-[#22c55e]/40 text-[#d4d4d8] text-[11px] font-mono font-semibold pl-2.5 pr-6 py-1.5 rounded-lg cursor-pointer transition-all outline-none focus:border-[#22c55e]/50 focus:ring-1 focus:ring-[#22c55e]/20 max-w-[135px] sm:max-w-[180px] truncate"
-      >
-        {versions.map((v) => (
-          <option key={v.id} value={v.id}>
-            {v.name}{v.isFinal ? " ★" : ""}
-          </option>
-        ))}
-      </select>
-      <ChevronDown
-        size={11}
-        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[#71717a] pointer-events-none"
-      />
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-[#18181b] border border-[#27272a] hover:border-[#22c55e]/40 text-[#d4d4d8] text-[11px] font-mono font-semibold transition-all cursor-pointer select-none focus:outline-none focus:border-[#22c55e]/50 ${className}`}
+          title={`Versão ativa: ${activeVer?.name || displayLabel}. Clique para alternar.`}
+        >
+          <span>{displayLabel}</span>
+          {activeVer?.isFinal && <span className="text-[#22c55e] text-[10px]">★</span>}
+          <ChevronDown size={11} className="text-[#71717a] ml-0.5" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <div className="px-2.5 py-1.5 text-[10px] font-mono uppercase tracking-wider text-[#71717a] border-b border-[#1e1e24] mb-1">
+          Alternar Versão (A/B)
+        </div>
+        {versions.map((v, i) => {
+          const isSelected = v.id === activeId
+          return (
+            <DropdownMenuItem
+              key={v.id}
+              onClick={() => onChange(v.id)}
+              className="flex items-center justify-between text-xs py-2 px-2.5 cursor-pointer rounded-lg hover:bg-[#1a1a20]"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="font-mono text-[#22c55e] font-bold text-xs flex-shrink-0">
+                  v{i + 1}
+                </span>
+                <span className="truncate text-[#e4e4e7]">{v.name}</span>
+                {v.isFinal && (
+                  <span className="text-[9px] text-[#22c55e] bg-[#22c55e]/15 px-1 py-0.5 rounded font-mono font-bold flex-shrink-0">
+                    Final
+                  </span>
+                )}
+              </div>
+              {isSelected && (
+                <Check size={14} className="text-[#22c55e] flex-shrink-0 ml-2" />
+              )}
+            </DropdownMenuItem>
+          )
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

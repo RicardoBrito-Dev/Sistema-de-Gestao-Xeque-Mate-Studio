@@ -472,17 +472,22 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                               }`}
                             >
                               {/* Main Track Row */}
-                              <div className="flex items-center justify-between gap-2.5 sm:gap-3 p-3 sm:px-4 sm:py-3.5">
-                                {/* Left: Drag Handle, Play Button, Number, Title & Artist */}
-                                <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-2 sm:gap-3 p-2.5 sm:px-4 sm:py-3.5">
+                                {/* Left: Drag Handle, Number, Play Button, Title & Artist */}
+                                <div className="flex items-center gap-2 sm:gap-2.5 flex-1 min-w-0">
                                   {/* Drag Handle */}
                                   <div
                                     {...draggableProvided.dragHandleProps}
-                                    className="cursor-grab active:cursor-grabbing p-1 text-[#3f3f46] hover:text-[#a1a1aa] transition-colors flex-shrink-0 touch-none"
+                                    className="cursor-grab active:cursor-grabbing p-1 text-[#3f3f46] hover:text-[#a1a1aa] transition-colors flex-shrink-0 touch-none flex items-center justify-center"
                                     title="Segure e arraste para reordenar a faixa"
                                   >
                                     <GripVertical size={16} />
                                   </div>
+
+                                  {/* Track Number */}
+                                  <span className="text-xs font-mono text-[#52525b] w-5 text-center flex-shrink-0 select-none">
+                                    {String(idx + 1).padStart(2, "0")}
+                                  </span>
 
                                   {/* Play Button */}
                                   <div className="w-8 flex items-center justify-center flex-shrink-0">
@@ -503,26 +508,23 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                                     </button>
                                   </div>
 
-                                  {/* Track Info (Title & Artist) - Gets all available space */}
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-xs font-mono text-[#52525b] flex-shrink-0">
-                                        {String(idx + 1).padStart(2, "0")}
-                                      </span>
+                                  {/* Track Info (Title & Artist) */}
+                                  <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                    <div className="flex items-center gap-1.5 min-w-0">
                                       <h3
-                                        className={`text-sm font-semibold truncate ${
+                                        className={`text-sm font-semibold truncate leading-tight ${
                                           isCurrent ? "text-[#4ade80]" : "text-[#f4f4f5]"
                                         }`}
                                       >
                                         {track.trackName}
                                       </h3>
                                       {activeVer?.isFinal && (
-                                        <span className="text-[9px] font-bold text-[#22c55e] bg-[#22c55e]/15 border border-[#22c55e]/20 px-1.5 py-0.5 rounded uppercase tracking-wider font-mono flex-shrink-0">
+                                        <span className="text-[9px] font-bold text-[#22c55e] bg-[#22c55e]/15 border border-[#22c55e]/20 px-1.5 py-0.5 rounded uppercase tracking-wider font-mono flex-shrink-0 leading-none">
                                           Final
                                         </span>
                                       )}
                                     </div>
-                                    <p className="text-xs text-[#71717a] truncate ml-6 mt-0.5">
+                                    <p className="text-xs text-[#71717a] truncate mt-0.5 leading-tight">
                                       {track.artistName || album.artistName}
                                     </p>
                                   </div>
@@ -618,9 +620,9 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                                 </div>
                               </div>
 
-                              {/* Expandable Feedback Box */}
+                              {/* Expandable Feedback Box - Centered and Symmetrical */}
                               {isFeedbackExpanded && (
-                                <div className="px-4 pb-4 pt-1 pl-12 md:pl-16">
+                                <div className="px-3 sm:px-4 pb-3.5 pt-2 border-t border-[#1e1e24] mt-0.5">
                                   <TrackFeedbackList
                                     track={track}
                                     onUpdateFeedbacks={(newFeedbacks) =>
