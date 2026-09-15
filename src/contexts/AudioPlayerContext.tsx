@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState, useRef, useEffect } from "react"
+import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from "react"
 import { TrackVersion } from "@/lib/types"
 import { getAudioBlob } from "@/lib/audioStorage"
 
@@ -20,13 +20,19 @@ interface AudioPlayerContextType {
   currentTime: number
   duration: number
   volume: number
-  playTrack: (track: PlayingTrack, targetVersionId?: string) => void
+  playlist: PlayingTrack[]
+  hasNext: boolean
+  hasPrev: boolean
+  playTrack: (track: PlayingTrack, targetVersionId?: string, newPlaylist?: PlayingTrack[]) => void
   pauseTrack: () => void
   resumeTrack: () => void
   stopTrack: () => void
   seek: (time: number) => void
   setVolume: (vol: number) => void
   switchVersion: (versionId: string) => void
+  nextTrack: () => void
+  prevTrack: () => void
+  updatePlaylist: (newPlaylist: PlayingTrack[]) => void
 }
 
 const AudioPlayerContext = createContext<AudioPlayerContextType>({
@@ -36,6 +42,9 @@ const AudioPlayerContext = createContext<AudioPlayerContextType>({
   currentTime: 0,
   duration: 0,
   volume: 1,
+  playlist: [],
+  hasNext: false,
+  hasPrev: false,
   playTrack: () => {},
   pauseTrack: () => {},
   resumeTrack: () => {},
@@ -43,6 +52,9 @@ const AudioPlayerContext = createContext<AudioPlayerContextType>({
   seek: () => {},
   setVolume: () => {},
   switchVersion: () => {},
+  nextTrack: () => {},
+  prevTrack: () => {},
+  updatePlaylist: () => {},
 })
 
 export function AudioPlayerProvider({ children }: { children: React.ReactNode }) {
@@ -52,44 +64,16 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [volume, setVolumeState] = useState(1)
+  const [playlist, setPlaylist] = useState<PlayingTrack[]>([])
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const fallbackTimerRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Initialize HTML5 Audio Element
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const audio = new Audio()
-      audio.preload = "auto"
-
-      audio.ontimeupdate = () => {
-        setCurrentTime(audio.currentTime)
-      }
-
-      audio.onloadedmetadata = () => {
-        if (!isNaN(audio.duration) && isFinite(audio.duration)) {
-          setDuration(audio.duration)
-        }
-      }
-
-      audio.onended = () => {
-        setIsPlaying(false)
-        setCurrentTime(0)
-      }
-
-      audio.onerror = () => {
-        // Fallback simulation if audio file URL failed or is mock
-        console.warn("Audio file failed or format unsupported, using fallback timer")
-      }
-
-      audioRef.current = audio
-
-      return () => {
-        audio.pause()
-        audio.src = ""
-      }
-    }
-  }, [])
+  // Keep refs for event handlers to avoid stale closures
+  const currentTrackRef = useRef<PlayingTrack | null>(null)
+  const playlistRef = useRef<PlayingTrack[]>([])
+  currentTrackRef.current = currentTrack
+  playlistRef.current = playlist
 
   // Resolve audio source (check IndexedDB if blob URL expired)
   const resolveAudioUrl = async (version: TrackVersion): Promise<string> => {
@@ -106,8 +90,9 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     return version.audioUrl || ""
   }
 
-  const playTrack = async (track: PlayingTrack, targetVersionId?: string) => {
+  const playTrackInternal = useCallback(async (track: PlayingTrack, targetVersionId?: string) => {
     setCurrentTrack(track)
+    currentTrackRef.current = track
 
     // Determine which version to play
     let versionToPlay: TrackVersion | null = null
@@ -139,12 +124,10 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
           .play()
           .then(() => setIsPlaying(true))
           .catch(() => {
-            // Autoplay policy or empty src - fallback timer
             setIsPlaying(true)
             setDuration(165)
           })
       } else {
-        // No audio URL yet: visual simulation mode
         setIsPlaying(true)
         setDuration(165)
       }
@@ -152,6 +135,89 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       setIsPlaying(true)
       setDuration(165)
     }
+  }, [])
+
+  const nextTrack = useCallback(() => {
+    const curr = currentTrackRef.current
+    const list = playlistRef.current
+    if (!curr || list.length <= 1) return
+
+    const currentIndex = list.findIndex((t) => t.id === curr.id)
+    if (currentIndex !== -1 && currentIndex + 1 < list.length) {
+      const next = list[currentIndex + 1]
+      playTrackInternal(next, next.activeVersionId)
+    } else {
+      // End of playlist
+      setIsPlaying(false)
+      setCurrentTime(0)
+    }
+  }, [playTrackInternal])
+
+  const prevTrack = useCallback(() => {
+    const curr = currentTrackRef.current
+    const list = playlistRef.current
+    if (!curr || list.length <= 1) return
+
+    const currentIndex = list.findIndex((t) => t.id === curr.id)
+    if (currentIndex > 0) {
+      const prev = list[currentIndex - 1]
+      playTrackInternal(prev, prev.activeVersionId)
+    } else {
+      // Restart current track from beginning
+      if (audioRef.current) audioRef.current.currentTime = 0
+      setCurrentTime(0)
+    }
+  }, [playTrackInternal])
+
+  // Next Track reference for audio.onended handler
+  const nextTrackRef = useRef(nextTrack)
+  nextTrackRef.current = nextTrack
+
+  // Initialize HTML5 Audio Element
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const audio = new Audio()
+      audio.preload = "auto"
+
+      audio.ontimeupdate = () => {
+        setCurrentTime(audio.currentTime)
+      }
+
+      audio.onloadedmetadata = () => {
+        if (!isNaN(audio.duration) && isFinite(audio.duration)) {
+          setDuration(audio.duration)
+        }
+      }
+
+      // Auto-advance to next track when finished
+      audio.onended = () => {
+        nextTrackRef.current()
+      }
+
+      audio.onerror = () => {
+        console.warn("Audio file failed or format unsupported, using fallback timer")
+      }
+
+      audioRef.current = audio
+
+      return () => {
+        audio.pause()
+        audio.src = ""
+      }
+    }
+  }, [])
+
+  const playTrack = (track: PlayingTrack, targetVersionId?: string, newPlaylist?: PlayingTrack[]) => {
+    if (newPlaylist && newPlaylist.length > 0) {
+      setPlaylist(newPlaylist)
+      playlistRef.current = newPlaylist
+    }
+    playTrackInternal(track, targetVersionId)
+  }
+
+  const updatePlaylist = (newPlaylist: PlayingTrack[]) => {
+    setPlaylist(newPlaylist)
+    playlistRef.current = newPlaylist
   }
 
   const switchVersion = async (versionId: string) => {
@@ -217,13 +283,13 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
   }
 
-  // Fallback timer when no actual audio source is loaded
+  // Fallback timer when no actual audio source is loaded (visual simulation mode)
   useEffect(() => {
     if (isPlaying && (!audioRef.current || !audioRef.current.src)) {
       fallbackTimerRef.current = setInterval(() => {
         setCurrentTime((prev) => {
           if (prev >= duration) {
-            setIsPlaying(false)
+            nextTrackRef.current()
             return 0
           }
           return prev + 1
@@ -238,6 +304,11 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
   }, [isPlaying, duration])
 
+  // Queue navigation state helpers
+  const currentIdx = currentTrack ? playlist.findIndex((t) => t.id === currentTrack.id) : -1
+  const hasNext = currentIdx !== -1 && currentIdx + 1 < playlist.length
+  const hasPrev = currentIdx > 0
+
   return (
     <AudioPlayerContext.Provider
       value={{
@@ -247,6 +318,9 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         currentTime,
         duration: duration || 165,
         volume,
+        playlist,
+        hasNext,
+        hasPrev,
         playTrack,
         pauseTrack,
         resumeTrack,
@@ -254,6 +328,9 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         seek,
         setVolume,
         switchVersion,
+        nextTrack,
+        prevTrack,
+        updatePlaylist,
       }}
     >
       {children}

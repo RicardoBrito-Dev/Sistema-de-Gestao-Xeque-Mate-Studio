@@ -14,7 +14,9 @@ import {
   Sparkles, 
   Plus, 
   Layers,
-  Star
+  Star,
+  SkipBack,
+  SkipForward,
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { AudioDropzone } from "@/components/audio/AudioDropzone"
@@ -28,12 +30,17 @@ export function StudioAudioPlayer() {
     currentTime,
     duration,
     volume,
+    playlist,
+    hasNext,
+    hasPrev,
     pauseTrack,
     resumeTrack,
     stopTrack,
     seek,
     setVolume,
     switchVersion,
+    nextTrack,
+    prevTrack,
   } = useAudioPlayer()
 
   const [isVersionDropdownOpen, setIsVersionDropdownOpen] = useState(false)
@@ -228,8 +235,19 @@ export function StudioAudioPlayer() {
             </div>
           </div>
 
-          {/* Action Buttons: Play/Pause, Volume, Close */}
-          <div className="flex items-center gap-1.5 shrink-0">
+          {/* Action Buttons: Prev, Play/Pause, Next, Volume, Close */}
+          <div className="flex items-center gap-1 shrink-0">
+            {playlist.length > 1 && (
+              <button
+                onClick={prevTrack}
+                disabled={!hasPrev}
+                className="p-1.5 rounded-lg text-[#71717a] hover:text-white disabled:opacity-30 disabled:hover:text-[#71717a] transition-colors cursor-pointer"
+                title="Faixa anterior"
+              >
+                <SkipBack size={14} />
+              </button>
+            )}
+
             <button
               onClick={isPlaying ? pauseTrack : resumeTrack}
               className="p-2.5 rounded-xl bg-[#15803d] hover:bg-[#166534] text-white shadow-sm transition-all cursor-pointer active:scale-90"
@@ -237,6 +255,17 @@ export function StudioAudioPlayer() {
             >
               {isPlaying ? <Pause size={15} /> : <Play size={15} className="ml-0.5" />}
             </button>
+
+            {playlist.length > 1 && (
+              <button
+                onClick={nextTrack}
+                disabled={!hasNext}
+                className="p-1.5 rounded-lg text-[#71717a] hover:text-white disabled:opacity-30 disabled:hover:text-[#71717a] transition-colors cursor-pointer"
+                title="Próxima faixa"
+              >
+                <SkipForward size={14} />
+              </button>
+            )}
 
             <button
               onClick={toggleMute}

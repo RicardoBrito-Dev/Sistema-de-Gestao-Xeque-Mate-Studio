@@ -45,14 +45,20 @@ export default function AlbumsPage() {
     e.stopPropagation()
     if (!album.tracks || album.tracks.length === 0) return
 
+    const playlist = album.tracks.map((t) => ({
+      id: t.kanbanCardId,
+      title: t.trackName,
+      artist: t.artistName || album.artistName,
+      versions: t.versions,
+      activeVersionId: t.selectedVersionId,
+    }))
+
     const firstTrack = album.tracks[0]
-    playTrack({
-      id: firstTrack.kanbanCardId,
-      title: firstTrack.trackName,
-      artist: firstTrack.artistName || album.artistName,
-      versions: firstTrack.versions,
-      activeVersionId: firstTrack.selectedVersionId,
-    })
+    playTrack(
+      playlist[0],
+      firstTrack.selectedVersionId,
+      playlist
+    )
   }
 
   return (

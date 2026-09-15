@@ -19,11 +19,13 @@ import {
   MessageSquareQuote,
   ChevronDown,
   ChevronUp,
+  GripVertical,
 } from "lucide-react"
+import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd"
 import PageWrapper from "@/components/ui/PageWrapper"
 import { Album, AlbumTrack, TrackVersion, TrackFeedback } from "@/lib/types"
 import { getAlbums, getAlbumsAsync, saveAlbumAsync, deleteAlbumAsync } from "@/lib/storage"
-import { useAudioPlayer } from "@/contexts/AudioPlayerContext"
+import { useAudioPlayer, PlayingTrack } from "@/contexts/AudioPlayerContext"
 import { AlbumTrackPicker } from "@/components/albums/AlbumTrackPicker"
 import { AlbumCreateSheet } from "@/components/albums/AlbumCreateSheet"
 import { VersionSelector } from "@/components/albums/VersionSelector"
@@ -44,7 +46,16 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
   const [activeFeedbackTrackId, setActiveFeedbackTrackId] = useState<string | null>(null)
   const [versionModalTrack, setVersionModalTrack] = useState<AlbumTrack | null>(null)
 
-  const { playTrack, pauseTrack, resumeTrack, currentTrack, isPlaying, switchVersion, activeVersion } = useAudioPlayer()
+  const {
+    playTrack,
+    pauseTrack,
+    resumeTrack,
+    currentTrack,
+    isPlaying,
+    switchVersion,
+    activeVersion,
+    updatePlaylist,
+  } = useAudioPlayer()
 
   const loadAlbum = async () => {
     // 1. Cache local imediato
@@ -74,6 +85,16 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
     loadAlbum()
   }, [id])
 
+  const getAlbumPlaylist = (tracks: AlbumTrack[]): PlayingTrack[] => {
+    return tracks.map((t) => ({
+      id: t.kanbanCardId,
+      title: t.trackName,
+      artist: t.artistName || album?.artistName || "",
+      versions: t.versions,
+      activeVersionId: t.selectedVersionId,
+    }))
+  }
+
   const handlePlayTrack = (track: AlbumTrack) => {
     const isCurrent = currentTrack?.id === track.kanbanCardId
     if (isCurrent) {
@@ -85,6 +106,7 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
       return
     }
 
+    const playlist = album ? getAlbumPlaylist(album.tracks) : []
     playTrack(
       {
         id: track.kanbanCardId,
@@ -93,23 +115,46 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
         versions: track.versions,
         activeVersionId: track.selectedVersionId,
       },
-      track.selectedVersionId
+      track.selectedVersionId,
+      playlist
     )
   }
 
   const handlePlayAll = () => {
     if (!album || !album.tracks || album.tracks.length === 0) return
-    const first = album.tracks[0]
+    const playlist = getAlbumPlaylist(album.tracks)
+    const firstTrack = album.tracks[0]
     playTrack(
-      {
-        id: first.kanbanCardId,
-        title: first.trackName,
-        artist: first.artistName || album.artistName,
-        versions: first.versions,
-        activeVersionId: first.selectedVersionId,
-      },
-      first.selectedVersionId
+      playlist[0],
+      firstTrack.selectedVersionId,
+      playlist
     )
+  }
+
+  const handleDragEnd = async (result: DropResult) => {
+    if (!result.destination || !album) return
+    if (result.destination.index === result.source.index) return
+
+    const reordered = Array.from(album.tracks)
+    const [moved] = reordered.splice(result.source.index, 1)
+    reordered.splice(result.destination.index, 0, moved)
+
+    const updatedTracks = reordered.map((t, idx) => ({
+      ...t,
+      order: idx + 1,
+    }))
+
+    const updatedAlbum: Album = {
+      ...album,
+      tracks: updatedTracks,
+      updatedAt: new Date().toISOString(),
+    }
+
+    setAlbum(updatedAlbum)
+    await saveAlbumAsync(updatedAlbum)
+
+    // Sincroniza a fila do player com a nova ordem das faixas
+    updatePlaylist(getAlbumPlaylist(updatedTracks))
   }
 
   const handleAddTracks = async (newTracks: AlbumTrack[]) => {
@@ -380,154 +425,185 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
               </button>
             </div>
           ) : (
-            <div className="bg-[#121214] border border-[#1e1e22] rounded-2xl overflow-hidden divide-y divide-[#1e1e22]">
-              {album.tracks.map((track, idx) => {
-                const isCurrent = currentTrack?.id === track.kanbanCardId
-                const trackPlaying = isCurrent && isPlaying
-                const versions = track.versions || []
-                const activeVer = versions.find(
-                  (v) => v.id === (track.selectedVersionId || versions[versions.length - 1]?.id)
-                )
-
-                const feedbacks = track.feedbacks || []
-                const completedFeedbacks = feedbacks.filter((f) => f.isCompleted).length
-                const isFeedbackExpanded = activeFeedbackTrackId === track.kanbanCardId
-
-                return (
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="album-tracks-list">
+                {(droppableProvided) => (
                   <div
-                    key={track.kanbanCardId}
-                    className={`flex flex-col transition-all ${
-                      isCurrent
-                        ? "bg-[#22c55e]/5 border-l-4 border-l-[#22c55e]"
-                        : "hover:bg-[#161619]/60 border-l-4 border-l-transparent"
-                    }`}
+                    ref={droppableProvided.innerRef}
+                    {...droppableProvided.droppableProps}
+                    className="bg-[#121214] border border-[#1e1e22] rounded-2xl overflow-hidden divide-y divide-[#1e1e22]"
                   >
-                    {/* Main Track Row */}
-                    <div className="flex flex-wrap md:flex-nowrap items-center gap-3 md:gap-4 p-3.5 md:px-5 md:py-4">
-                      {/* Index or Play Button */}
-                      <div className="w-8 flex items-center justify-center flex-shrink-0">
-                        <button
-                          onClick={() => handlePlayTrack(track)}
-                          className={`h-8 w-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-                            trackPlaying
-                              ? "bg-[#22c55e] text-black shadow-lg shadow-[#22c55e]/20"
-                              : "bg-[#18181b] hover:bg-[#22c55e]/20 text-[#a1a1aa] hover:text-[#4ade80] border border-[#27272a]"
-                          }`}
-                          title={trackPlaying ? "Pausar" : "Tocar versão selecionada"}
+                    {album.tracks.map((track, idx) => {
+                      const isCurrent = currentTrack?.id === track.kanbanCardId
+                      const trackPlaying = isCurrent && isPlaying
+                      const versions = track.versions || []
+                      const activeVer = versions.find(
+                        (v) => v.id === (track.selectedVersionId || versions[versions.length - 1]?.id)
+                      )
+
+                      const feedbacks = track.feedbacks || []
+                      const completedFeedbacks = feedbacks.filter((f) => f.isCompleted).length
+                      const isFeedbackExpanded = activeFeedbackTrackId === track.kanbanCardId
+
+                      return (
+                        <Draggable
+                          key={track.kanbanCardId}
+                          draggableId={track.kanbanCardId}
+                          index={idx}
                         >
-                          {trackPlaying ? (
-                            <Pause size={13} className="fill-black" />
-                          ) : (
-                            <Play size={13} className="fill-current ml-0.5" />
+                          {(draggableProvided, snapshot) => (
+                            <div
+                              ref={draggableProvided.innerRef}
+                              {...draggableProvided.draggableProps}
+                              className={`flex flex-col transition-all group ${
+                                snapshot.isDragging
+                                  ? "bg-[#16161a] shadow-2xl ring-2 ring-[#22c55e]/40 z-30 opacity-95"
+                                  : isCurrent
+                                  ? "bg-[#22c55e]/5 border-l-4 border-l-[#22c55e]"
+                                  : "hover:bg-[#161619]/60 border-l-4 border-l-transparent"
+                              }`}
+                            >
+                              {/* Main Track Row */}
+                              <div className="flex flex-wrap md:flex-nowrap items-center gap-2 sm:gap-3 md:gap-4 p-3 md:px-5 md:py-4">
+                                {/* Drag Handle */}
+                                <div
+                                  {...draggableProvided.dragHandleProps}
+                                  className="cursor-grab active:cursor-grabbing p-1 text-[#3f3f46] hover:text-[#a1a1aa] transition-colors flex-shrink-0 touch-none"
+                                  title="Segure e arraste para reordenar a faixa"
+                                >
+                                  <GripVertical size={16} />
+                                </div>
+
+                                {/* Index or Play Button */}
+                                <div className="w-8 flex items-center justify-center flex-shrink-0">
+                                  <button
+                                    onClick={() => handlePlayTrack(track)}
+                                    className={`h-8 w-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                                      trackPlaying
+                                        ? "bg-[#22c55e] text-black shadow-lg shadow-[#22c55e]/20"
+                                        : "bg-[#18181b] hover:bg-[#22c55e]/20 text-[#a1a1aa] hover:text-[#4ade80] border border-[#27272a]"
+                                    }`}
+                                    title={trackPlaying ? "Pausar" : "Tocar versão selecionada"}
+                                  >
+                                    {trackPlaying ? (
+                                      <Pause size={13} className="fill-black" />
+                                    ) : (
+                                      <Play size={13} className="fill-current ml-0.5" />
+                                    )}
+                                  </button>
+                                </div>
+
+                                {/* Track Info */}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-mono text-[#52525b] w-4">
+                                      {String(idx + 1).padStart(2, "0")}
+                                    </span>
+                                    <h3
+                                      className={`text-sm font-semibold truncate ${
+                                        isCurrent ? "text-[#4ade80]" : "text-[#f4f4f5]"
+                                      }`}
+                                    >
+                                      {track.trackName}
+                                    </h3>
+                                    {activeVer?.isFinal && (
+                                      <span className="text-[9px] font-bold text-[#22c55e] bg-[#22c55e]/15 border border-[#22c55e]/20 px-1.5 py-0.5 rounded uppercase tracking-wider font-mono">
+                                        Final
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-[#71717a] truncate ml-6 mt-0.5">
+                                    {track.artistName || album.artistName}
+                                  </p>
+                                </div>
+
+                                {/* Version Controls (Selector + Modal trigger) */}
+                                <div className="flex items-center gap-1.5 flex-shrink-0">
+                                  <VersionSelector
+                                    versions={versions}
+                                    selectedVersionId={track.selectedVersionId}
+                                    onChange={(versionId) =>
+                                      handleVersionChange(track.kanbanCardId, versionId)
+                                    }
+                                  />
+
+                                  <button
+                                    type="button"
+                                    onClick={() => setVersionModalTrack(track)}
+                                    title="Gerenciar versões e subir novos áudios desta faixa"
+                                    className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-[#18181b] hover:bg-[#222226] border border-[#27272a] text-[11px] font-medium text-[#d4d4d8] hover:text-white transition-all cursor-pointer"
+                                  >
+                                    <Layers size={12} className="text-[#22c55e]" />
+                                    <span className="hidden sm:inline">+ Versão</span>
+                                  </button>
+                                </div>
+
+                                {/* Feedback Toggle Button */}
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setActiveFeedbackTrackId(
+                                        isFeedbackExpanded ? null : track.kanbanCardId
+                                      )
+                                    }
+                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all border cursor-pointer ${
+                                      isFeedbackExpanded
+                                        ? "bg-[#22c55e]/15 border-[#22c55e]/40 text-[#4ade80]"
+                                        : feedbacks.length > 0 && completedFeedbacks === feedbacks.length
+                                        ? "bg-[#22c55e]/10 border-[#22c55e]/30 text-[#4ade80]"
+                                        : feedbacks.length > 0
+                                        ? "bg-[#18181b] hover:bg-[#222226] border-[#3f3f46] text-[#e4e4e7]"
+                                        : "bg-[#141416] hover:bg-[#1a1a1e] border-[#27272a] text-[#71717a] hover:text-[#d4d4d8]"
+                                    }`}
+                                    title="Abrir anotações e feedbacks de revisão"
+                                  >
+                                    <MessageSquareQuote size={13} />
+                                    <span>
+                                      {feedbacks.length === 0
+                                        ? "Feedbacks"
+                                        : `${completedFeedbacks}/${feedbacks.length} OK`}
+                                    </span>
+                                    {isFeedbackExpanded ? (
+                                      <ChevronUp size={12} />
+                                    ) : (
+                                      <ChevronDown size={12} />
+                                    )}
+                                  </button>
+
+                                  {/* Remove Action */}
+                                  <button
+                                    onClick={() => handleRemoveTrack(track.kanbanCardId)}
+                                    title="Remover faixa deste álbum"
+                                    className="opacity-70 sm:opacity-0 sm:group-hover:opacity-100 text-[#52525b] hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition-all flex-shrink-0 cursor-pointer"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Expandable Feedback Box */}
+                              {isFeedbackExpanded && (
+                                <div className="px-4 pb-4 pt-1 pl-12 md:pl-16">
+                                  <TrackFeedbackList
+                                    track={track}
+                                    onUpdateFeedbacks={(newFeedbacks) =>
+                                      handleUpdateFeedbacks(track.kanbanCardId, newFeedbacks)
+                                    }
+                                    isCurrentPlaying={isCurrent}
+                                  />
+                                </div>
+                              )}
+                            </div>
                           )}
-                        </button>
-                      </div>
-
-                      {/* Track Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono text-[#52525b] w-4">
-                            {String(idx + 1).padStart(2, "0")}
-                          </span>
-                          <h3
-                            className={`text-sm font-semibold truncate ${
-                              isCurrent ? "text-[#4ade80]" : "text-[#f4f4f5]"
-                            }`}
-                          >
-                            {track.trackName}
-                          </h3>
-                          {activeVer?.isFinal && (
-                            <span className="text-[9px] font-bold text-[#22c55e] bg-[#22c55e]/15 border border-[#22c55e]/20 px-1.5 py-0.5 rounded uppercase tracking-wider font-mono">
-                              Final
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-[#71717a] truncate ml-6 mt-0.5">
-                          {track.artistName || album.artistName}
-                        </p>
-                      </div>
-
-                      {/* Version Controls (Selector + Modal trigger) */}
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <VersionSelector
-                          versions={versions}
-                          selectedVersionId={track.selectedVersionId}
-                          onChange={(versionId) =>
-                            handleVersionChange(track.kanbanCardId, versionId)
-                          }
-                        />
-
-                        <button
-                          type="button"
-                          onClick={() => setVersionModalTrack(track)}
-                          title="Gerenciar versões e subir novos áudios desta faixa"
-                          className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-[#18181b] hover:bg-[#222226] border border-[#27272a] text-[11px] font-medium text-[#d4d4d8] hover:text-white transition-all cursor-pointer"
-                        >
-                          <Layers size={12} className="text-[#22c55e]" />
-                          <span className="hidden sm:inline">+ Versão</span>
-                        </button>
-                      </div>
-
-                      {/* Feedback Toggle Button */}
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setActiveFeedbackTrackId(
-                              isFeedbackExpanded ? null : track.kanbanCardId
-                            )
-                          }
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all border cursor-pointer ${
-                            isFeedbackExpanded
-                              ? "bg-[#22c55e]/15 border-[#22c55e]/40 text-[#4ade80]"
-                              : feedbacks.length > 0 && completedFeedbacks === feedbacks.length
-                              ? "bg-[#22c55e]/10 border-[#22c55e]/30 text-[#4ade80]"
-                              : feedbacks.length > 0
-                              ? "bg-[#18181b] hover:bg-[#222226] border-[#3f3f46] text-[#e4e4e7]"
-                              : "bg-[#141416] hover:bg-[#1a1a1e] border-[#27272a] text-[#71717a] hover:text-[#d4d4d8]"
-                          }`}
-                          title="Abrir anotações e feedbacks de revisão"
-                        >
-                          <MessageSquareQuote size={13} />
-                          <span>
-                            {feedbacks.length === 0
-                              ? "Feedbacks"
-                              : `${completedFeedbacks}/${feedbacks.length} OK`}
-                          </span>
-                          {isFeedbackExpanded ? (
-                            <ChevronUp size={12} />
-                          ) : (
-                            <ChevronDown size={12} />
-                          )}
-                        </button>
-
-                        {/* Remove Action */}
-                        <button
-                          onClick={() => handleRemoveTrack(track.kanbanCardId)}
-                          title="Remover faixa deste álbum"
-                          className="opacity-0 group-hover:opacity-100 text-[#52525b] hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition-all flex-shrink-0 cursor-pointer"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Expandable Feedback Box */}
-                    {isFeedbackExpanded && (
-                      <div className="px-4 pb-4 pt-1 pl-12 md:pl-16">
-                        <TrackFeedbackList
-                          track={track}
-                          onUpdateFeedbacks={(newFeedbacks) =>
-                            handleUpdateFeedbacks(track.kanbanCardId, newFeedbacks)
-                          }
-                          isCurrentPlaying={isCurrent}
-                        />
-                      </div>
-                    )}
+                        </Draggable>
+                      )
+                    })}
+                    {droppableProvided.placeholder}
                   </div>
-                )
-              })}
-            </div>
+                )}
+              </Droppable>
+            </DragDropContext>
           )}
         </div>
 
