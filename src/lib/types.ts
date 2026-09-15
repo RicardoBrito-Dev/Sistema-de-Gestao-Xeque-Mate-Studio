@@ -181,6 +181,16 @@ export interface AuthSession {
 // Album Types
 // ============================================================
 
+export interface TrackFeedback {
+  id: string
+  author: string
+  timestampSeconds?: number
+  content: string
+  isCompleted: boolean
+  completedAt?: string
+  createdAt: string
+}
+
 export interface AlbumTrack {
   kanbanCardId: string
   trackName: string
@@ -188,6 +198,7 @@ export interface AlbumTrack {
   order: number
   selectedVersionId?: string
   versions?: TrackVersion[]
+  feedbacks?: TrackFeedback[]
 }
 
 export interface Album {
