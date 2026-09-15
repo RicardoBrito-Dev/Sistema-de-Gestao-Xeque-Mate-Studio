@@ -23,6 +23,7 @@ import {
   Plus,
   ArrowRight,
   Sparkles,
+  Disc3,
 } from "lucide-react"
 import { getArtistsAsync, getKanbanCardsAsync } from "@/lib/storage"
 import { Artist, KanbanCard } from "@/lib/types"
@@ -130,6 +131,10 @@ export function GlobalCommandMenu() {
           <CommandItem onSelect={() => runCommand(() => router.push("/kanban"))}>
             <Kanban className="mr-2 h-4 w-4 text-[#71717a]" />
             <span>Produção (Kanban)</span>
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => router.push("/albums"))}>
+            <Disc3 className="mr-2 h-4 w-4 text-[#71717a]" />
+            <span>Álbuns & EPs</span>
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => router.push("/schedule"))}>
             <Calendar className="mr-2 h-4 w-4 text-[#71717a]" />

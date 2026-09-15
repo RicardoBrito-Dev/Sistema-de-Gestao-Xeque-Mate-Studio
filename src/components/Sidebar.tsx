@@ -19,6 +19,7 @@ import {
   Camera,
   Smartphone,
   Search,
+  Disc3,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
@@ -35,6 +36,7 @@ const iconMap = {
   '/artists': Mic2,
   '/clients': Users,
   '/kanban': Kanban,
+  '/albums': Disc3,
   '/schedule': Calendar,
   '/finances': DollarSign,
 }

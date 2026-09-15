@@ -417,3 +417,29 @@ export function deleteUser(id: string): void {
     db().then(m => m.dbDeleteUserCascaded(id, user?.artistId, user?.name))
   }
 }
+
+// ============================================================
+// Albums
+// ============================================================
+
+export async function getAlbumsAsync(): Promise<import('./types').Album[]> {
+  if (USE_SUPABASE) {
+    const { dbGetAlbums } = await db()
+    return dbGetAlbums()
+  }
+  return []
+}
+
+export async function saveAlbumAsync(album: import('./types').Album): Promise<void> {
+  if (USE_SUPABASE) {
+    const { dbSaveAlbum } = await db()
+    await dbSaveAlbum(album)
+  }
+}
+
+export async function deleteAlbumAsync(id: string): Promise<void> {
+  if (USE_SUPABASE) {
+    const { dbDeleteAlbum } = await db()
+    await dbDeleteAlbum(id)
+  }
+}

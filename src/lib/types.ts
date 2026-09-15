@@ -176,3 +176,27 @@ export interface AuthSession {
   approved?: boolean
   expiresAt?: number
 }
+
+// ============================================================
+// Album Types
+// ============================================================
+
+export interface AlbumTrack {
+  kanbanCardId: string
+  trackName: string
+  artistName: string
+  order: number
+  selectedVersionId?: string
+  versions?: TrackVersion[]
+}
+
+export interface Album {
+  id: string
+  title: string
+  artistName: string
+  year: string
+  coverUrl?: string      // URL pública Supabase Storage (bucket album-covers)
+  tracks: AlbumTrack[]
+  createdAt: string      // ISO date
+  updatedAt: string      // ISO date
+}

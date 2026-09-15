@@ -1,9 +1,10 @@
 "use client"
 
 import React, { useState, useRef } from "react"
-import { UploadCloud, Music, FileAudio, Check, Plus } from "lucide-react"
+import { UploadCloud, Plus, CheckCircle2, AlertCircle } from "lucide-react"
 import { TrackVersion } from "@/lib/types"
 import { saveAudioBlob } from "@/lib/audioStorage"
+import { uploadTrackVersion } from "@/lib/supabaseStorage"
 import { generateId } from "@/lib/storage"
 
 interface AudioDropzoneProps {
@@ -21,6 +22,7 @@ export function AudioDropzone({
 }: AudioDropzoneProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const formatFileSize = (bytes: number) => {
@@ -38,20 +40,31 @@ export function AudioDropzone({
     }
 
     setUploading(true)
+    setUploadStatus('uploading')
+
     try {
       const nextVersionNum = existingVersions.length + 1
       const versionId = `v-${generateId()}`
-      const blobUrl = URL.createObjectURL(file)
-
-      // Save binary blob to IndexedDB
-      await saveAudioBlob(versionId, file)
-
       const cleanFileName = file.name.replace(/\.[^/.]+$/, "")
+
+      // 1. Upload para Supabase Storage (URL permanente, cross-device)
+      let audioUrl = await uploadTrackVersion(file, versionId)
+
+      // 2. Fallback: se upload falhar, usa blob URL local + IndexedDB
+      if (!audioUrl) {
+        console.warn("Supabase Storage upload falhou — usando IndexedDB local como fallback")
+        audioUrl = URL.createObjectURL(file)
+        await saveAudioBlob(versionId, file)
+      } else {
+        // Cache local para reprodução offline/instantânea
+        await saveAudioBlob(versionId, file).catch(() => {})
+      }
+
       const newVersion: TrackVersion = {
         id: versionId,
         versionNumber: nextVersionNum,
         name: `v${nextVersionNum} • ${cleanFileName}`,
-        audioUrl: blobUrl,
+        audioUrl,
         fileName: file.name,
         fileSize: formatFileSize(file.size),
         uploadedAt: new Date().toISOString(),
@@ -59,9 +72,12 @@ export function AudioDropzone({
       }
 
       onVersionAdded(newVersion)
+      setUploadStatus('done')
+      setTimeout(() => setUploadStatus('idle'), 2500)
     } catch (err) {
       console.error("Erro ao processar áudio:", err)
-      alert("Erro ao carregar o arquivo de áudio.")
+      setUploadStatus('error')
+      setTimeout(() => setUploadStatus('idle'), 3000)
     } finally {
       setUploading(false)
       setIsDragging(false)
@@ -73,7 +89,6 @@ export function AudioDropzone({
     e.preventDefault()
     e.stopPropagation()
     setIsDragging(false)
-
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       handleFileProcess(e.dataTransfer.files[0])
     }
@@ -109,10 +124,29 @@ export function AudioDropzone({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#18181b] hover:bg-[#222226] border border-[#27272a] text-xs font-semibold text-[#d4d4d8] hover:text-white transition-all cursor-pointer active:scale-95"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#18181b] hover:bg-[#222226] border border-[#27272a] text-xs font-semibold text-[#d4d4d8] hover:text-white transition-all cursor-pointer active:scale-95 disabled:opacity-60"
         >
-          <Plus size={13} className="text-[#22c55e]" />
-          <span>{uploading ? "Carregando..." : "Adicionar Versão"}</span>
+          {uploadStatus === 'uploading' ? (
+            <>
+              <div className="h-3 w-3 border border-[#22c55e] border-t-transparent rounded-full animate-spin" />
+              <span>Enviando...</span>
+            </>
+          ) : uploadStatus === 'done' ? (
+            <>
+              <CheckCircle2 size={12} className="text-[#22c55e]" />
+              <span className="text-[#22c55e]">Enviado!</span>
+            </>
+          ) : uploadStatus === 'error' ? (
+            <>
+              <AlertCircle size={12} className="text-rose-400" />
+              <span className="text-rose-400">Erro!</span>
+            </>
+          ) : (
+            <>
+              <Plus size={13} className="text-[#22c55e]" />
+              <span>Adicionar Versão</span>
+            </>
+          )}
         </button>
       </div>
     )
@@ -123,7 +157,7 @@ export function AudioDropzone({
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
-      onClick={() => fileInputRef.current?.click()}
+      onClick={() => !uploading && fileInputRef.current?.click()}
       className={`group relative rounded-2xl border-2 border-dashed transition-all cursor-pointer p-6 flex flex-col items-center justify-center text-center ${
         isDragging
           ? "border-[#22c55e] bg-[#22c55e]/10 scale-[1.01]"
@@ -145,6 +179,8 @@ export function AudioDropzone({
       <div className="h-12 w-12 rounded-xl bg-[#18181b] border border-[#27272a] flex items-center justify-center text-[#22c55e] group-hover:scale-110 transition-transform mb-3 shadow-inner">
         {uploading ? (
           <div className="h-5 w-5 border-2 border-[#22c55e] border-t-transparent rounded-full animate-spin" />
+        ) : uploadStatus === 'done' ? (
+          <CheckCircle2 size={22} className="text-[#22c55e]" />
         ) : (
           <UploadCloud size={24} />
         )}
@@ -152,21 +188,29 @@ export function AudioDropzone({
 
       <p className="text-sm font-semibold text-white">
         {uploading
-          ? "Processando áudio..."
+          ? "Enviando para o servidor..."
+          : uploadStatus === 'done'
+          ? "Áudio enviado com sucesso!"
+          : uploadStatus === 'error'
+          ? "Erro no envio. Tente novamente."
           : isDragging
           ? "Solte o áudio aqui!"
           : "Arraste e solte o áudio da música aqui"}
       </p>
       <p className="text-xs text-[#71717a] mt-1">
-        ou clique para selecionar do computador / celular (MP3, WAV, M4A)
+        {uploading
+          ? "Aguarde, salvando no Supabase Storage..."
+          : "ou clique para selecionar do computador (MP3, WAV, M4A)"}
       </p>
 
-      <div className="flex items-center gap-2 mt-3 text-[10px] text-[#52525b] font-mono">
-        <span className="px-2 py-0.5 rounded bg-[#18181b] border border-[#27272a]">WAV</span>
-        <span className="px-2 py-0.5 rounded bg-[#18181b] border border-[#27272a]">MP3</span>
-        <span className="px-2 py-0.5 rounded bg-[#18181b] border border-[#27272a]">FLAC</span>
-        <span>• Criação automática de v{existingVersions.length + 1}</span>
-      </div>
+      {!uploading && uploadStatus === 'idle' && (
+        <div className="flex items-center gap-2 mt-3 text-[10px] text-[#52525b] font-mono">
+          <span className="px-2 py-0.5 rounded bg-[#18181b] border border-[#27272a]">WAV</span>
+          <span className="px-2 py-0.5 rounded bg-[#18181b] border border-[#27272a]">MP3</span>
+          <span className="px-2 py-0.5 rounded bg-[#18181b] border border-[#27272a]">FLAC</span>
+          <span>• Criação automática de v{existingVersions.length + 1}</span>
+        </div>
+      )}
     </div>
   )
 }

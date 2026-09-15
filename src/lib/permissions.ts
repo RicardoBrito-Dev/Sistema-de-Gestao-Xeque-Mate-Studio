@@ -74,6 +74,7 @@ export const NAV_ITEMS = [
   { href: '/artists', label: 'Artistas', adminOnly: false },
   { href: '/clients', label: 'Clientes', adminOnly: true },
   { href: '/kanban', label: 'Produção', adminOnly: false },
+  { href: '/albums', label: 'Álbuns', adminOnly: false },
   { href: '/schedule', label: 'Agenda', adminOnly: false },
   { href: '/finances', label: 'Financeiro', adminOnly: true },
 ] as const

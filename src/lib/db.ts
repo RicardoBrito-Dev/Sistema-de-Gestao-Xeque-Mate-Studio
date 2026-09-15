@@ -5,7 +5,7 @@
 
 import { createClient } from '@/lib/supabase/client'
 import {
-  Artist, Client, KanbanCard, Transaction, Session, AppUser
+  Artist, Client, KanbanCard, Transaction, Session, AppUser, Album
 } from '@/lib/types'
 
 // Helper: converte snake_case do banco para camelCase do app
@@ -132,6 +132,8 @@ function toKanban(row: Record<string, unknown>): KanbanCard {
     notes: row.notes as string | undefined,
     daysInStage: row.days_in_stage as number,
     driveLink: row.drive_link as string | undefined,
+    versions: row.versions as KanbanCard['versions'] | undefined,
+    activeVersionId: row.active_version_id as string | undefined,
   }
 }
 
@@ -148,6 +150,8 @@ function fromKanban(k: KanbanCard): Record<string, unknown> {
     notes: k.notes,
     days_in_stage: k.daysInStage,
     drive_link: k.driveLink,
+    versions: k.versions ?? null,
+    active_version_id: k.activeVersionId ?? null,
   }
 }
 
@@ -438,4 +442,58 @@ export async function dbDeleteUserCascaded(userId: string, artistId?: string, us
       await supabase.from('kanban_cards').delete().eq('client_id', artistId)
     }
   }
+}
+
+// ============================================================
+// Albums
+// ============================================================
+
+function toAlbum(row: Record<string, unknown>): Album {
+  return {
+    id: row.id as string,
+    title: row.title as string,
+    artistName: row.artist_name as string,
+    year: (row.year as string) || '',
+    coverUrl: row.cover_url as string | undefined,
+    tracks: (row.tracks as Album['tracks']) || [],
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  }
+}
+
+function fromAlbum(a: Album): Record<string, unknown> {
+  return {
+    id: a.id,
+    title: a.title,
+    artist_name: a.artistName,
+    year: a.year,
+    cover_url: a.coverUrl ?? null,
+    tracks: a.tracks,
+    created_at: a.createdAt,
+    updated_at: a.updatedAt,
+  }
+}
+
+export async function dbGetAlbums(): Promise<Album[]> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('albums')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error || !data) { console.error('dbGetAlbums:', error?.message); return [] }
+  return (data as Record<string, unknown>[]).map(toAlbum)
+}
+
+export async function dbSaveAlbum(album: Album): Promise<void> {
+  const supabase = createClient()
+  const { error } = await supabase
+    .from('albums')
+    .upsert(fromAlbum(album), { onConflict: 'id' })
+  if (error) console.error('dbSaveAlbum:', error.message)
+}
+
+export async function dbDeleteAlbum(id: string): Promise<void> {
+  const supabase = createClient()
+  const { error } = await supabase.from('albums').delete().eq('id', id)
+  if (error) console.error('dbDeleteAlbum:', error.message)
 }
