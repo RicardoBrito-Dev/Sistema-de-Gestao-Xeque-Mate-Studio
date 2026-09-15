@@ -80,7 +80,6 @@ export const NAV_ITEMS = [
 ] as const
 
 export function getNavItemsForUser(user: AuthSession | null) {
-  if (!user) return []
-  if (user.role === 'admin') return NAV_ITEMS
+  if (user?.role === 'admin') return NAV_ITEMS
   return NAV_ITEMS.filter(item => !item.adminOnly)
 }
