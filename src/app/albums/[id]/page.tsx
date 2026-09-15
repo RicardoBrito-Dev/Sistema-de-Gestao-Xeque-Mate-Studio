@@ -464,61 +464,73 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                               }`}
                             >
                               {/* Main Track Row */}
-                              <div className="flex flex-wrap md:flex-nowrap items-center gap-2 sm:gap-3 md:gap-4 p-3 md:px-5 md:py-4">
-                                {/* Drag Handle */}
-                                <div
-                                  {...draggableProvided.dragHandleProps}
-                                  className="cursor-grab active:cursor-grabbing p-1 text-[#3f3f46] hover:text-[#a1a1aa] transition-colors flex-shrink-0 touch-none"
-                                  title="Segure e arraste para reordenar a faixa"
-                                >
-                                  <GripVertical size={16} />
-                                </div>
-
-                                {/* Index or Play Button */}
-                                <div className="w-8 flex items-center justify-center flex-shrink-0">
-                                  <button
-                                    onClick={() => handlePlayTrack(track)}
-                                    className={`h-8 w-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-                                      trackPlaying
-                                        ? "bg-[#22c55e] text-black shadow-lg shadow-[#22c55e]/20"
-                                        : "bg-[#18181b] hover:bg-[#22c55e]/20 text-[#a1a1aa] hover:text-[#4ade80] border border-[#27272a]"
-                                    }`}
-                                    title={trackPlaying ? "Pausar" : "Tocar versão selecionada"}
+                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5 sm:gap-3 p-3 sm:p-4">
+                                {/* Top/Left: Drag Handle, Play Button, Track Title & Artist */}
+                                <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
+                                  {/* Drag Handle */}
+                                  <div
+                                    {...draggableProvided.dragHandleProps}
+                                    className="cursor-grab active:cursor-grabbing p-1 text-[#3f3f46] hover:text-[#a1a1aa] transition-colors flex-shrink-0 touch-none"
+                                    title="Segure e arraste para reordenar a faixa"
                                   >
-                                    {trackPlaying ? (
-                                      <Pause size={13} className="fill-black" />
-                                    ) : (
-                                      <Play size={13} className="fill-current ml-0.5" />
-                                    )}
+                                    <GripVertical size={16} />
+                                  </div>
+
+                                  {/* Play Button */}
+                                  <div className="w-8 flex items-center justify-center flex-shrink-0">
+                                    <button
+                                      onClick={() => handlePlayTrack(track)}
+                                      className={`h-8 w-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                                        trackPlaying
+                                          ? "bg-[#22c55e] text-black shadow-lg shadow-[#22c55e]/20"
+                                          : "bg-[#18181b] hover:bg-[#22c55e]/20 text-[#a1a1aa] hover:text-[#4ade80] border border-[#27272a]"
+                                      }`}
+                                      title={trackPlaying ? "Pausar" : "Tocar versão selecionada"}
+                                    >
+                                      {trackPlaying ? (
+                                        <Pause size={13} className="fill-black" />
+                                      ) : (
+                                        <Play size={13} className="fill-current ml-0.5" />
+                                      )}
+                                    </button>
+                                  </div>
+
+                                  {/* Track Info (Title & Artist) - Gets maximum horizontal space */}
+                                  <div className="flex-1 min-w-0 pr-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs font-mono text-[#52525b] flex-shrink-0">
+                                        {String(idx + 1).padStart(2, "0")}
+                                      </span>
+                                      <h3
+                                        className={`text-sm font-semibold truncate ${
+                                          isCurrent ? "text-[#4ade80]" : "text-[#f4f4f5]"
+                                        }`}
+                                      >
+                                        {track.trackName}
+                                      </h3>
+                                      {activeVer?.isFinal && (
+                                        <span className="text-[9px] font-bold text-[#22c55e] bg-[#22c55e]/15 border border-[#22c55e]/20 px-1.5 py-0.5 rounded uppercase tracking-wider font-mono flex-shrink-0">
+                                          Final
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="text-xs text-[#71717a] truncate ml-6 mt-0.5">
+                                      {track.artistName || album.artistName}
+                                    </p>
+                                  </div>
+
+                                  {/* Mobile Delete Button */}
+                                  <button
+                                    onClick={() => handleRemoveTrack(track.kanbanCardId)}
+                                    title="Remover faixa deste álbum"
+                                    className="md:hidden text-[#52525b] hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition-all flex-shrink-0 cursor-pointer"
+                                  >
+                                    <Trash2 size={15} />
                                   </button>
                                 </div>
 
-                                {/* Track Info */}
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-xs font-mono text-[#52525b] w-4">
-                                      {String(idx + 1).padStart(2, "0")}
-                                    </span>
-                                    <h3
-                                      className={`text-sm font-semibold truncate ${
-                                        isCurrent ? "text-[#4ade80]" : "text-[#f4f4f5]"
-                                      }`}
-                                    >
-                                      {track.trackName}
-                                    </h3>
-                                    {activeVer?.isFinal && (
-                                      <span className="text-[9px] font-bold text-[#22c55e] bg-[#22c55e]/15 border border-[#22c55e]/20 px-1.5 py-0.5 rounded uppercase tracking-wider font-mono">
-                                        Final
-                                      </span>
-                                    )}
-                                  </div>
-                                  <p className="text-xs text-[#71717a] truncate ml-6 mt-0.5">
-                                    {track.artistName || album.artistName}
-                                  </p>
-                                </div>
-
-                                {/* Version Controls (Selector + Modal trigger) */}
-                                <div className="flex items-center gap-1.5 flex-shrink-0">
+                                {/* Bottom/Right: Version Selector, + Versão, Feedbacks, and Desktop Delete */}
+                                <div className="flex items-center gap-2 pl-9 sm:pl-12 md:pl-0 flex-shrink-0 flex-wrap sm:flex-nowrap">
                                   <VersionSelector
                                     versions={versions}
                                     selectedVersionId={track.selectedVersionId}
@@ -531,15 +543,12 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                                     type="button"
                                     onClick={() => setVersionModalTrack(track)}
                                     title="Gerenciar versões e subir novos áudios desta faixa"
-                                    className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-[#18181b] hover:bg-[#222226] border border-[#27272a] text-[11px] font-medium text-[#d4d4d8] hover:text-white transition-all cursor-pointer"
+                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#18181b] hover:bg-[#222226] border border-[#27272a] text-[11px] font-medium text-[#d4d4d8] hover:text-white transition-all cursor-pointer"
                                   >
                                     <Layers size={12} className="text-[#22c55e]" />
-                                    <span className="hidden sm:inline">+ Versão</span>
+                                    <span>+ Versão</span>
                                   </button>
-                                </div>
 
-                                {/* Feedback Toggle Button */}
-                                <div className="flex items-center gap-2 flex-shrink-0">
                                   <button
                                     type="button"
                                     onClick={() =>
@@ -571,13 +580,13 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                                     )}
                                   </button>
 
-                                  {/* Remove Action */}
+                                  {/* Desktop Delete Action */}
                                   <button
                                     onClick={() => handleRemoveTrack(track.kanbanCardId)}
                                     title="Remover faixa deste álbum"
-                                    className="opacity-70 sm:opacity-0 sm:group-hover:opacity-100 text-[#52525b] hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition-all flex-shrink-0 cursor-pointer"
+                                    className="hidden md:inline-flex opacity-0 group-hover:opacity-100 text-[#52525b] hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition-all flex-shrink-0 cursor-pointer"
                                   >
-                                    <Trash2 size={14} />
+                                    <Trash2 size={15} />
                                   </button>
                                 </div>
                               </div>

@@ -25,7 +25,7 @@ export function VersionSelector({ versions, selectedVersionId, onChange, classNa
       <select
         value={activeId}
         onChange={(e) => onChange(e.target.value)}
-        className="appearance-none bg-[#18181b] border border-[#27272a] hover:border-[#15803d]/50 text-[#d4d4d8] text-[11px] font-mono font-semibold pl-2.5 pr-7 py-1.5 rounded-lg cursor-pointer transition-all outline-none focus:border-[#22c55e]/50 focus:ring-1 focus:ring-[#22c55e]/20"
+        className="appearance-none bg-[#18181b] border border-[#27272a] hover:border-[#22c55e]/40 text-[#d4d4d8] text-[11px] font-mono font-semibold pl-2.5 pr-6 py-1.5 rounded-lg cursor-pointer transition-all outline-none focus:border-[#22c55e]/50 focus:ring-1 focus:ring-[#22c55e]/20 max-w-[135px] sm:max-w-[180px] truncate"
       >
         {versions.map((v) => (
           <option key={v.id} value={v.id}>
@@ -35,7 +35,7 @@ export function VersionSelector({ versions, selectedVersionId, onChange, classNa
       </select>
       <ChevronDown
         size={11}
-        className="absolute right-2 top-1/2 -translate-y-1/2 text-[#52525b] pointer-events-none"
+        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[#71717a] pointer-events-none"
       />
     </div>
   )
