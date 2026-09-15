@@ -20,6 +20,7 @@ const KEYS = {
   transactions: 'xm_transactions',
   sessions: 'xm_sessions',
   users: 'xm_users',
+  albums: 'xm_albums',
 } as const
 
 function getItem<T>(key: string, fallback: T[]): T[] {
@@ -422,24 +423,64 @@ export function deleteUser(id: string): void {
 // Albums
 // ============================================================
 
+export function getAlbums(): import('./types').Album[] {
+  return getItem<import('./types').Album>(KEYS.albums, [])
+}
+
+export function saveAlbum(album: import('./types').Album): void {
+  const current = getAlbums()
+  const idx = current.findIndex(a => a.id === album.id)
+  if (idx >= 0) {
+    current[idx] = album
+  } else {
+    current.unshift(album)
+  }
+  setItem(KEYS.albums, current)
+}
+
+export function deleteAlbum(id: string): void {
+  setItem(KEYS.albums, getAlbums().filter(a => a.id !== id))
+}
+
 export async function getAlbumsAsync(): Promise<import('./types').Album[]> {
   if (USE_SUPABASE) {
-    const { dbGetAlbums } = await db()
-    return dbGetAlbums()
+    try {
+      const { dbGetAlbums } = await db()
+      const data = await dbGetAlbums()
+      if (data && data.length > 0) {
+        setItem(KEYS.albums, data)
+        return data
+      }
+    } catch (err) {
+      console.warn('Supabase dbGetAlbums falhou, usando localStorage fallback:', err)
+    }
   }
-  return []
+  return getAlbums()
 }
 
 export async function saveAlbumAsync(album: import('./types').Album): Promise<void> {
+  // Salva no localStorage imediatamente (garante persistência local sem travar tela)
+  saveAlbum(album)
+
   if (USE_SUPABASE) {
-    const { dbSaveAlbum } = await db()
-    await dbSaveAlbum(album)
+    try {
+      const { dbSaveAlbum } = await db()
+      await dbSaveAlbum(album)
+    } catch (err) {
+      console.warn('Supabase dbSaveAlbum falhou, mantido no localStorage:', err)
+    }
   }
 }
 
 export async function deleteAlbumAsync(id: string): Promise<void> {
+  deleteAlbum(id)
+
   if (USE_SUPABASE) {
-    const { dbDeleteAlbum } = await db()
-    await dbDeleteAlbum(id)
+    try {
+      const { dbDeleteAlbum } = await db()
+      await dbDeleteAlbum(id)
+    } catch (err) {
+      console.warn('Supabase dbDeleteAlbum falhou:', err)
+    }
   }
 }

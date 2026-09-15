@@ -19,7 +19,7 @@ import {
 } from "lucide-react"
 import PageWrapper from "@/components/ui/PageWrapper"
 import { Album, AlbumTrack, TrackVersion } from "@/lib/types"
-import { getAlbumsAsync, saveAlbumAsync, deleteAlbumAsync } from "@/lib/storage"
+import { getAlbums, getAlbumsAsync, saveAlbumAsync, deleteAlbumAsync } from "@/lib/storage"
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext"
 import { AlbumTrackPicker } from "@/components/albums/AlbumTrackPicker"
 import { AlbumCreateSheet } from "@/components/albums/AlbumCreateSheet"
@@ -40,13 +40,20 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
   const { playTrack, pauseTrack, resumeTrack, currentTrack, isPlaying, switchVersion, activeVersion } = useAudioPlayer()
 
   const loadAlbum = async () => {
-    setLoading(true)
+    // 1. Cache local imediato
+    const local = getAlbums().find((a) => a.id === id)
+    if (local) {
+      setAlbum(local)
+      setLoading(false)
+    }
+
+    // 2. Sincroniza com Supabase
     try {
       const albums = await getAlbumsAsync()
       const found = albums.find((a) => a.id === id)
       if (found) {
         setAlbum(found)
-      } else {
+      } else if (!local) {
         router.push("/albums")
       }
     } catch (err) {

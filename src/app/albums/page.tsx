@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Disc3, Plus, Music, Play, Layers, Calendar, User } from "lucide-react"
 import PageWrapper from "@/components/ui/PageWrapper"
 import { Album } from "@/lib/types"
-import { getAlbumsAsync } from "@/lib/storage"
+import { getAlbums, getAlbumsAsync } from "@/lib/storage"
 import { AlbumCreateSheet } from "@/components/albums/AlbumCreateSheet"
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext"
 
@@ -16,10 +16,19 @@ export default function AlbumsPage() {
   const { playTrack } = useAudioPlayer()
 
   const loadAlbums = async () => {
-    setLoading(true)
+    // 1. Carrega do cache local imediatamente para não piscar
+    const cached = getAlbums()
+    if (cached.length > 0) {
+      setAlbums(cached)
+      setLoading(false)
+    }
+
+    // 2. Sincroniza em background com Supabase
     try {
       const data = await getAlbumsAsync()
-      setAlbums(data)
+      if (data && data.length > 0) {
+        setAlbums(data)
+      }
     } catch (err) {
       console.error("Erro ao carregar álbuns:", err)
     } finally {
@@ -167,7 +176,12 @@ export default function AlbumsPage() {
         <AlbumCreateSheet
           isOpen={isCreateOpen}
           onClose={() => setIsCreateOpen(false)}
-          onSave={() => loadAlbums()}
+          onSave={(newAlbum) => {
+            setAlbums((prev) => {
+              const filtered = prev.filter((a) => a.id !== newAlbum.id)
+              return [newAlbum, ...filtered]
+            })
+          }}
         />
       </div>
     </PageWrapper>
