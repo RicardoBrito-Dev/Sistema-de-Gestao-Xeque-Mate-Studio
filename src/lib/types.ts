@@ -47,6 +47,18 @@ export interface Client {
 export type KanbanStage = 'gravacao' | 'mix' | 'master' | 'recall' | 'entregue'
 export type Priority = 'urgente' | 'normal' | 'espera'
 
+export interface TrackVersion {
+  id: string
+  versionNumber: number
+  name: string
+  audioUrl: string
+  fileName: string
+  fileSize?: string
+  uploadedAt: string
+  isFinal?: boolean
+  notes?: string
+}
+
 export interface KanbanCard {
   id: string
   trackName: string
@@ -59,6 +71,8 @@ export interface KanbanCard {
   notes?: string
   daysInStage: number
   driveLink?: string
+  versions?: TrackVersion[]
+  activeVersionId?: string
 }
 
 // ============================================================

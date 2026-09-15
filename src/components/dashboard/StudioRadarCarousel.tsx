@@ -222,6 +222,8 @@ export default function StudioRadarCarousel({
                             id: track.id,
                             title: track.trackName,
                             artist: track.artistName,
+                            versions: track.versions,
+                            activeVersionId: track.activeVersionId,
                           })
                         }
                         className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#4ade80] bg-[#15803d]/15 hover:bg-[#15803d]/30 border border-[#15803d]/30 px-2 py-0.5 rounded-lg transition-all cursor-pointer active:scale-95"

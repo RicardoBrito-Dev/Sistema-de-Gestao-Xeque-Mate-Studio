@@ -255,6 +255,8 @@ export default function KanbanPage() {
                                             id: card.id,
                                             title: card.trackName,
                                             artist: card.artistName,
+                                            versions: card.versions,
+                                            activeVersionId: card.activeVersionId,
                                           })
                                         }}
                                         className="flex items-center gap-1 bg-[#22c55e]/10 hover:bg-[#22c55e]/20 border border-[#22c55e]/20 text-[#4ade80] px-2 py-1 rounded-lg transition-all text-[10px] cursor-pointer"
