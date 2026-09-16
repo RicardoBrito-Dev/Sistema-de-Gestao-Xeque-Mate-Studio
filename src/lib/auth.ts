@@ -199,6 +199,9 @@ export async function registerArtist(artistData: {
   }
 
   saveUser(newUser)
+  if (typeof window !== 'undefined' && !newUser.approved) {
+    window.dispatchEvent(new CustomEvent('xm:new-user-registered', { detail: newUser }))
+  }
   return newUser
 }
 
