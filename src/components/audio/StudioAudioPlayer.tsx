@@ -200,23 +200,25 @@ export function StudioAudioPlayer() {
                     {currentTrack.title}
                   </h4>
 
-                  {/* ─── Version Button ─── */}
-                  <button
-                    ref={buttonRef}
-                    type="button"
-                    onClick={() => setIsVersionDropdownOpen((prev) => !prev)}
-                    className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#18181b] hover:bg-[#222226] border border-[#2e2e36] text-[10px] font-mono text-[#22c55e] hover:text-[#4ade80] transition-colors cursor-pointer"
-                    title="Alternar entre versões da faixa"
-                  >
-                    <span className="font-bold">
-                      {activeVersion ? `v${activeVersion.versionNumber}` : "v1"}
-                    </span>
-                    <ChevronDown size={10} />
-                  </button>
+                  {/* ─── Version Button (hidden on external share page) ─── */}
+                  {!isSharePage && (
+                    <button
+                      ref={buttonRef}
+                      type="button"
+                      onClick={() => setIsVersionDropdownOpen((prev) => !prev)}
+                      className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#18181b] hover:bg-[#222226] border border-[#2e2e36] text-[10px] font-mono text-[#22c55e] hover:text-[#4ade80] transition-colors cursor-pointer"
+                      title="Alternar entre versões da faixa"
+                    >
+                      <span className="font-bold">
+                        {activeVersion ? `v${activeVersion.versionNumber}` : "v1"}
+                      </span>
+                      <ChevronDown size={10} />
+                    </button>
+                  )}
                 </div>
 
                 <p className="text-[11px] text-[#71717a] truncate mt-0.5">
-                  {currentTrack.artist} {activeVersion?.name && `• ${activeVersion.name.replace(/^v\d+\s*•?\s*/, "")}`}
+                  {currentTrack.artist} {!isSharePage && activeVersion?.name && `• ${activeVersion.name.replace(/^v\d+\s*•?\s*/, "")}`}
                 </p>
               </div>
             </div>
@@ -316,10 +318,10 @@ export function StudioAudioPlayer() {
               )}
             </div>
 
-            {/* Right: Version indicator badge */}
+            {/* Right: Version / format indicator badge */}
             <div className="w-8 flex justify-end">
               <span className="text-[9px] font-mono text-[#71717a] px-1.5 py-0.5 rounded bg-white/[0.04] border border-[#27272a] uppercase font-semibold">
-                {activeVersion?.isFinal ? "FINAL" : "WAV"}
+                {isSharePage ? "XM" : activeVersion?.isFinal ? "FINAL" : "WAV"}
               </span>
             </div>
           </div>

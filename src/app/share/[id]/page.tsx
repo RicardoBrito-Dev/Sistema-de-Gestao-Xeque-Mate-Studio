@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, use, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
-import Image from "next/image"
 import {
   Play,
   Pause,
@@ -12,14 +11,11 @@ import {
   Headphones,
   Share2,
   Check,
-  Sparkles,
   Volume2,
-  ExternalLink,
 } from "lucide-react"
 import { Album, AlbumTrack, TrackVersion } from "@/lib/types"
 import { getAlbumByIdAsync } from "@/lib/storage"
 import { useAudioPlayer, PlayingTrack } from "@/contexts/AudioPlayerContext"
-import { VersionSelector } from "@/components/albums/VersionSelector"
 
 interface SharePageProps {
   params: Promise<{ id: string }>
@@ -55,8 +51,6 @@ function ShareContent({ params }: SharePageProps) {
     resumeTrack,
     currentTrack,
     isPlaying,
-    switchVersion,
-    activeVersion,
   } = useAudioPlayer()
 
   // Carrega os dados do álbum
@@ -183,16 +177,6 @@ function ShareContent({ params }: SharePageProps) {
     playTrack(initialTrack, versionToPlay, playlist)
   }
 
-  // Alternar versão da faixa
-  const handleVersionChange = (trackId: string, versionId: string) => {
-    setSelectedVersions((prev) => ({ ...prev, [trackId]: versionId }))
-
-    // Se a faixa alterada estiver tocando agora, troca a versão em tempo real no áudio
-    if (currentTrack?.id === trackId) {
-      switchVersion(versionId)
-    }
-  }
-
   // Copiar link de compartilhamento
   const handleShare = async () => {
     const url = typeof window !== "undefined" ? window.location.href : ""
@@ -294,6 +278,12 @@ function ShareContent({ params }: SharePageProps) {
         {/* Album Hero Showcase */}
         <div className="relative rounded-3xl bg-gradient-to-b from-[#16161a] to-[#0e0e11] border border-[#222226] p-6 sm:p-8 overflow-hidden shadow-2xl">
           {/* Subtle Ambient Glow */}
+          {album.coverUrl && (
+            <div
+              className="absolute inset-0 opacity-20 filter blur-3xl scale-110 pointer-events-none bg-cover bg-center"
+              style={{ backgroundImage: `url(${album.coverUrl})` }}
+            />
+          )}
           <div className="absolute -top-24 -left-24 w-80 h-80 bg-[#22c55e]/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-[#15803d]/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -316,13 +306,10 @@ function ShareContent({ params }: SharePageProps) {
               {/* Cover Artwork Card */}
               <div className="relative h-44 w-44 sm:h-52 sm:w-52 rounded-2xl overflow-hidden bg-[#121214] border border-[#27272a] shadow-2xl z-10 flex items-center justify-center">
                 {album.coverUrl ? (
-                  <Image
+                  <img
                     src={album.coverUrl}
                     alt={album.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 640px) 176px, 208px"
-                    priority
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center text-[#3f3f46]">
@@ -394,11 +381,11 @@ function ShareContent({ params }: SharePageProps) {
             <div className="flex items-center gap-2">
               <Music size={18} className="text-[#22c55e]" />
               <h2 className="text-base sm:text-lg font-bold text-white tracking-wide">
-                Faixas & Versões Disponíveis
+                Faixas do Álbum
               </h2>
             </div>
             <span className="text-xs text-[#71717a] font-mono hidden sm:inline">
-              Alterne as versões para comparar mixagens
+              Áudio de alta fidelidade
             </span>
           </div>
 
@@ -412,9 +399,6 @@ function ShareContent({ params }: SharePageProps) {
               album.tracks.map((track, idx) => {
                 const isCurrent = currentTrack?.id === track.kanbanCardId
                 const isTrackPlaying = isCurrent && isPlaying
-                const versions = track.versions || []
-                const activeVersionId = selectedVersions[track.kanbanCardId] || track.selectedVersionId
-                const activeVer = versions.find((v) => v.id === activeVersionId) || versions[versions.length - 1]
                 const isTargetSharedTrack = targetTrackId === track.kanbanCardId
 
                 return (
@@ -468,12 +452,6 @@ function ShareContent({ params }: SharePageProps) {
                               Compartilhada
                             </span>
                           )}
-
-                          {activeVer?.isFinal && (
-                            <span className="text-[9px] font-mono uppercase bg-gold/20 text-gold border border-gold/30 px-1.5 py-0.5 rounded font-bold shrink-0">
-                              Master Final
-                            </span>
-                          )}
                         </div>
 
                         <div className="flex items-center gap-3 text-xs text-[#71717a] mt-0.5 font-mono">
@@ -490,13 +468,15 @@ function ShareContent({ params }: SharePageProps) {
                       </div>
                     </div>
 
-                    {/* Right: Version Switcher Pill (Listener can toggle between Guia / Mix / Master) */}
+                    {/* Right: Equalizer animation when playing */}
                     <div className="flex items-center gap-2 shrink-0">
-                      <VersionSelector
-                        versions={versions}
-                        selectedVersionId={activeVersionId}
-                        onChange={(versionId) => handleVersionChange(track.kanbanCardId, versionId)}
-                      />
+                      {isTrackPlaying && (
+                        <div className="flex items-end gap-0.5 h-3.5 px-2">
+                          <span className="w-0.5 bg-[#22c55e] h-3.5 animate-pulse rounded-full"></span>
+                          <span className="w-0.5 bg-[#22c55e] h-2 animate-bounce rounded-full" style={{ animationDelay: "120ms" }}></span>
+                          <span className="w-0.5 bg-[#22c55e] h-3 animate-pulse rounded-full" style={{ animationDelay: "240ms" }}></span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )
