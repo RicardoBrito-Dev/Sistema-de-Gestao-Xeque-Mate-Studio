@@ -11,7 +11,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
 
-  const isPublic = PUBLIC_ROUTES.includes(pathname)
+  const isPublic = PUBLIC_ROUTES.includes(pathname) || pathname.startsWith('/share')
 
   useEffect(() => {
     if (isLoading) return

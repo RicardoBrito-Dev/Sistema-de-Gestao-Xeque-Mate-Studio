@@ -14,7 +14,21 @@ import { NotificationBell } from '@/components/notifications/NotificationBell'
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const isLoginPage = pathname === '/login'
+  const isSharePage = pathname.startsWith('/share')
   const { user } = useAuth()
+
+  if (isSharePage) {
+    return (
+      <AuthGuard>
+        <AudioPlayerProvider>
+          <StudioAudioPlayer />
+          <div className="min-h-screen bg-[#09090b] text-[#f4f4f5] flex flex-col">
+            {children}
+          </div>
+        </AudioPlayerProvider>
+      </AuthGuard>
+    )
+  }
 
   return (
     <AuthGuard>

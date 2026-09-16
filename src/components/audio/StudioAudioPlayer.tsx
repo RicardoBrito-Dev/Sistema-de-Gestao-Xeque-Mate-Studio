@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from "react"
+import { usePathname } from "next/navigation"
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext"
 import { 
   Play, 
@@ -17,6 +18,9 @@ import {
 import { motion, AnimatePresence } from "framer-motion"
 
 export function StudioAudioPlayer() {
+  const pathname = usePathname()
+  const isSharePage = pathname?.startsWith('/share')
+
   const {
     currentTrack,
     activeVersion,
@@ -96,7 +100,7 @@ export function StudioAudioPlayer() {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 90, opacity: 0 }}
         transition={{ type: "spring", damping: 22, stiffness: 300 }}
-        className="fixed bottom-20 md:bottom-6 left-3 right-3 sm:left-auto sm:right-6 sm:w-[460px] z-50 rounded-2xl bg-[#0c0c0f]/95 backdrop-blur-2xl border border-[#27272e] p-3.5 sm:p-4 shadow-2xl shadow-black/95"
+        className={`fixed ${isSharePage ? 'bottom-4 sm:bottom-6' : 'bottom-20 md:bottom-6'} left-3 right-3 sm:left-auto sm:right-6 sm:w-[460px] z-50 rounded-2xl bg-[#0c0c0f]/95 backdrop-blur-2xl border border-[#27272e] p-3.5 sm:p-4 shadow-2xl shadow-black/95`}
       >
         {/* ─── Floating Version Selector Modal (Never overflows viewport) ─── */}
         <AnimatePresence>

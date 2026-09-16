@@ -484,6 +484,20 @@ export async function dbGetAlbums(): Promise<Album[]> {
   return (data as Record<string, unknown>[]).map(toAlbum)
 }
 
+export async function dbGetAlbumById(id: string): Promise<Album | null> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('albums')
+    .select('*')
+    .eq('id', id)
+    .single()
+  if (error || !data) {
+    console.error('dbGetAlbumById:', error?.message)
+    return null
+  }
+  return toAlbum(data as Record<string, unknown>)
+}
+
 export async function dbSaveAlbum(album: Album): Promise<void> {
   const supabase = createClient()
   const { error } = await supabase

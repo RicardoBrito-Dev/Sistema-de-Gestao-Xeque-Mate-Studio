@@ -22,8 +22,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  // Deixa passar a tela de login e assets
-  if (pathname === '/login' || pathname.startsWith('/_next')) {
+  // Deixa passar a tela de login, rotas de compartilhamento público e assets
+  if (pathname === '/login' || pathname.startsWith('/share') || pathname.startsWith('/_next')) {
     return NextResponse.next()
   }
 

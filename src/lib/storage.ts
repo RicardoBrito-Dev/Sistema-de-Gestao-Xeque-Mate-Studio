@@ -477,6 +477,21 @@ export async function getAlbumsAsync(): Promise<import('./types').Album[]> {
   return getAlbums()
 }
 
+export async function getAlbumByIdAsync(id: string): Promise<import('./types').Album | null> {
+  // 1. Tenta buscar no Supabase
+  if (USE_SUPABASE) {
+    try {
+      const { dbGetAlbumById } = await db()
+      const remote = await dbGetAlbumById(id)
+      if (remote) return remote
+    } catch (err) {
+      console.warn('Supabase dbGetAlbumById falhou, tentando fallback local:', err)
+    }
+  }
+  // 2. Fallback para cache local
+  return getAlbums().find((a) => a.id === id) || null
+}
+
 export async function saveAlbumAsync(album: import('./types').Album): Promise<void> {
   // Salva no localStorage imediatamente (garante persistência local sem travar tela)
   saveAlbum(album)

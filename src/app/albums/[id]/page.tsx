@@ -22,6 +22,8 @@ import {
   GripVertical,
   MoreVertical,
   Headphones,
+  Share2,
+  Check,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -54,6 +56,12 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [activeFeedbackTrackId, setActiveFeedbackTrackId] = useState<string | null>(null)
   const [versionModalTrack, setVersionModalTrack] = useState<AlbumTrack | null>(null)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg)
+    setTimeout(() => setToastMessage(null), 2500)
+  }
 
   const {
     playTrack,
@@ -270,6 +278,52 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
     }
   }
 
+  const handleShareAlbum = async () => {
+    if (!album) return
+    const url = `${window.location.origin}/share/${album.id}`
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${album.title} — Xeque Mate Studio`,
+          text: `Ouça o álbum "${album.title}" por ${album.artistName} no player oficial do Xeque Mate Studio:`,
+          url,
+        })
+        return
+      } catch {
+        // Ignora se o usuário cancelou o menu nativo
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url)
+      showToast("Link do álbum copiado para a área de transferência!")
+    } catch {
+      showToast("Erro ao copiar link do álbum")
+    }
+  }
+
+  const handleShareTrack = async (trackId: string, trackName: string) => {
+    if (!album) return
+    const url = `${window.location.origin}/share/${album.id}?track=${trackId}`
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${trackName} — Xeque Mate Studio`,
+          text: `Ouça a faixa "${trackName}" no player oficial do Xeque Mate Studio:`,
+          url,
+        })
+        return
+      } catch {
+        // Ignora se o usuário cancelou o menu nativo
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url)
+      showToast(`Link de "${trackName}" copiado!`)
+    } catch {
+      showToast("Erro ao copiar link da faixa")
+    }
+  }
+
   const handleUpdateFeedbacks = async (cardId: string, feedbacks: TrackFeedback[]) => {
     if (!album) return
     const updatedTracks = album.tracks.map((t) => {
@@ -374,6 +428,14 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
           </div>
         </div>
 
+        {/* Toast Feedback */}
+        {toastMessage && (
+          <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-[#166534] text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-[#22c55e]/50 animate-in fade-in duration-200">
+            <Check size={14} className="text-[#4ade80]" />
+            <span>{toastMessage}</span>
+          </div>
+        )}
+
         {/* Hero Section — Untitled Style Banner */}
         <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-b from-[#18181c]/90 via-[#111114]/90 to-[#0c0c0e] border border-[#27272a] p-4 sm:p-6 md:p-8 shadow-2xl">
           {/* Background Blurred Ambient Glow */}
@@ -395,7 +457,8 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                 />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center text-[#52525b]">
-                  <Disc3 size={56} className="stroke-[1.5]" />
+                  <Disc3 size={48} className="text-[#27272a]" />
+                  <span className="font-bebas text-sm text-[#52525b] mt-1">XEQUE MATE</span>
                 </div>
               )}
             </div>
@@ -434,12 +497,12 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                 <span className="hidden sm:inline">Untitled Stream Engine</span>
               </div>
 
-              {/* Play All button */}
-              <div className="pt-2 flex items-center justify-center md:justify-start gap-3">
+              {/* Action buttons: Play All, Add Track, Share Album */}
+              <div className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-2.5 sm:gap-3">
                 <button
                   onClick={handlePlayAll}
                   disabled={album.tracks.length === 0}
-                  className="inline-flex items-center gap-2 bg-[#22c55e] hover:bg-[#16a34a] disabled:opacity-50 text-black font-bold text-xs md:text-sm px-5 sm:px-6 py-2.5 sm:py-3 rounded-2xl transition-all shadow-lg shadow-[#22c55e]/20 active:scale-95 cursor-pointer"
+                  className="inline-flex items-center gap-2 bg-[#22c55e] hover:bg-[#16a34a] disabled:opacity-50 text-black font-bold text-xs md:text-sm px-4 sm:px-6 py-2.5 sm:py-3 rounded-2xl transition-all shadow-lg shadow-[#22c55e]/20 active:scale-95 cursor-pointer"
                 >
                   <Play size={15} className="fill-black" />
                   <span>Ouvir Álbum</span>
@@ -447,10 +510,19 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
 
                 <button
                   onClick={() => setIsPickerOpen(true)}
-                  className="inline-flex items-center gap-2 bg-[#18181b] hover:bg-[#222226] text-white border border-[#27272a] font-semibold text-xs md:text-sm px-4 py-2.5 sm:py-3 rounded-2xl transition-all active:scale-95 cursor-pointer"
+                  className="inline-flex items-center gap-2 bg-[#18181b] hover:bg-[#222226] text-white border border-[#27272a] font-semibold text-xs md:text-sm px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl transition-all active:scale-95 cursor-pointer"
                 >
                   <Plus size={15} className="text-[#22c55e]" />
                   <span>Adicionar Faixa</span>
+                </button>
+
+                <button
+                  onClick={handleShareAlbum}
+                  className="inline-flex items-center gap-2 bg-[#18181b] hover:bg-[#222226] text-white border border-[#27272a] hover:border-[#38bdf8]/40 font-semibold text-xs md:text-sm px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl transition-all active:scale-95 cursor-pointer shadow-sm"
+                  title="Compartilhar link público do álbum"
+                >
+                  <Share2 size={15} className="text-[#38bdf8]" />
+                  <span>Compartilhar</span>
                 </button>
               </div>
             </div>
@@ -644,10 +716,19 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                                       </button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-52">
-                                      {/* Opção 1: Adicionar/Gerenciar Versões */}
+                                      {/* Opção 1: Compartilhar Faixa */}
+                                      <DropdownMenuItem
+                                        onClick={() => handleShareTrack(track.kanbanCardId, track.trackName)}
+                                        className="gap-2.5 cursor-pointer text-[#38bdf8] focus:text-[#38bdf8]"
+                                      >
+                                        <Share2 size={14} className="text-[#38bdf8]" />
+                                        <span>Compartilhar Faixa</span>
+                                      </DropdownMenuItem>
+
+                                      {/* Opção 2: Adicionar/Gerenciar Versões */}
                                       <DropdownMenuItem
                                         onClick={() => setVersionModalTrack(track)}
-                                        className="gap-2.5"
+                                        className="gap-2.5 cursor-pointer"
                                       >
                                         <Layers size={14} className="text-[#22c55e]" />
                                         <span>+ Versão (Mixagens)</span>
