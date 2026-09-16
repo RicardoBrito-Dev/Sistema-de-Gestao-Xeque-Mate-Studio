@@ -11,16 +11,10 @@ import {
   VolumeX, 
   ChevronDown, 
   Check, 
-  Sparkles, 
-  Plus, 
-  Layers,
-  Star,
-  SkipBack,
-  SkipForward,
+  SkipBack, 
+  SkipForward 
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { AudioDropzone } from "@/components/audio/AudioDropzone"
-import { TrackVersion } from "@/lib/types"
 
 export function StudioAudioPlayer() {
   const {
@@ -92,34 +86,35 @@ export function StudioAudioPlayer() {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 90, opacity: 0 }}
         transition={{ type: "spring", damping: 22, stiffness: 300 }}
-        className="fixed bottom-20 md:bottom-6 left-3 right-3 sm:left-auto sm:right-6 sm:w-[500px] z-50 rounded-2xl bg-[#0c0c0f]/95 backdrop-blur-2xl border border-[#27272e] p-4 shadow-2xl shadow-black/95"
+        className="fixed bottom-20 md:bottom-6 left-3 right-3 sm:left-auto sm:right-6 sm:w-[460px] z-50 rounded-2xl bg-[#0c0c0f]/95 backdrop-blur-2xl border border-[#27272e] p-3.5 sm:p-4 shadow-2xl shadow-black/95"
       >
-        <div className="flex items-center gap-3.5">
-          {/* Spinning Vinyl Disc */}
-          <div className="relative h-12 w-12 rounded-xl bg-[#141417] border border-[#27272a] flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
-            <Disc3
-              size={26}
-              className={`text-[#22c55e] ${isPlaying ? "animate-spin" : ""}`}
-              style={{ animationDuration: "2.8s" }}
-            />
-          </div>
+        <div className="flex flex-col gap-2.5">
+          {/* Top Row: Track Art + Track Details + (Equalizer & Close) */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              {/* Spinning Vinyl Disc */}
+              <div className="relative h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-[#141417] border border-[#27272a] flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
+                <Disc3
+                  size={22}
+                  className={`text-[#22c55e] ${isPlaying ? "animate-spin" : ""}`}
+                  style={{ animationDuration: "2.8s" }}
+                />
+              </div>
 
-          {/* Track Info & Version Dropdown (Untitled style) */}
-          <div className="min-w-0 flex-1 space-y-1.5">
-            <div className="flex items-center justify-between gap-2">
-              <div className="min-w-0">
+              {/* Title, Version Selector, Artist */}
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h4 className="font-bebas text-base text-white tracking-wide truncate leading-none">
+                  <h4 className="font-bebas text-base sm:text-lg text-white tracking-wide truncate leading-tight">
                     {currentTrack.title}
                   </h4>
 
                   {/* ─── Untitled Version Selector Dropdown ─── */}
-                  <div className="relative" ref={dropdownRef}>
+                  <div className="relative shrink-0" ref={dropdownRef}>
                     <button
                       type="button"
                       onClick={() => setIsVersionDropdownOpen((prev) => !prev)}
                       className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#18181b] hover:bg-[#222226] border border-[#2e2e36] text-[10px] font-mono text-[#22c55e] hover:text-[#4ade80] transition-colors cursor-pointer"
-                      title="Alternar entre versões da faixa (estilo Untitled)"
+                      title="Alternar entre versões da faixa"
                     >
                       <span className="font-bold">
                         {activeVersion ? `v${activeVersion.versionNumber}` : "v1"}
@@ -135,7 +130,7 @@ export function StudioAudioPlayer() {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: -6, scale: 0.95 }}
                           transition={{ duration: 0.12 }}
-                          className="absolute left-0 bottom-7 z-50 w-64 rounded-xl bg-[#111114] border border-[#2a2a30] shadow-2xl p-1.5 space-y-1"
+                          className="absolute left-0 bottom-8 z-50 w-64 max-w-[calc(100vw-3rem)] rounded-xl bg-[#111114] border border-[#2a2a30] shadow-2xl p-1.5 space-y-1"
                         >
                           <div className="px-2 py-1 text-[10px] font-bold text-[#71717a] uppercase tracking-wider flex items-center justify-between border-b border-[#1e1e22]">
                             <span>Versões da Música</span>
@@ -192,13 +187,15 @@ export function StudioAudioPlayer() {
                 </div>
 
                 <p className="text-[11px] text-[#71717a] truncate mt-0.5">
-                  {currentTrack.artist} • <span className="text-[#d4d4d8]">{activeVersion?.name || "Versão 1"}</span>
+                  {currentTrack.artist} {activeVersion?.name && `• ${activeVersion.name.replace(/^v\d+\s*•?\s*/, "")}`}
                 </p>
               </div>
+            </div>
 
-              {/* Equalizer Waveform Bars Animation */}
+            {/* Right Header Actions: Equalizer + Close */}
+            <div className="flex items-center gap-2 shrink-0">
               {isPlaying && (
-                <div className="flex items-end gap-0.5 h-3.5 shrink-0 px-1">
+                <div className="flex items-end gap-0.5 h-3.5 px-1">
                   <span className="w-0.5 bg-[#22c55e] h-3.5 animate-pulse rounded-full"></span>
                   <span className="w-0.5 bg-[#22c55e] h-2 animate-bounce rounded-full" style={{ animationDelay: "120ms" }}></span>
                   <span className="w-0.5 bg-[#22c55e] h-3 animate-pulse rounded-full" style={{ animationDelay: "240ms" }}></span>
@@ -206,82 +203,96 @@ export function StudioAudioPlayer() {
                   <span className="w-0.5 bg-[#22c55e] h-2.5 animate-pulse rounded-full" style={{ animationDelay: "480ms" }}></span>
                 </div>
               )}
-            </div>
-
-            {/* Interactive Timeline Progress */}
-            <div className="flex items-center gap-2 pt-0.5">
-              <span className="text-[9px] font-mono text-[#71717a] shrink-0 w-8">
-                {formatTime(currentTime)}
-              </span>
-
-              <div
-                className="relative flex-1 h-1.5 bg-[#1e1e22] rounded-full cursor-pointer overflow-hidden group"
-                onClick={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect()
-                  const clickX = e.clientX - rect.left
-                  const newPercent = Math.max(0, Math.min(1, clickX / rect.width))
-                  seek(newPercent * duration)
-                }}
+              <button
+                onClick={stopTrack}
+                className="p-1.5 rounded-lg text-[#71717a] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                title="Fechar Player"
               >
-                <div
-                  className="h-full bg-[#22c55e] rounded-full transition-all duration-100 group-hover:bg-[#4ade80]"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
-
-              <span className="text-[9px] font-mono text-[#71717a] shrink-0 w-8 text-right">
-                {formatTime(duration)}
-              </span>
+                <X size={16} />
+              </button>
             </div>
           </div>
 
-          {/* Action Buttons: Prev, Play/Pause, Next, Volume, Close */}
-          <div className="flex items-center gap-1 shrink-0">
-            {playlist.length > 1 && (
-              <button
-                onClick={prevTrack}
-                disabled={!hasPrev}
-                className="p-1.5 rounded-lg text-[#71717a] hover:text-white disabled:opacity-30 disabled:hover:text-[#71717a] transition-colors cursor-pointer"
-                title="Faixa anterior"
-              >
-                <SkipBack size={14} />
-              </button>
-            )}
+          {/* Middle: Full-width Scrubber with timestamps */}
+          <div className="flex items-center gap-2.5">
+            <span className="text-[10px] font-mono text-[#71717a] shrink-0 w-8">
+              {formatTime(currentTime)}
+            </span>
 
-            <button
-              onClick={isPlaying ? pauseTrack : resumeTrack}
-              className="p-2.5 rounded-xl bg-[#15803d] hover:bg-[#166534] text-white shadow-sm transition-all cursor-pointer active:scale-90"
-              title={isPlaying ? "Pausar" : "Tocar"}
+            <div
+              className="relative flex-1 h-1.5 hover:h-2 bg-[#1e1e22] rounded-full cursor-pointer overflow-hidden group transition-all"
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect()
+                const clickX = e.clientX - rect.left
+                const newPercent = Math.max(0, Math.min(1, clickX / rect.width))
+                seek(newPercent * duration)
+              }}
             >
-              {isPlaying ? <Pause size={15} /> : <Play size={15} className="ml-0.5" />}
-            </button>
+              <div
+                className="h-full bg-[#22c55e] rounded-full transition-all duration-100 group-hover:bg-[#4ade80]"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
 
-            {playlist.length > 1 && (
-              <button
-                onClick={nextTrack}
-                disabled={!hasNext}
-                className="p-1.5 rounded-lg text-[#71717a] hover:text-white disabled:opacity-30 disabled:hover:text-[#71717a] transition-colors cursor-pointer"
-                title="Próxima faixa"
-              >
-                <SkipForward size={14} />
-              </button>
-            )}
+            <span className="text-[10px] font-mono text-[#71717a] shrink-0 w-8 text-right">
+              {formatTime(duration)}
+            </span>
+          </div>
 
+          {/* Bottom Row: Controls */}
+          <div className="flex items-center justify-between pt-0.5">
+            {/* Left: Volume / Mute */}
             <button
               onClick={toggleMute}
-              className="p-2 rounded-lg text-[#71717a] hover:text-white hover:bg-white/10 transition-colors"
+              className="p-1.5 rounded-lg text-[#71717a] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               title={isMuted ? "Ativar som" : "Silenciar"}
             >
-              {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+              {isMuted ? <VolumeX size={16} className="text-red-400" /> : <Volume2 size={16} />}
             </button>
 
-            <button
-              onClick={stopTrack}
-              className="p-1.5 rounded-lg text-[#71717a] hover:text-white hover:bg-white/10 transition-colors"
-              title="Fechar Player"
-            >
-              <X size={15} />
-            </button>
+            {/* Center: Playback Controls (Prev, Play/Pause, Next) */}
+            <div className="flex items-center gap-3">
+              {playlist.length > 1 ? (
+                <button
+                  onClick={prevTrack}
+                  disabled={!hasPrev}
+                  className="p-2 rounded-full text-[#71717a] hover:text-white hover:bg-white/5 disabled:opacity-20 disabled:hover:text-[#71717a] transition-colors cursor-pointer"
+                  title="Faixa anterior"
+                >
+                  <SkipBack size={16} />
+                </button>
+              ) : (
+                <div className="w-8" />
+              )}
+
+              <button
+                onClick={isPlaying ? pauseTrack : resumeTrack}
+                className="w-10 h-10 rounded-full bg-[#22c55e] hover:bg-[#16a34a] text-black flex items-center justify-center shadow-lg shadow-[#22c55e]/20 transition-all cursor-pointer active:scale-95"
+                title={isPlaying ? "Pausar" : "Tocar"}
+              >
+                {isPlaying ? <Pause size={18} className="fill-current" /> : <Play size={18} className="fill-current ml-0.5" />}
+              </button>
+
+              {playlist.length > 1 ? (
+                <button
+                  onClick={nextTrack}
+                  disabled={!hasNext}
+                  className="p-2 rounded-full text-[#71717a] hover:text-white hover:bg-white/5 disabled:opacity-20 disabled:hover:text-[#71717a] transition-colors cursor-pointer"
+                  title="Próxima faixa"
+                >
+                  <SkipForward size={16} />
+                </button>
+              ) : (
+                <div className="w-8" />
+              )}
+            </div>
+
+            {/* Right: Version indicator badge */}
+            <div className="w-8 flex justify-end">
+              <span className="text-[9px] font-mono text-[#71717a] px-1.5 py-0.5 rounded bg-white/[0.04] border border-[#27272a] uppercase font-semibold">
+                {activeVersion?.isFinal ? "FINAL" : "WAV"}
+              </span>
+            </div>
           </div>
         </div>
       </motion.div>
