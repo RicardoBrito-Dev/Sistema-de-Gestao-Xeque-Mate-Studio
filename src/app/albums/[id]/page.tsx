@@ -109,7 +109,7 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
       setAlbum((prev) => {
         if (!prev) return prev
         const updatedTracks = prev.tracks.map((t) => {
-          if (t.kanbanCardId === trackId) {
+          if (t.kanbanCardId === trackId || (t as unknown as { id?: string }).id === trackId) {
             const updatedVersions = t.versions?.map((v) => {
               if (versionId && v.id === versionId && versionPlayCount !== undefined) {
                 return { ...v, playCount: versionPlayCount }
@@ -118,7 +118,7 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
             })
             return {
               ...t,
-              playCount: Math.max(t.playCount || 0, playCount),
+              playCount: playCount,
               versions: updatedVersions,
             }
           }
@@ -133,46 +133,6 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
       window.removeEventListener("xm:play-count-updated", handlePlayCountUpdate)
     }
   }, [])
-
-  const incrementTrackPlay = async (cardId: string, versionId?: string) => {
-    if (!album) return
-    const targetVerId =
-      versionId ||
-      album.tracks.find((t) => t.kanbanCardId === cardId)?.selectedVersionId
-
-    const updatedTracks = album.tracks.map((t) => {
-      if (t.kanbanCardId === cardId) {
-        const nextPlayCount = (t.playCount || 0) + 1
-        const activeVerId =
-          targetVerId ||
-          t.selectedVersionId ||
-          t.versions?.[t.versions.length - 1]?.id
-
-        const updatedVersions = t.versions?.map((v) => {
-          if (v.id === activeVerId) {
-            return { ...v, playCount: (v.playCount || 0) + 1 }
-          }
-          return v
-        })
-
-        return {
-          ...t,
-          playCount: nextPlayCount,
-          versions: updatedVersions,
-        }
-      }
-      return t
-    })
-
-    const updatedAlbum: Album = {
-      ...album,
-      tracks: updatedTracks,
-      updatedAt: new Date().toISOString(),
-    }
-
-    setAlbum(updatedAlbum)
-    await saveAlbumAsync(updatedAlbum)
-  }
 
   const getAlbumPlaylist = (tracks: AlbumTrack[]): PlayingTrack[] => {
     return tracks.map((t) => ({
@@ -193,12 +153,9 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
         pauseTrack()
       } else {
         resumeTrack()
-        incrementTrackPlay(track.kanbanCardId, track.selectedVersionId)
       }
       return
     }
-
-    incrementTrackPlay(track.kanbanCardId, track.selectedVersionId)
 
     const playlist = album ? getAlbumPlaylist(album.tracks) : []
     playTrack(
@@ -209,7 +166,7 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
         versions: track.versions,
         activeVersionId: track.selectedVersionId,
         albumId: album?.id,
-        playCount: (track.playCount || 0) + 1,
+        playCount: track.playCount,
       },
       track.selectedVersionId,
       playlist
@@ -218,9 +175,8 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
 
   const handlePlayAll = () => {
     if (!album || !album.tracks || album.tracks.length === 0) return
-    const firstTrack = album.tracks[0]
-    incrementTrackPlay(firstTrack.kanbanCardId, firstTrack.selectedVersionId)
     const playlist = getAlbumPlaylist(album.tracks)
+    const firstTrack = album.tracks[0]
     playTrack(
       playlist[0],
       firstTrack.selectedVersionId,
