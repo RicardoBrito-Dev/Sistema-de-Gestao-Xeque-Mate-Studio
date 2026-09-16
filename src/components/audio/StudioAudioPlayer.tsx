@@ -40,19 +40,29 @@ export function StudioAudioPlayer() {
   const [isVersionDropdownOpen, setIsVersionDropdownOpen] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const prevVolumeRef = useRef(volume)
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // Close dropdown on outside click
+  // Close dropdown on outside click or touch
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(e.target as Node)
+      ) {
         setIsVersionDropdownOpen(false)
       }
     }
     if (isVersionDropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside)
+      document.addEventListener("touchstart", handleClickOutside)
     }
-    return () => document.removeEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      document.removeEventListener("touchstart", handleClickOutside)
+    }
   }, [isVersionDropdownOpen])
 
   if (!currentTrack) return null
@@ -88,6 +98,84 @@ export function StudioAudioPlayer() {
         transition={{ type: "spring", damping: 22, stiffness: 300 }}
         className="fixed bottom-20 md:bottom-6 left-3 right-3 sm:left-auto sm:right-6 sm:w-[460px] z-50 rounded-2xl bg-[#0c0c0f]/95 backdrop-blur-2xl border border-[#27272e] p-3.5 sm:p-4 shadow-2xl shadow-black/95"
       >
+        {/* ─── Floating Version Selector Modal (Never overflows viewport) ─── */}
+        <AnimatePresence>
+          {isVersionDropdownOpen && (
+            <motion.div
+              ref={dropdownRef}
+              initial={{ opacity: 0, y: 8, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.96 }}
+              transition={{ duration: 0.15 }}
+              className="absolute bottom-[calc(100%+8px)] left-0 right-0 sm:left-auto sm:right-0 sm:w-80 z-50 rounded-2xl bg-[#111114]/98 backdrop-blur-xl border border-[#2a2a30] shadow-2xl p-2 space-y-1.5"
+            >
+              <div className="px-2.5 py-1.5 text-[11px] font-bold text-[#a1a1aa] uppercase tracking-wider flex items-center justify-between border-b border-[#1e1e22]">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-white">Versões da Faixa</span>
+                  <span className="text-[9px] font-mono text-[#71717a] font-normal">({versions.length})</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] text-[#22c55e] font-mono lowercase bg-[#22c55e]/10 px-1.5 py-0.5 rounded border border-[#22c55e]/20">teste a/b</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsVersionDropdownOpen(false)}
+                    className="p-1 rounded text-[#71717a] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                    title="Fechar menu"
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="max-h-60 overflow-y-auto space-y-1 pr-0.5">
+                {versions.length === 0 ? (
+                  <div className="p-3 text-center text-xs text-[#71717a]">
+                    Versão única (Guia inicial)
+                  </div>
+                ) : (
+                  versions.map((ver) => {
+                    const isSelected = activeVersion?.id === ver.id
+                    return (
+                      <button
+                        key={ver.id}
+                        type="button"
+                        onClick={() => {
+                          switchVersion(ver.id)
+                          setIsVersionDropdownOpen(false)
+                        }}
+                        className={`w-full text-left p-2 rounded-xl text-xs flex items-center justify-between gap-2 transition-all cursor-pointer ${
+                          isSelected
+                            ? "bg-[#15803d]/20 text-[#4ade80] font-semibold border border-[#15803d]/30"
+                            : "text-[#d4d4d8] hover:bg-white/[0.04] border border-transparent"
+                        }`}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono text-[11px] font-bold">
+                              v{ver.versionNumber}
+                            </span>
+                            <span className="truncate">{ver.name.replace(/^v\d+\s*•?\s*/, "")}</span>
+                            {ver.isFinal && (
+                              <span className="text-[9px] bg-gold/20 text-gold px-1 rounded font-bold">
+                                FINAL
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[9px] text-[#71717a] mt-0.5 flex items-center gap-2 font-mono">
+                            {ver.fileSize && <span>{ver.fileSize}</span>}
+                          </div>
+                        </div>
+
+                        {isSelected && <Check size={13} className="text-[#22c55e] shrink-0" />}
+                      </button>
+                    )
+                  })
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="flex flex-col gap-2.5">
           {/* Top Row: Track Art + Track Details + (Equalizer & Close) */}
           <div className="flex items-center justify-between gap-3">
@@ -108,82 +196,19 @@ export function StudioAudioPlayer() {
                     {currentTrack.title}
                   </h4>
 
-                  {/* ─── Untitled Version Selector Dropdown ─── */}
-                  <div className="relative shrink-0" ref={dropdownRef}>
-                    <button
-                      type="button"
-                      onClick={() => setIsVersionDropdownOpen((prev) => !prev)}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#18181b] hover:bg-[#222226] border border-[#2e2e36] text-[10px] font-mono text-[#22c55e] hover:text-[#4ade80] transition-colors cursor-pointer"
-                      title="Alternar entre versões da faixa"
-                    >
-                      <span className="font-bold">
-                        {activeVersion ? `v${activeVersion.versionNumber}` : "v1"}
-                      </span>
-                      <ChevronDown size={10} />
-                    </button>
-
-                    {/* Version Dropdown Menu */}
-                    <AnimatePresence>
-                      {isVersionDropdownOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -6, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -6, scale: 0.95 }}
-                          transition={{ duration: 0.12 }}
-                          className="absolute left-0 bottom-8 z-50 w-64 max-w-[calc(100vw-3rem)] rounded-xl bg-[#111114] border border-[#2a2a30] shadow-2xl p-1.5 space-y-1"
-                        >
-                          <div className="px-2 py-1 text-[10px] font-bold text-[#71717a] uppercase tracking-wider flex items-center justify-between border-b border-[#1e1e22]">
-                            <span>Versões da Música</span>
-                            <span className="text-[9px] text-[#22c55e] lowercase">teste a/b</span>
-                          </div>
-
-                          {versions.length === 0 ? (
-                            <div className="p-2 text-center text-xs text-[#71717a]">
-                              Versão única (Guia inicial)
-                            </div>
-                          ) : (
-                            versions.map((ver) => {
-                              const isSelected = activeVersion?.id === ver.id
-                              return (
-                                <button
-                                  key={ver.id}
-                                  type="button"
-                                  onClick={() => {
-                                    switchVersion(ver.id)
-                                    setIsVersionDropdownOpen(false)
-                                  }}
-                                  className={`w-full text-left p-2 rounded-lg text-xs flex items-center justify-between gap-2 transition-all cursor-pointer ${
-                                    isSelected
-                                      ? "bg-[#15803d]/20 text-[#4ade80] font-semibold border border-[#15803d]/30"
-                                      : "text-[#d4d4d8] hover:bg-white/[0.04]"
-                                  }`}
-                                >
-                                  <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="font-mono text-[11px] font-bold">
-                                        v{ver.versionNumber}
-                                      </span>
-                                      <span className="truncate">{ver.name.replace(/^v\d+\s*•?\s*/, "")}</span>
-                                      {ver.isFinal && (
-                                        <span className="text-[9px] bg-gold/20 text-gold px-1 rounded font-bold">
-                                          FINAL
-                                        </span>
-                                      )}
-                                    </div>
-                                    <div className="text-[9px] text-[#71717a] mt-0.5 flex items-center gap-2 font-mono">
-                                      {ver.fileSize && <span>{ver.fileSize}</span>}
-                                    </div>
-                                  </div>
-
-                                  {isSelected && <Check size={13} className="text-[#22c55e] shrink-0" />}
-                                </button>
-                              )
-                            })
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                  {/* ─── Version Button ─── */}
+                  <button
+                    ref={buttonRef}
+                    type="button"
+                    onClick={() => setIsVersionDropdownOpen((prev) => !prev)}
+                    className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#18181b] hover:bg-[#222226] border border-[#2e2e36] text-[10px] font-mono text-[#22c55e] hover:text-[#4ade80] transition-colors cursor-pointer"
+                    title="Alternar entre versões da faixa"
+                  >
+                    <span className="font-bold">
+                      {activeVersion ? `v${activeVersion.versionNumber}` : "v1"}
+                    </span>
+                    <ChevronDown size={10} />
+                  </button>
                 </div>
 
                 <p className="text-[11px] text-[#71717a] truncate mt-0.5">
