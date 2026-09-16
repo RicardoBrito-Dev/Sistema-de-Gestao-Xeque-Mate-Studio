@@ -11,6 +11,8 @@ import {
   Sparkles,
   User,
   Send,
+  X,
+  ChevronUp,
 } from "lucide-react"
 import { TrackFeedback, AlbumTrack } from "@/lib/types"
 import { generateId } from "@/lib/storage"
@@ -21,12 +23,14 @@ interface TrackFeedbackListProps {
   track: AlbumTrack
   onUpdateFeedbacks: (feedbacks: TrackFeedback[]) => void
   isCurrentPlaying?: boolean
+  onClose?: () => void
 }
 
 export function TrackFeedbackList({
   track,
   onUpdateFeedbacks,
   isCurrentPlaying = false,
+  onClose,
 }: TrackFeedbackListProps) {
   const { user } = useAuth()
   const { currentTime, seek } = useAudioPlayer()
@@ -86,35 +90,49 @@ export function TrackFeedbackList({
 
   return (
     <div className="bg-[#0e0e10] border border-[#222226] rounded-2xl p-4 md:p-5 space-y-4 shadow-inner">
-      {/* Header com Progresso */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1e1e22] pb-3">
-        <div className="flex items-center gap-2">
-          <MessageSquareQuote size={16} className="text-[#22c55e]" />
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-[#d4d4d8]">
+      {/* Header com Progresso e Botão Fechar */}
+      <div className="flex items-center justify-between gap-2 border-b border-[#1e1e22] pb-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <MessageSquareQuote size={16} className="text-[#22c55e] flex-shrink-0" />
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-[#d4d4d8] truncate">
             Tópicos de Revisão & Feedbacks
           </h4>
-          <span className="text-[10px] font-mono text-[#71717a]">
+          <span className="text-[10px] font-mono text-[#71717a] flex-shrink-0">
             ({completedCount}/{totalCount})
           </span>
         </div>
 
-        {totalCount > 0 && (
-          <div className="flex items-center gap-2">
-            <div className="w-24 h-1.5 bg-[#1e1e22] rounded-full overflow-hidden">
-              <div
-                className="h-full bg-[#22c55e] transition-all duration-500"
-                style={{ width: `${progressPercent}%` }}
-              />
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {totalCount > 0 && (
+            <div className="hidden sm:flex items-center gap-2">
+              <div className="w-20 h-1.5 bg-[#1e1e22] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[#22c55e] transition-all duration-500"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+              <span
+                className={`text-[10px] font-mono font-bold ${
+                  progressPercent === 100 ? "text-[#4ade80]" : "text-[#71717a]"
+                }`}
+              >
+                {progressPercent}% OK
+              </span>
             </div>
-            <span
-              className={`text-[10px] font-mono font-bold ${
-                progressPercent === 100 ? "text-[#4ade80]" : "text-[#71717a]"
-              }`}
+          )}
+
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#18181b] hover:bg-[#222226] text-[#a1a1aa] hover:text-white border border-[#27272e] text-[11px] font-medium transition-all active:scale-95 cursor-pointer shadow-sm"
+              title="Fechar aba de feedbacks"
             >
-              {progressPercent}% OK
-            </span>
-          </div>
-        )}
+              <span>Fechar</span>
+              <X size={13} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Lista de Feedbacks */}
@@ -257,6 +275,20 @@ export function TrackFeedbackList({
           </button>
         </div>
       </form>
+
+      {/* Botão de recolher no rodapé */}
+      {onClose && (
+        <div className="pt-2 flex justify-center border-t border-[#1a1a1e]">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center gap-1.5 text-xs text-[#71717a] hover:text-[#d4d4d8] transition-colors py-1.5 px-3 rounded-lg hover:bg-white/5 cursor-pointer font-mono"
+          >
+            <ChevronUp size={13} />
+            <span>Recolher Feedbacks</span>
+          </button>
+        </div>
+      )}
     </div>
   )
 }

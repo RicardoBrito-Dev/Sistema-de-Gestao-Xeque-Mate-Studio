@@ -697,6 +697,7 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                                       handleUpdateFeedbacks(track.kanbanCardId, newFeedbacks)
                                     }
                                     isCurrentPlaying={isCurrent}
+                                    onClose={() => setActiveFeedbackTrackId(null)}
                                   />
                                 </div>
                               )}
