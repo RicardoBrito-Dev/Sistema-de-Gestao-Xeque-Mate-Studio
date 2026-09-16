@@ -518,11 +518,10 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
 
                 <button
                   onClick={handleShareAlbum}
-                  className="inline-flex items-center gap-2 bg-[#18181b] hover:bg-[#222226] text-white border border-[#27272a] hover:border-[#38bdf8]/40 font-semibold text-xs md:text-sm px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl transition-all active:scale-95 cursor-pointer shadow-sm"
+                  className="h-10 w-10 sm:h-11 sm:w-11 flex items-center justify-center bg-[#18181b] hover:bg-[#222226] text-[#38bdf8] hover:text-[#7dd3fc] border border-[#27272a] hover:border-[#38bdf8]/50 rounded-2xl transition-all active:scale-90 cursor-pointer shadow-sm shrink-0"
                   title="Compartilhar link público do álbum"
                 >
-                  <Share2 size={15} className="text-[#38bdf8]" />
-                  <span>Compartilhar</span>
+                  <Share2 size={16} />
                 </button>
               </div>
             </div>

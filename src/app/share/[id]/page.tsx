@@ -365,10 +365,10 @@ function ShareContent({ params }: SharePageProps) {
 
                 <button
                   onClick={handleShare}
-                  className="inline-flex items-center gap-2 bg-[#18181b] hover:bg-[#222226] text-white border border-[#27272a] font-semibold text-sm px-5 py-3 rounded-2xl transition-all active:scale-95 cursor-pointer"
+                  className="h-11 w-11 flex items-center justify-center bg-[#18181b] hover:bg-[#222226] text-[#38bdf8] hover:text-[#7dd3fc] border border-[#27272a] hover:border-[#38bdf8]/50 rounded-2xl transition-all active:scale-90 cursor-pointer shadow-sm shrink-0"
+                  title="Compartilhar link do álbum"
                 >
-                  <Share2 size={15} className="text-[#38bdf8]" />
-                  <span>Compartilhar</span>
+                  <Share2 size={16} />
                 </button>
               </div>
             </div>
