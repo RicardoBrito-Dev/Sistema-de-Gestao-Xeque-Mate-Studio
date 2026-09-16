@@ -196,7 +196,7 @@ export function TrackVersionsModal({
                             <span className="inline-flex items-center gap-1 text-[#22c55e]">
                               <span>·</span>
                               <Headphones size={10} />
-                              <span>{v.playCount} {v.playCount === 1 ? "audição" : "audições"}</span>
+                              <span>{v.playCount}</span>
                             </span>
                           )}
                         </p>

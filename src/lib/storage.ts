@@ -519,16 +519,18 @@ export async function recordTrackPlay(params: {
   const albums = getAlbums()
   let albumToUpdate: import('./types').Album | null = null
 
+  // Tenta encontrar pelo albumId se informado
   for (const alb of albums) {
     if (albumId && alb.id !== albumId) continue
-    const tIndex = alb.tracks.findIndex((t) => t.kanbanCardId === trackId)
+    const tIndex = alb.tracks.findIndex((t) => t.kanbanCardId === trackId || (t as unknown as { id?: string }).id === trackId)
     if (tIndex !== -1) {
       const track = alb.tracks[tIndex]
       track.playCount = (track.playCount || 0) + 1
       updatedTrackPlayCount = track.playCount
 
-      if (versionId && track.versions) {
-        const vIndex = track.versions.findIndex((v) => v.id === versionId)
+      const targetVerId = versionId || track.selectedVersionId || track.versions?.[track.versions.length - 1]?.id
+      if (targetVerId && track.versions) {
+        const vIndex = track.versions.findIndex((v) => v.id === targetVerId)
         if (vIndex !== -1) {
           track.versions[vIndex].playCount = (track.versions[vIndex].playCount || 0) + 1
           updatedVersionPlayCount = track.versions[vIndex].playCount
@@ -536,6 +538,29 @@ export async function recordTrackPlay(params: {
       }
       albumToUpdate = alb
       break
+    }
+  }
+
+  // Fallback: se não encontrou com o filtro de albumId, procura em todos os álbuns
+  if (!albumToUpdate) {
+    for (const alb of albums) {
+      const tIndex = alb.tracks.findIndex((t) => t.kanbanCardId === trackId || (t as unknown as { id?: string }).id === trackId)
+      if (tIndex !== -1) {
+        const track = alb.tracks[tIndex]
+        track.playCount = (track.playCount || 0) + 1
+        updatedTrackPlayCount = track.playCount
+
+        const targetVerId = versionId || track.selectedVersionId || track.versions?.[track.versions.length - 1]?.id
+        if (targetVerId && track.versions) {
+          const vIndex = track.versions.findIndex((v) => v.id === targetVerId)
+          if (vIndex !== -1) {
+            track.versions[vIndex].playCount = (track.versions[vIndex].playCount || 0) + 1
+            updatedVersionPlayCount = track.versions[vIndex].playCount
+          }
+        }
+        albumToUpdate = alb
+        break
+      }
     }
   }
 
@@ -558,8 +583,8 @@ export async function recordTrackPlay(params: {
     saveKanbanCard(card)
   }
 
-  // 3. Notifica a interface em tempo real via CustomEvent
-  if (typeof window !== 'undefined') {
+  // 3. Notifica a interface em tempo real via CustomEvent (somente se atualizou)
+  if (typeof window !== 'undefined' && updatedTrackPlayCount > 0) {
     window.dispatchEvent(
       new CustomEvent('xm:play-count-updated', {
         detail: {

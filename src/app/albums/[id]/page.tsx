@@ -104,6 +104,8 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
         versionPlayCount?: number
       }>
       const { trackId, versionId, playCount, versionPlayCount } = customEvent.detail
+      if (!playCount) return
+
       setAlbum((prev) => {
         if (!prev) return prev
         const updatedTracks = prev.tracks.map((t) => {
@@ -116,7 +118,7 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
             })
             return {
               ...t,
-              playCount,
+              playCount: Math.max(t.playCount || 0, playCount),
               versions: updatedVersions,
             }
           }
@@ -131,6 +133,46 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
       window.removeEventListener("xm:play-count-updated", handlePlayCountUpdate)
     }
   }, [])
+
+  const incrementTrackPlay = async (cardId: string, versionId?: string) => {
+    if (!album) return
+    const targetVerId =
+      versionId ||
+      album.tracks.find((t) => t.kanbanCardId === cardId)?.selectedVersionId
+
+    const updatedTracks = album.tracks.map((t) => {
+      if (t.kanbanCardId === cardId) {
+        const nextPlayCount = (t.playCount || 0) + 1
+        const activeVerId =
+          targetVerId ||
+          t.selectedVersionId ||
+          t.versions?.[t.versions.length - 1]?.id
+
+        const updatedVersions = t.versions?.map((v) => {
+          if (v.id === activeVerId) {
+            return { ...v, playCount: (v.playCount || 0) + 1 }
+          }
+          return v
+        })
+
+        return {
+          ...t,
+          playCount: nextPlayCount,
+          versions: updatedVersions,
+        }
+      }
+      return t
+    })
+
+    const updatedAlbum: Album = {
+      ...album,
+      tracks: updatedTracks,
+      updatedAt: new Date().toISOString(),
+    }
+
+    setAlbum(updatedAlbum)
+    await saveAlbumAsync(updatedAlbum)
+  }
 
   const getAlbumPlaylist = (tracks: AlbumTrack[]): PlayingTrack[] => {
     return tracks.map((t) => ({
@@ -151,9 +193,12 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
         pauseTrack()
       } else {
         resumeTrack()
+        incrementTrackPlay(track.kanbanCardId, track.selectedVersionId)
       }
       return
     }
+
+    incrementTrackPlay(track.kanbanCardId, track.selectedVersionId)
 
     const playlist = album ? getAlbumPlaylist(album.tracks) : []
     playTrack(
@@ -164,7 +209,7 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
         versions: track.versions,
         activeVersionId: track.selectedVersionId,
         albumId: album?.id,
-        playCount: track.playCount,
+        playCount: (track.playCount || 0) + 1,
       },
       track.selectedVersionId,
       playlist
@@ -173,8 +218,9 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
 
   const handlePlayAll = () => {
     if (!album || !album.tracks || album.tracks.length === 0) return
-    const playlist = getAlbumPlaylist(album.tracks)
     const firstTrack = album.tracks[0]
+    incrementTrackPlay(firstTrack.kanbanCardId, firstTrack.selectedVersionId)
+    const playlist = getAlbumPlaylist(album.tracks)
     playTrack(
       playlist[0],
       firstTrack.selectedVersionId,
@@ -422,11 +468,10 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-4 text-xs text-[#71717a] font-mono pt-1">
                 <span>{album.tracks.length} {album.tracks.length === 1 ? "faixa" : "faixas"}</span>
                 <span>•</span>
-                <span className="inline-flex items-center gap-1.5 text-[#4ade80]" title="Total de reproduções do álbum">
+                <span className="inline-flex items-center gap-1 text-[#4ade80]" title="Total de reproduções do álbum">
                   <Headphones size={13} className="text-[#22c55e]" />
                   <span>
-                    {album.tracks.reduce((sum, t) => sum + (t.playCount || 0), 0)}{" "}
-                    {album.tracks.reduce((sum, t) => sum + (t.playCount || 0), 0) === 1 ? "audição" : "audições"}
+                    {album.tracks.reduce((sum, t) => sum + (t.playCount || 0), 0)}
                   </span>
                 </span>
                 <span className="hidden sm:inline">•</span>
