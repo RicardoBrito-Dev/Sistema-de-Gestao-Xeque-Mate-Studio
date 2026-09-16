@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from "react"
 import { TrackVersion } from "@/lib/types"
 import { getAudioBlob } from "@/lib/audioStorage"
+import { recordTrackPlay } from "@/lib/storage"
 
 export interface PlayingTrack {
   id: string
@@ -11,6 +12,8 @@ export interface PlayingTrack {
   audioUrl?: string
   versions?: TrackVersion[]
   activeVersionId?: string
+  albumId?: string
+  playCount?: number
 }
 
 interface AudioPlayerContextType {
@@ -68,6 +71,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const fallbackTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const lastPlayRecordedRef = useRef<{ [key: string]: number }>({})
 
   // Keep refs for event handlers to avoid stale closures
   const currentTrackRef = useRef<PlayingTrack | null>(null)
@@ -113,6 +117,18 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
 
     setActiveVersion(versionToPlay)
     setCurrentTime(0)
+
+    // Registrar reprodução com debounce de 3 segundos
+    const now = Date.now()
+    const lastPlayed = lastPlayRecordedRef.current[track.id] || 0
+    if (now - lastPlayed > 3000) {
+      lastPlayRecordedRef.current[track.id] = now
+      recordTrackPlay({
+        trackId: track.id,
+        albumId: track.albumId,
+        versionId: versionToPlay.id,
+      }).catch((e) => console.warn("Erro ao registrar reprodução:", e))
+    }
 
     const audio = audioRef.current
     if (audio) {
@@ -226,6 +242,14 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     if (!target) return
 
     setActiveVersion(target)
+
+    // Registra reprodução da nova versão
+    recordTrackPlay({
+      trackId: currentTrack.id,
+      albumId: currentTrack.albumId,
+      versionId: target.id,
+    }).catch((e) => console.warn("Erro ao registrar reprodução de versão:", e))
+
     const audio = audioRef.current
     const wasPlaying = isPlaying
 

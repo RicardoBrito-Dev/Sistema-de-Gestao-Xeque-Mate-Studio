@@ -21,6 +21,7 @@ import {
   ChevronUp,
   GripVertical,
   MoreVertical,
+  Headphones,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -93,6 +94,44 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
     loadAlbum()
   }, [id])
 
+  // Sincroniza contagem de reproduções em tempo real
+  useEffect(() => {
+    const handlePlayCountUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<{
+        trackId: string
+        versionId?: string
+        playCount: number
+        versionPlayCount?: number
+      }>
+      const { trackId, versionId, playCount, versionPlayCount } = customEvent.detail
+      setAlbum((prev) => {
+        if (!prev) return prev
+        const updatedTracks = prev.tracks.map((t) => {
+          if (t.kanbanCardId === trackId) {
+            const updatedVersions = t.versions?.map((v) => {
+              if (versionId && v.id === versionId && versionPlayCount !== undefined) {
+                return { ...v, playCount: versionPlayCount }
+              }
+              return v
+            })
+            return {
+              ...t,
+              playCount,
+              versions: updatedVersions,
+            }
+          }
+          return t
+        })
+        return { ...prev, tracks: updatedTracks }
+      })
+    }
+
+    window.addEventListener("xm:play-count-updated", handlePlayCountUpdate)
+    return () => {
+      window.removeEventListener("xm:play-count-updated", handlePlayCountUpdate)
+    }
+  }, [])
+
   const getAlbumPlaylist = (tracks: AlbumTrack[]): PlayingTrack[] => {
     return tracks.map((t) => ({
       id: t.kanbanCardId,
@@ -100,6 +139,8 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
       artist: t.artistName || album?.artistName || "",
       versions: t.versions,
       activeVersionId: t.selectedVersionId,
+      albumId: album?.id,
+      playCount: t.playCount,
     }))
   }
 
@@ -122,6 +163,8 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
         artist: track.artistName || album?.artistName || "",
         versions: track.versions,
         activeVersionId: track.selectedVersionId,
+        albumId: album?.id,
+        playCount: track.playCount,
       },
       track.selectedVersionId,
       playlist
@@ -378,6 +421,14 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
 
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-4 text-xs text-[#71717a] font-mono pt-1">
                 <span>{album.tracks.length} {album.tracks.length === 1 ? "faixa" : "faixas"}</span>
+                <span>•</span>
+                <span className="inline-flex items-center gap-1.5 text-[#4ade80]" title="Total de reproduções do álbum">
+                  <Headphones size={13} className="text-[#22c55e]" />
+                  <span>
+                    {album.tracks.reduce((sum, t) => sum + (t.playCount || 0), 0)}{" "}
+                    {album.tracks.reduce((sum, t) => sum + (t.playCount || 0), 0) === 1 ? "audição" : "audições"}
+                  </span>
+                </span>
                 <span className="hidden sm:inline">•</span>
                 <span className="hidden sm:inline">Untitled Stream Engine</span>
               </div>
@@ -524,9 +575,25 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                                         </span>
                                       )}
                                     </div>
-                                    <p className="text-xs text-[#71717a] truncate mt-0.5 leading-tight">
-                                      {track.artistName || album.artistName}
-                                    </p>
+                                    <div className="flex items-center gap-2 text-xs text-[#71717a] mt-0.5 leading-tight">
+                                      <span className="truncate">
+                                        {track.artistName || album.artistName}
+                                      </span>
+                                      <span
+                                        className="inline-flex items-center gap-1 text-[10px] font-mono text-[#71717a] flex-shrink-0"
+                                        title={`Esta faixa já foi escutada ${track.playCount || 0} ${
+                                          track.playCount === 1 ? "vez" : "vezes"
+                                        }`}
+                                      >
+                                        <Headphones
+                                          size={10}
+                                          className={track.playCount ? "text-[#22c55e]" : "text-[#52525b]"}
+                                        />
+                                        <span className={track.playCount ? "text-[#a1a1aa]" : "text-[#52525b]"}>
+                                          {track.playCount || 0}
+                                        </span>
+                                      </span>
+                                    </div>
                                   </div>
                                 </div>
 

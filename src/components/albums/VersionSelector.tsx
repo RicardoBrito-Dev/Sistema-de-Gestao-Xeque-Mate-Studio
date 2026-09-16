@@ -2,7 +2,7 @@
 
 import React from "react"
 import { TrackVersion } from "@/lib/types"
-import { ChevronDown, Check } from "lucide-react"
+import { ChevronDown, Check, Headphones } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,9 +68,20 @@ export function VersionSelector({
                   </span>
                 )}
               </div>
-              {isSelected && (
-                <Check size={14} className="text-[#22c55e] flex-shrink-0 ml-2" />
-              )}
+              <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                {v.playCount !== undefined && v.playCount > 0 && (
+                  <span
+                    className="inline-flex items-center gap-0.5 text-[10px] font-mono text-[#a1a1aa]"
+                    title={`${v.playCount} ${v.playCount === 1 ? "audição" : "audições"} desta versão`}
+                  >
+                    <Headphones size={10} className="text-[#22c55e]" />
+                    <span>{v.playCount}</span>
+                  </span>
+                )}
+                {isSelected && (
+                  <Check size={14} className="text-[#22c55e] flex-shrink-0" />
+                )}
+              </div>
             </DropdownMenuItem>
           )
         })}

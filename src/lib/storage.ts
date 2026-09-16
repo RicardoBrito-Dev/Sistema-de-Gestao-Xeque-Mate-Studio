@@ -503,3 +503,76 @@ export async function deleteAlbumAsync(id: string): Promise<void> {
     }
   }
 }
+
+// ─── Contador de Reproduções (Audios Escutados) ───────────
+export async function recordTrackPlay(params: {
+  trackId: string
+  albumId?: string
+  versionId?: string
+}): Promise<{ trackPlayCount: number; versionPlayCount?: number } | null> {
+  const { trackId, albumId, versionId } = params
+
+  let updatedTrackPlayCount = 0
+  let updatedVersionPlayCount: number | undefined = undefined
+
+  // 1. Atualiza nos Álbuns
+  const albums = getAlbums()
+  let albumToUpdate: import('./types').Album | null = null
+
+  for (const alb of albums) {
+    if (albumId && alb.id !== albumId) continue
+    const tIndex = alb.tracks.findIndex((t) => t.kanbanCardId === trackId)
+    if (tIndex !== -1) {
+      const track = alb.tracks[tIndex]
+      track.playCount = (track.playCount || 0) + 1
+      updatedTrackPlayCount = track.playCount
+
+      if (versionId && track.versions) {
+        const vIndex = track.versions.findIndex((v) => v.id === versionId)
+        if (vIndex !== -1) {
+          track.versions[vIndex].playCount = (track.versions[vIndex].playCount || 0) + 1
+          updatedVersionPlayCount = track.versions[vIndex].playCount
+        }
+      }
+      albumToUpdate = alb
+      break
+    }
+  }
+
+  if (albumToUpdate) {
+    await saveAlbumAsync(albumToUpdate)
+  }
+
+  // 2. Atualiza no Card Kanban (se existir)
+  const cards = getKanbanCards()
+  const cardIndex = cards.findIndex((c) => c.id === trackId)
+  if (cardIndex !== -1) {
+    const card = cards[cardIndex]
+    card.playCount = (card.playCount || 0) + 1
+    if (versionId && card.versions) {
+      const cvIndex = card.versions.findIndex((v) => v.id === versionId)
+      if (cvIndex !== -1) {
+        card.versions[cvIndex].playCount = (card.versions[cvIndex].playCount || 0) + 1
+      }
+    }
+    saveKanbanCard(card)
+  }
+
+  // 3. Notifica a interface em tempo real via CustomEvent
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('xm:play-count-updated', {
+        detail: {
+          trackId,
+          albumId: albumToUpdate?.id || albumId,
+          versionId,
+          playCount: updatedTrackPlayCount,
+          versionPlayCount: updatedVersionPlayCount,
+        },
+      })
+    )
+  }
+
+  return { trackPlayCount: updatedTrackPlayCount, versionPlayCount: updatedVersionPlayCount }
+}
+

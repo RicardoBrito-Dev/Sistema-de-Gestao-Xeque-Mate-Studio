@@ -14,7 +14,7 @@ import { AudioDropzone } from "@/components/audio/AudioDropzone"
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext"
 import { deleteAudioBlob } from "@/lib/audioStorage"
 import { getKanbanCardsAsync, saveKanbanCardAsync } from "@/lib/storage"
-import { Play, Star, Trash2, Layers, Check, Music2 } from "lucide-react"
+import { Play, Star, Trash2, Layers, Check, Music2, Headphones } from "lucide-react"
 
 interface TrackVersionsModalProps {
   isOpen: boolean
@@ -190,8 +190,15 @@ export function TrackVersionsModal({
                             </span>
                           )}
                         </p>
-                        <p className="text-[10px] text-[#52525b] truncate font-mono mt-0.5">
-                          {v.fileName} {v.fileSize ? `· ${v.fileSize}` : ""}
+                        <p className="text-[10px] text-[#52525b] truncate font-mono mt-0.5 flex items-center gap-1.5">
+                          <span>{v.fileName} {v.fileSize ? `· ${v.fileSize}` : ""}</span>
+                          {v.playCount !== undefined && v.playCount > 0 && (
+                            <span className="inline-flex items-center gap-1 text-[#22c55e]">
+                              <span>·</span>
+                              <Headphones size={10} />
+                              <span>{v.playCount} {v.playCount === 1 ? "audição" : "audições"}</span>
+                            </span>
+                          )}
                         </p>
                       </div>
 

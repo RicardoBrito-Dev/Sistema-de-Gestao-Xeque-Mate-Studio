@@ -57,6 +57,7 @@ export interface TrackVersion {
   uploadedAt: string
   isFinal?: boolean
   notes?: string
+  playCount?: number
 }
 
 export interface KanbanCard {
@@ -73,6 +74,7 @@ export interface KanbanCard {
   driveLink?: string
   versions?: TrackVersion[]
   activeVersionId?: string
+  playCount?: number
 }
 
 // ============================================================
@@ -199,6 +201,7 @@ export interface AlbumTrack {
   selectedVersionId?: string
   versions?: TrackVersion[]
   feedbacks?: TrackFeedback[]
+  playCount?: number
 }
 
 export interface Album {
